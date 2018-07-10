@@ -1,116 +1,141 @@
-package tripaint.image
+package com.martomate.tripaint.image
 
-import scalafx.beans.property.ReadOnlyBooleanWrapper
+import scalafx.beans.property.{ReadOnlyBooleanProperty, ReadOnlyBooleanWrapper, ReadOnlyStringProperty, ReadOnlyStringWrapper}
 import java.awt.image.BufferedImage
+
 import javax.imageio.ImageIO
 import java.io.File
 import java.io.IOException
-import scalafx.beans.property.ReadOnlyStringProperty
-import scalafx.beans.property.ReadOnlyStringWrapper
+
 import scalafx.scene.paint.Color
 
 class ExtendedColor(val r: Double, val g: Double, val b: Double, val a: Double) {
   def +(c2: ExtendedColor) = new ExtendedColor(r + c2.r, g + c2.g, b + c2.b, a + c2.a)
+
   def -(c2: ExtendedColor) = new ExtendedColor(r - c2.r, g - c2.g, b - c2.b, a - c2.a)
+
   def *(d: Double) = new ExtendedColor(r * d, g * d, b * d, a * d)
+
   def /(d: Double) = new ExtendedColor(r / d, g / d, b / d, a / d)
-  def toColor = Color.color(clamp(r), clamp(g), clamp(b), clamp(a))
+
+  def toColor: Color = Color.color(clamp(r), clamp(g), clamp(b), clamp(a))
+
   private def clamp(v: Double, lo: Double = 0, hi: Double = 1) = math.min(math.max(v, lo), hi)
 }
 
-class Coord private (val x: Int, val y: Int, val index: Int) {
+class Coord private(val x: Int, val y: Int, val index: Int) {
   def distanceSq(p2: Coord): Double = {
     val dx = p2.x - x
     val dy = p2.y - y
-    val xx = dx * 0.5 - dy * 0.5// It's like magic!
+    val xx = dx * 0.5 - dy * 0.5
+    // It's like magic!
     val yy = dy * Coord.sqrt3 / 2
     xx * xx + yy * yy
   }
+
   def distance(p2: Coord): Double = math.sqrt(distanceSq(p2))
-  override def equals(c2: Any) = if (c2.isInstanceOf[Coord]) index == c2.asInstanceOf[Coord].index else false
-  override def hashCode = index.hashCode
+
+  override def equals(c2: Any): Boolean = c2 match {
+    case coord: Coord => index == coord.index
+    case _ => false
+  }
+
+  override def hashCode: Int = index.hashCode
 }
+
 object Coord {
-	private val sqrt3 = math.sqrt(3)
-	
-	def apply(x: Int, y: Int)(implicit storage: ImageStorage) = new Coord(x, y, (if (x < y) x else y) + (y - (if (x > y) x - y else 0)) * storage.imageSize)
-	def apply(index: Int)(implicit storage: ImageStorage) = {
-	  val xx = index % storage.imageSize
+  private val sqrt3 = math.sqrt(3)
+
+  def apply(x: Int, y: Int)(implicit storage: ImageStorage) = new Coord(x, y, (if (x < y) x else y) + (y - (if (x > y) x - y else 0)) * storage.imageSize)
+
+  def apply(index: Int)(implicit storage: ImageStorage): Coord = {
+    val xx = index % storage.imageSize
     val yy = index / storage.imageSize
     if (yy < xx) new Coord(xx + xx - yy, xx, index)
     else new Coord(xx, yy, index)
-	}
-	
-	def unapply(c: Coord) = Some(c.x, c.y, c.index)
+  }
+
+  def unapply(c: Coord) = Some(c.x, c.y, c.index)
 }
 
 case class SaveLocation(file: File, offset: Option[(Int, Int)])
+
 class ImageStorage(val imageSize: Int, initialColor: Color = null) {
-	private implicit val thisStorage = this
+  private implicit val thisStorage: ImageStorage = this
+
   import scala.language.implicitConversions
-  implicit def colorToExtendedColor(c: Color) = new ExtendedColor(c.red, c.green, c.blue, c.opacity)
-  
+
+  implicit def colorToExtendedColor(c: Color): ExtendedColor = new ExtendedColor(c.red, c.green, c.blue, c.opacity)
+
   private val _pixels = Array.fill[Color](imageSize * imageSize)(initialColor)
-  def numPixels = _pixels.length
-  
+
+  def numPixels: Int = _pixels.length
+
   private[image] val cumulativeChange = new CumulativeImageChange
   private[image] var registerChanges = true
-  
+
   def apply(index: Int) = _pixels(index)
-  def update(index: Int, newColor: Color) = {
-	  if (registerChanges) cumulativeChange.addChange(index, apply(index), newColor)
+
+  def update(index: Int, newColor: Color): Unit = {
+    if (registerChanges) cumulativeChange.addChange(index, apply(index), newColor)
     _pixels(index) = newColor
     hasChanged = true
   }
 
   private val _hasChanged = new ReadOnlyBooleanWrapper
-  private def hasChanged_=(newVal: Boolean) = _hasChanged() = newVal
-  def hasChanged: Boolean = _hasChanged.value
-  def hasChangedProperty = _hasChanged.readOnlyProperty
 
-  private var _saveLocation: SaveLocation = null
-  def saveLocation = _saveLocation
-  def saveLocation_=(location: SaveLocation) = {
+  private def hasChanged_=(newVal: Boolean): Unit = _hasChanged() = newVal
+
+  def hasChanged: Boolean = _hasChanged.value
+
+  def hasChangedProperty: ReadOnlyBooleanProperty = _hasChanged.readOnlyProperty
+
+  private var _saveLocation: SaveLocation = _
+
+  def saveLocation: SaveLocation = _saveLocation
+
+  def saveLocation_=(location: SaveLocation): Unit = {
     if (location.file == null || location.offset == null) throw new IllegalArgumentException("location mush have non-null file and offset")
     _saveLocation = location
     hasChanged = true
 
     _infoText() = makeInfoText
   }
-  
+
   def neighbours(c: Coord): Seq[Coord] = neighbours(c.x, c.y)
+
   def neighbours(x: Int, y: Int): Seq[Coord] = {
     Seq(
       Coord(x - 1, y),
       if (x % 2 == 0) Coord(x + 1, y + 1) else Coord(x - 1, y - 1),
       Coord(x + 1, y)).filter(t => t.x >= 0 && t.y >= 0 && t.x < 2 * t.y + 1 && t.y < imageSize)
   }
-  
+
   def searchWithIndex(index: Int, predicate: (Coord, Color) => Boolean): Seq[Coord] = search(coordsFromIndex(index), predicate)
 
   def search(startPos: Coord, predicate: (Coord, Color) => Boolean): Seq[Coord] = {
-	  val visited = collection.mutable.Set.empty[Coord]
-	  val result = collection.mutable.ArrayBuffer.empty[Coord]
-	  val q = collection.mutable.Queue(startPos)
-	  val startIndex = startPos.index
-	  if (startIndex != -1) {
-  	  visited += startPos
-  	  
-  	  while (q.nonEmpty) {
-  	    val p = q.dequeue
-  	    
-  	    val color = apply(p.index)
-  	    if (predicate(p, color)) {
-    	    result += p
-    	    
-    	    val newOnes = neighbours(p.x, p.y).filter(!visited(_))
-    	    visited ++= newOnes
-    	    q ++= newOnes
-  	    }
-  	  }
-	  }
-	  result
-	}
+    val visited = collection.mutable.Set.empty[Coord]
+    val result = collection.mutable.ArrayBuffer.empty[Coord]
+    val q = collection.mutable.Queue(startPos)
+    val startIndex = startPos.index
+    if (startIndex != -1) {
+      visited += startPos
+
+      while (q.nonEmpty) {
+        val p = q.dequeue
+
+        val color = apply(p.index)
+        if (predicate(p, color)) {
+          result += p
+
+          val newOnes = neighbours(p.x, p.y).filter(!visited(_))
+          visited ++= newOnes
+          q ++= newOnes
+        }
+      }
+    }
+    result
+  }
 
   def blur(radius: Int): Unit = {
     if (radius > 0) {
@@ -122,9 +147,9 @@ class ImageStorage(val imageSize: Int, initialColor: Color = null) {
         })
         val col = apply(i)
         val numCols = cols.foldLeft(1d)(_ + _._1)
-        (cols.foldLeft(col*1)((now, next) => now + next._2 * next._1) / numCols).toColor
+        (cols.foldLeft(col * 1)((now, next) => now + next._2 * next._1) / numCols).toColor
       }
-      for (i <- _pixels.indices) this(i) = newVals(i)
+      for (i <- _pixels.indices) this (i) = newVals(i)
     }
   }
 
@@ -138,28 +163,28 @@ class ImageStorage(val imageSize: Int, initialColor: Color = null) {
         })
         val col = apply(i)
         val numCols = cols.foldLeft(1d)(_ + _._1)
-        (cols.foldLeft(col*1)((now, next) => now + next._2 * next._1) / numCols).toColor
+        (cols.foldLeft(col * 1)((now, next) => now + next._2 * next._1) / numCols).toColor
       })
-      for (i <- _pixels.indices) this(i) = newVals(i)
+      for (i <- _pixels.indices) this (i) = newVals(i)
     }
   }
 
-  def perlinNoise: Unit = {
+  def perlinNoise(): Unit = {
     ???
   }
 
   def randomNoise(min: Color, max: Color): Unit = {
-    _pixels.indices.foreach(i => this(i) = 
+    _pixels.indices.foreach(i => this (i) =
       Color.hsb(math.random * (max.hue - min.hue) + min.hue, math.random * (max.saturation - min.saturation) + min.saturation, math.random * (max.brightness - min.brightness) + min.brightness, 1)
     )
   }
-  
-  def scramble: Unit = {
+
+  def scramble(): Unit = {
     for (i <- _pixels.indices) {
       val idx = (math.random * numPixels).toInt
-      val temp = this(i)
-      this(i) = this(idx)
-      this(idx) = temp
+      val temp = this (i)
+      this (i) = this (idx)
+      this (idx) = temp
     }
   }
 
@@ -170,7 +195,7 @@ class ImageStorage(val imageSize: Int, initialColor: Color = null) {
     try {
       if (saveLocation != null) {
         if (!saveLocation.file.exists()) {
-          saveLocation.file.getParentFile().mkdirs()
+          saveLocation.file.getParentFile.mkdirs()
           saveLocation.file.createNewFile()
         }
         val image = saveLocation.offset match {
@@ -193,7 +218,7 @@ class ImageStorage(val imageSize: Int, initialColor: Color = null) {
           }
         }
 
-        if (ImageIO.write(image, saveLocation.file.getName().substring(saveLocation.file.getName().lastIndexOf('.') + 1), saveLocation.file)) {
+        if (ImageIO.write(image, saveLocation.file.getName.substring(saveLocation.file.getName.lastIndexOf('.') + 1), saveLocation.file)) {
           hasChanged = false
           success = true
         }
@@ -206,11 +231,14 @@ class ImageStorage(val imageSize: Int, initialColor: Color = null) {
   }
 
   private val _infoText = new ReadOnlyStringWrapper
-  def infoText = _infoText.readOnlyProperty
+
+  def infoText: ReadOnlyStringProperty = _infoText.readOnlyProperty
+
   private def makeInfoText =
     if (saveLocation != null) {
-      s"File: ${saveLocation.file.getName}\nSize: ${imageSize}" + (if (saveLocation.offset != None) s"\nOffset: ${saveLocation.offset}" else "")
-    } else s"Not saved\nSize: ${imageSize}"
+      s"File: ${saveLocation.file.getName}\nSize: $imageSize" + (if (saveLocation.offset.isDefined) s"\nOffset: ${saveLocation.offset}" else "")
+    } else s"Not saved\nSize: $imageSize"
+
   _infoText() = makeInfoText
 }
 

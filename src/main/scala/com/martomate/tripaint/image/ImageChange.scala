@@ -1,6 +1,6 @@
-package tripaint.image
+package com.martomate.tripaint.image
 
-import tripaint.undo.Change
+import com.martomate.tripaint.undo.Change
 import scalafx.scene.paint.Color
 import scala.collection.mutable.ArrayBuffer
 
@@ -25,13 +25,17 @@ class ImageChange(val description: String, val image: TriImage, pixelsChanged: S
     true
   }
 }
+
 private[image] class CumulativeImageChange {
   private val pixelsChanged = ArrayBuffer.empty[(Int, Color, Color)]
+
   def done(description: String, image: TriImage): ImageChange = {
     val change = new ImageChange(description, image, pixelsChanged.reverse.toVector)
     pixelsChanged.clear
     change
   }
+
   def addChange(index: Int, oldColor: Color, newColor: Color): Unit = addChange(change = (index, oldColor, newColor))
+
   def addChange(change: (Int, Color, Color)): Unit = pixelsChanged append change
 }
