@@ -1,0 +1,12 @@
+.toggle-button, .button {
+	-fx-background-color: rgba(120, 200, 255, 0);
+	-fx-border-color: rgba(100, 180, 225, 0);
+}
+.toggle-button:hover, .button:hover {
+	-fx-background-color: rgba(180, 220, 255, 0.3);
+	-fx-border-color: rgba(180, 220, 255, 0.8);
+}
+.toggle-button:selected, .button:selected {
+	-fx-background-color: rgba(120, 200, 255, 0.3);
+	-fx-border-color: rgba(120, 200, 255, 0.8);
+}
