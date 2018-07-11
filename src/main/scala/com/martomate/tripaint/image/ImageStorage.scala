@@ -23,6 +23,12 @@ class ExtendedColor(val r: Double, val g: Double, val b: Double, val a: Double) 
   private def clamp(v: Double, lo: Double = 0, hi: Double = 1) = math.min(math.max(v, lo), hi)
 }
 
+object ExtendedColor {
+  import scala.language.implicitConversions
+
+  implicit def colorToExtendedColor(c: Color): ExtendedColor = new ExtendedColor(c.red, c.green, c.blue, c.opacity)
+}
+
 class Coord private(val x: Int, val y: Int, val index: Int) {
   def distanceSq(p2: Coord): Double = {
     val dx = p2.x - x
@@ -62,10 +68,7 @@ case class SaveLocation(file: File, offset: Option[(Int, Int)])
 
 class ImageStorage(val imageSize: Int, initialColor: Color = null) {
   private implicit val thisStorage: ImageStorage = this
-
-  import scala.language.implicitConversions
-
-  implicit def colorToExtendedColor(c: Color): ExtendedColor = new ExtendedColor(c.red, c.green, c.blue, c.opacity)
+  import ExtendedColor._
 
   private val _pixels = Array.fill[Color](imageSize * imageSize)(initialColor)
 
@@ -135,57 +138,6 @@ class ImageStorage(val imageSize: Int, initialColor: Color = null) {
       }
     }
     result
-  }
-
-  def blur(radius: Int): Unit = {
-    if (radius > 0) {
-      val radiusSq = radius * radius
-      val newVals = for (i <- _pixels.indices) yield {
-        val here = coordsFromIndex(i)
-        val cols = search(startPos = here, predicate = (p, _) => p.distanceSq(here) <= radiusSq * 1.5).map(c => {
-          (math.exp(-2 * c.distanceSq(here) / radiusSq), apply(c.index))
-        })
-        val col = apply(i)
-        val numCols = cols.foldLeft(1d)(_ + _._1)
-        (cols.foldLeft(col * 1)((now, next) => now + next._2 * next._1) / numCols).toColor
-      }
-      for (i <- _pixels.indices) this (i) = newVals(i)
-    }
-  }
-
-  def motionBlur(radius: Int): Unit = {
-    if (radius > 0) {
-      val radiusSq = radius * radius
-      val newVals = _pixels.indices.map(i => {
-        val here = coordsFromIndex(i)
-        val cols = search(here, (p, _) => here.y == p.y && math.pow(here.x - p.x, 2) <= radiusSq * 1.5).map(c => {
-          (math.exp(-2 * math.pow(here.x - c.x, 2) / radiusSq), apply(c.index))
-        })
-        val col = apply(i)
-        val numCols = cols.foldLeft(1d)(_ + _._1)
-        (cols.foldLeft(col * 1)((now, next) => now + next._2 * next._1) / numCols).toColor
-      })
-      for (i <- _pixels.indices) this (i) = newVals(i)
-    }
-  }
-
-  def perlinNoise(): Unit = {
-    ???
-  }
-
-  def randomNoise(min: Color, max: Color): Unit = {
-    _pixels.indices.foreach(i => this (i) =
-      Color.hsb(math.random * (max.hue - min.hue) + min.hue, math.random * (max.saturation - min.saturation) + min.saturation, math.random * (max.brightness - min.brightness) + min.brightness, 1)
-    )
-  }
-
-  def scramble(): Unit = {
-    for (i <- _pixels.indices) {
-      val idx = (math.random * numPixels).toInt
-      val temp = this (i)
-      this (i) = this (idx)
-      this (idx) = temp
-    }
   }
 
   def coordsFromIndex(index: Int): Coord = Coord(index)

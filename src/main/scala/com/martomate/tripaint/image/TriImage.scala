@@ -3,6 +3,7 @@ package com.martomate.tripaint.image
 import java.awt.image.BufferedImage
 import java.io.File
 
+import com.martomate.tripaint.image.effects.Effect
 import com.martomate.tripaint.{EditMode, ImagePane}
 import com.martomate.tripaint.undo.UndoManager
 import javafx.scene.control.Tooltip
@@ -291,32 +292,8 @@ class TriImage private(private[image] val storage: ImageStorage, val imagePane: 
 
   }
 
-  def blur(radius: Int): Unit = {
-    storage.blur(radius)
-
-    updateAfterDraw()
-  }
-
-  def motionBlur(radius: Int): Unit = {
-    storage.motionBlur(radius)
-
-    updateAfterDraw()
-  }
-
-  def perlinNoise(): Unit = {
-    storage.perlinNoise()
-
-    updateAfterDraw()
-  }
-
-  def randomNoise(min: Color = Color.Black, max: Color = Color.White): Unit = {
-    storage.randomNoise(min, max)
-
-    updateAfterDraw()
-  }
-
-  def scramble(): Unit = {
-    storage.scramble()
+  def applyEffect(effect: Effect): Unit = {
+    effect.action(storage)
 
     updateAfterDraw()
   }

@@ -2,6 +2,7 @@ package com.martomate.tripaint
 
 import java.io.File
 
+import com.martomate.tripaint.image.effects._
 import com.martomate.tripaint.image.{SaveLocation, TriImage}
 import javafx.event.{ActionEvent, Event, EventHandler}
 import scalafx.application.JFXApp
@@ -536,7 +537,7 @@ object TriPaint extends JFXApp {
       "Radius:",
       DialogUtils.uintRestriction,
       str => Try(str.toInt).getOrElse(0),
-      (im, amt) => im blur amt
+      (im, amt) => im.applyEffect(new BlurEffect(amt))
     )
   }
 
@@ -547,12 +548,12 @@ object TriPaint extends JFXApp {
       "Radius:",
       DialogUtils.uintRestriction,
       str => Try(str.toInt).getOrElse(0),
-      (im, amt) => im motionBlur amt
+      (im, amt) => im.applyEffect(new MotionBlurEffect(amt))
     )
   }
 
   private def action_perlinNoise(e: ActionEvent): Unit = {
-    imageDisplay.getSelectedImages.foreach(_.perlinNoise())
+    imageDisplay.getSelectedImages.foreach(_.applyEffect(PerlinNoiseEffect))
   }
 
   private def action_randomNoise(e: ActionEvent): Unit = {
@@ -577,13 +578,13 @@ object TriPaint extends JFXApp {
 
       buttons = Seq(ButtonType.OK, ButtonType.Cancel)
     ) match {
-      case Some((lo, hi)) => images.foreach(_.randomNoise(lo, hi))
+      case Some((lo, hi)) => images.foreach(_.applyEffect(new RandomNoiseEffect(lo, hi)))
       case _ =>
     }
   }
 
   private def action_scramble(e: ActionEvent): Unit = {
-    imageDisplay.getSelectedImages.foreach(_.scramble())
+    imageDisplay.getSelectedImages.foreach(_.applyEffect(ScrambleEffect))
   }
 
 }
