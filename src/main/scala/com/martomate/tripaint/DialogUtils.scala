@@ -1,5 +1,7 @@
 package com.martomate.tripaint
 
+import javafx.scene.control.DialogEvent
+import scalafx.application.Platform
 import scalafx.beans.property.StringProperty
 import scalafx.scene.Node
 import scalafx.scene.control.{ButtonType, Dialog, TextField, TitledPane}
@@ -64,6 +66,7 @@ object DialogUtils {
                           graphic: Node = null,
                           content: Seq[Region] = Seq.empty,
                           resultConverter: ButtonType => R,
+                          nodeWithFocus: Node = null,
                           buttons: Seq[ButtonType] = Seq(ButtonType.OK, ButtonType.Cancel)): Option[R] = {
 
     val dialog = new Dialog[R]
@@ -74,7 +77,7 @@ object DialogUtils {
     dialog.dialogPane().setContent(new VBox(content: _*))
     dialog.resultConverter = resultConverter
     for (b <- buttons) dialog.dialogPane().getButtonTypes add b
-
+    if (nodeWithFocus != null) dialog.setOnShowing(_ => Platform.runLater(nodeWithFocus.requestFocus()))
     val result = dialog.delegate.showAndWait()
     if (result.isPresent) Some(result.get) else None
   }

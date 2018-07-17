@@ -3,7 +3,7 @@ package com.martomate.tripaint
 import java.io.File
 
 import com.martomate.tripaint.image.effects._
-import com.martomate.tripaint.image.{SaveLocation, TriImage}
+import com.martomate.tripaint.image.{SaveLocation, TriImage, TriImageCoords}
 import javafx.event.{ActionEvent, Event, EventHandler}
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
@@ -27,7 +27,7 @@ object TriPaint extends JFXApp {
   private val imageTabs = new TilePane
   imageTabs.maxWidth = TriImage.previewSize
 
-  private val imageDisplay = new ImagePane
+  private val imageDisplay = new ImagePane(new ImageCollageImplOld(32))
 
   private val toolbox = new TilePane
   toolbox.orientation = Orientation.Vertical
@@ -53,102 +53,106 @@ object TriPaint extends JFXApp {
     item
   }
 
-  private val menu_file =
-    makeMenu("File",
-      makeMenuItem("New",
-        imagePath = "new",
-        onAction = action_new,
-        accelerator = new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)
-      ),
-      makeMenuItem("Open",
-        imagePath = "open",
-        onAction = action_open,
-        accelerator = new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)
-      ),
-      makeMenuItem("Open partial",
-        onAction = action_specialOpen,
-        accelerator = new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown, KeyCombination.ShiftDown)
-      ),
-      new SeparatorMenuItem,
-      makeMenuItem("Save",
-        imagePath = "save",
-        onAction = action_save,
-        accelerator = new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown)
-      ),
-      makeMenuItem("Save As",
-        onAction = action_saveAs,
-        accelerator = new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown, KeyCombination.ShiftDown)
-      ),
-      new SeparatorMenuItem,
-      makeMenuItem("Exit",
-        onAction = e => if (action_exit(e)) stage.close
-      )
+  private val menu_file = makeMenu("File",
+    makeMenuItem("New",
+      imagePath = "new",
+      onAction = action_new,
+      accelerator = new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)
+    ),
+    makeMenuItem("New composition",
+      /*imagePath = "new_comp",*/
+      onAction = action_new_composition,
+      accelerator = new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown, KeyCombination.ShiftDown)
+    ),
+    makeMenuItem("Open",
+      imagePath = "open",
+      onAction = action_open,
+      accelerator = new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)
+    ),
+    makeMenuItem("Open partial",
+      onAction = action_specialOpen,
+      accelerator = new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown, KeyCombination.ShiftDown)
+    ),
+    new SeparatorMenuItem,
+    makeMenuItem("Save",
+      imagePath = "save",
+      onAction = action_save,
+      accelerator = new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown)
+    ),
+    makeMenuItem("Save As",
+      onAction = action_saveAs,
+      accelerator = new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown, KeyCombination.ShiftDown)
+    ),
+    new SeparatorMenuItem,
+    makeMenuItem("Exit",
+      onAction = e => if (action_exit(e)) stage.close
     )
-  private val menu_edit =
-    makeMenu("Edit",
-      makeMenuItem("Undo",
-        imagePath = "undo",
-        onAction = action_undo,
-        accelerator = new KeyCodeCombination(KeyCode.Z, KeyCombination.ControlDown)
-      ),
-      makeMenuItem("Redo",
-        imagePath = "redo",
-        onAction = action_redo,
-        accelerator = new KeyCodeCombination(KeyCode.Y, KeyCombination.ControlDown)
-      ),
-      new SeparatorMenuItem,
-      makeMenuItem("Cut",
-        imagePath = "cut",
-        onAction = action_cut,
-        accelerator = new KeyCodeCombination(KeyCode.X, KeyCombination.ControlDown)
-      ),
-      makeMenuItem("Copy",
-        imagePath = "copy",
-        onAction = action_copy,
-        accelerator = new KeyCodeCombination(KeyCode.C, KeyCombination.ControlDown)
-      ),
-      makeMenuItem("Paste",
-        imagePath = "paste",
-        onAction = action_paste,
-        accelerator = new KeyCodeCombination(KeyCode.V, KeyCombination.ControlDown)
-      )
+  )
+
+  private val menu_edit = makeMenu("Edit",
+    makeMenuItem("Undo",
+      imagePath = "undo",
+      onAction = action_undo,
+      accelerator = new KeyCodeCombination(KeyCode.Z, KeyCombination.ControlDown)
+    ),
+    makeMenuItem("Redo",
+      imagePath = "redo",
+      onAction = action_redo,
+      accelerator = new KeyCodeCombination(KeyCode.Y, KeyCombination.ControlDown)
+    ),
+    new SeparatorMenuItem,
+    makeMenuItem("Cut",
+      imagePath = "cut",
+      onAction = action_cut,
+      accelerator = new KeyCodeCombination(KeyCode.X, KeyCombination.ControlDown)
+    ),
+    makeMenuItem("Copy",
+      imagePath = "copy",
+      onAction = action_copy,
+      accelerator = new KeyCodeCombination(KeyCode.C, KeyCombination.ControlDown)
+    ),
+    makeMenuItem("Paste",
+      imagePath = "paste",
+      onAction = action_paste,
+      accelerator = new KeyCodeCombination(KeyCode.V, KeyCombination.ControlDown)
     )
-  private val menu_organize =
-    makeMenu("Organize",
-      makeMenuItem("Move",
-        imagePath = "move",
-        onAction = action_move
-      ),
-      makeMenuItem("Scale",
-        imagePath = "scale",
-        onAction = action_scale
-      ),
-      makeMenuItem("Rotate",
-        imagePath = "rotate",
-        onAction = action_rotate
-      ),
-      makeMenuItem("Fit",
-        onAction = action_fit
-      )
+  )
+
+  private val menu_organize = makeMenu("Organize",
+    makeMenuItem("Move",
+      imagePath = "move",
+      onAction = action_move
+    ),
+    makeMenuItem("Scale",
+      imagePath = "scale",
+      onAction = action_scale
+    ),
+    makeMenuItem("Rotate",
+      imagePath = "rotate",
+      onAction = action_rotate
+    ),
+    makeMenuItem("Fit",
+      onAction = action_fit
     )
-  private val menu_effects =
-    makeMenu("Effects",
-      makeMenuItem("Blur",
-        onAction = action_blur
-      ),
-      makeMenuItem("Motion blur",
-        onAction = action_motionBlur
-      ),
-      makeMenuItem("Perlin Noise",
-        onAction = action_perlinNoise
-      ),
-      makeMenuItem("Random noise",
-        onAction = action_randomNoise
-      ),
-      makeMenuItem("Scramble",
-        onAction = action_scramble
-      )
+  )
+
+  private val menu_effects = makeMenu("Effects",
+    makeMenuItem("Blur",
+      onAction = action_blur
+    ),
+    makeMenuItem("Motion blur",
+      onAction = action_motionBlur
+    ),
+    makeMenuItem("Perlin Noise",
+      onAction = action_perlinNoise
+    ),
+    makeMenuItem("Random noise",
+      onAction = action_randomNoise
+    ),
+    makeMenuItem("Scramble",
+      onAction = action_scramble
     )
+  )
 
   stage = new PrimaryStage {
     title = "TriPaint"
@@ -244,7 +248,7 @@ object TriPaint extends JFXApp {
     if (newImage != null) {
       imageDisplay addImage newImage
 
-      val preview = new Canvas(newImage.previewCanvas)
+      val preview = new Canvas(newImage.preview)
       val stackPane = new StackPane
       val closeButton = new Button {
         text = "X"
@@ -317,28 +321,64 @@ object TriPaint extends JFXApp {
   }
 
   private def action_new(e: ActionEvent): Unit = {
+    askForWhereToPutImage() match {
+      case Some((x, y)) =>
+        addImage(TriImage(TriImageCoords(x, y), imageDisplay.imageSize, imageDisplay))
+      case _ =>
+    }
+  }
+
+  private def askForWhereToPutImage(): Option[(Int, Int)] = {
+    val xCoordTF = DialogUtils.uintTF
+    val yCoordTF = DialogUtils.uintTF
+
+    import DialogUtils._
+    showInputDialog[(Int, Int)](
+      title = "New image",
+      headerText = "Please enter where it should be placed.",
+
+      content = Seq(makeGridPane(Seq(
+        Seq(new Label("X coordinate:"), xCoordTF),
+        Seq(new Label("Y coordinate:"), yCoordTF)
+      ))),
+
+      resultConverter = {
+        case ButtonType.OK => Try((xCoordTF.text().toInt, yCoordTF.text().toInt)).getOrElse(null)
+        case _ => null
+      },
+
+      nodeWithFocus = xCoordTF,
+
+      buttons = Seq(ButtonType.OK, ButtonType.Cancel)
+    )
+  }
+
+  private def action_new_composition(e: ActionEvent): Unit = {
     val dialog = new TextInputDialog
-    dialog.title = "New image"
-    dialog.headerText = "Please enter imagesize."
-    dialog.contentText = "Image size:"
+    dialog.title = "New image composition"
+    dialog.headerText = "Please enter number of images."
+    dialog.contentText = "Number of images:"
     DialogUtils.restrictTextField(dialog.editor, DialogUtils.uintRestriction)
 
-    dialog.showAndWait.foreach(result => {
+    dialog.showAndWait.foreach { result =>
       try {
-        val size = result.toInt
-        if (size > 0) addImage(TriImage(size, imageDisplay))
+        val num = result.toInt
+
       } catch {
         case _: Exception =>
       }
-    })
+    }
   }
 
-  /** */
   private def action_open(e: ActionEvent): Unit = {
     val chooser = new FileChooser
     chooser.title = "Open file"
     val file = chooser.showOpenDialog(null)
-    if (file != null) addImage(TriImage.loadFromFile(file, imageDisplay))
+    if (file != null) askForWhereToPutImage() match {
+      case Some((x, y)) =>
+        addImage(TriImage.loadFromFile(TriImageCoords(x, y), file, imageDisplay))
+      case _ =>
+    }
   }
 
   private def action_specialOpen(e: ActionEvent): Unit = {
@@ -354,24 +394,28 @@ object TriPaint extends JFXApp {
     val yCoordTF = DialogUtils.uintTF
     val imageSizeTF = DialogUtils.uintTF
     import DialogUtils._
-    showInputDialog[(Int, Int, Int)](
+    showInputDialog[(Int, Int)](
       title = "Open partial image",
       headerText = "Which part of the image should be opened, and how much?",
 
       content = Seq(makeGridPane(Seq(
         Seq(new Label("X coordinate:"), xCoordTF),
-        Seq(new Label("Y coordinate:"), yCoordTF),
-        Seq(new Label("Image size:"), imageSizeTF)
+        Seq(new Label("Y coordinate:"), yCoordTF)
       ))),
 
       resultConverter = {
-        case ButtonType.OK => Try((xCoordTF.text().toInt, yCoordTF.text().toInt, imageSizeTF.text().toInt)).getOrElse(null)
+        case ButtonType.OK => Try((xCoordTF.text().toInt, yCoordTF.text().toInt)).getOrElse(null)
         case _ => null
       },
 
       buttons = Seq(ButtonType.OK, ButtonType.Cancel)
     ) match {
-      case Some((x, y, size)) => addImage(TriImage.loadFromFile(file, imageDisplay, Some(x, y), size))
+      case Some((ix, iy)) =>
+        askForWhereToPutImage() match {
+          case Some((x, y)) =>
+            addImage(TriImage.loadFromFile(TriImageCoords(x, y), file, imageDisplay, Some(ix, iy), imageDisplay.imageSize))
+          case _ =>
+        }
       case _ =>
     }
   }
@@ -421,7 +465,7 @@ object TriPaint extends JFXApp {
 
     val imageViews = images.map(im => {
       val view = new ImageView
-      view.image = im.previewCanvas.snapshot(params, null)
+      view.image = im.preview.snapshot(params, null)
       Tooltip.install(view.delegate, im.toolTip())
       view
     })

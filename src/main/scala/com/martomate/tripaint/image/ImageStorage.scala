@@ -68,7 +68,6 @@ case class SaveLocation(file: File, offset: Option[(Int, Int)])
 
 class ImageStorage(val imageSize: Int, initialColor: Color = null) {
   private implicit val thisStorage: ImageStorage = this
-  import ExtendedColor._
 
   private val _pixels = Array.fill[Color](imageSize * imageSize)(initialColor)
 
