@@ -7,7 +7,7 @@ import scalafx.scene.image.ImageView
 
 class EditMode(imagePath: String, val tooltipText: String, val shortCut: KeyCodeCombination = null) {
   val toolboxButton: ToggleButton = {
-    val t = new ToggleButton(null, new ImageView("icons/editmode/" + imagePath + ".png"))
+    val t = new ToggleButton(null, new ImageView("icons/editmodes/" + imagePath + ".png"))
     t.tooltip = new Tooltip(s"$tooltipText\n(Shortcut: $shortCut)")
     t.onAction = _ => select()
     t

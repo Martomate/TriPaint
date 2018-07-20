@@ -52,11 +52,11 @@ class Coord private(val x: Int, val y: Int, val index: Int) {
 object Coord {
   private val sqrt3 = math.sqrt(3)
 
-  def apply(x: Int, y: Int)(implicit storage: ImageStorage) = new Coord(x, y, (if (x < y) x else y) + (y - (if (x > y) x - y else 0)) * storage.imageSize)
+  def fromXY(x: Int, y: Int, imageSize: Int) = new Coord(x, y, (if (x < y) x else y) + (y - (if (x > y) x - y else 0)) * imageSize)
 
-  def apply(index: Int)(implicit storage: ImageStorage): Coord = {
-    val xx = index % storage.imageSize
-    val yy = index / storage.imageSize
+  def fromIndex(index: Int, imageSize: Int): Coord = {
+    val xx = index % imageSize
+    val yy = index / imageSize
     if (yy < xx) new Coord(xx + xx - yy, xx, index)
     else new Coord(xx, yy, index)
   }
@@ -108,9 +108,9 @@ class ImageStorage(val imageSize: Int, initialColor: Color = null) {
 
   def neighbours(x: Int, y: Int): Seq[Coord] = {
     Seq(
-      Coord(x - 1, y),
-      if (x % 2 == 0) Coord(x + 1, y + 1) else Coord(x - 1, y - 1),
-      Coord(x + 1, y)).filter(t => t.x >= 0 && t.y >= 0 && t.x < 2 * t.y + 1 && t.y < imageSize)
+      Coord.fromXY(x - 1, y, imageSize),
+      if (x % 2 == 0) Coord.fromXY(x + 1, y + 1, imageSize) else Coord.fromXY(x - 1, y - 1, imageSize),
+      Coord.fromXY(x + 1, y, imageSize)).filter(t => t.x >= 0 && t.y >= 0 && t.x < 2 * t.y + 1 && t.y < imageSize)
   }
 
   def searchWithIndex(index: Int, predicate: (Coord, Color) => Boolean): Seq[Coord] = search(coordsFromIndex(index), predicate)
@@ -139,7 +139,7 @@ class ImageStorage(val imageSize: Int, initialColor: Color = null) {
     result
   }
 
-  def coordsFromIndex(index: Int): Coord = Coord(index)
+  def coordsFromIndex(index: Int): Coord = Coord.fromIndex(index, imageSize)
 
   def save: Boolean = {
     var success = false

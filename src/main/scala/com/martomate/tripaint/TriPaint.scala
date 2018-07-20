@@ -27,7 +27,7 @@ object TriPaint extends JFXApp {
   private val imageTabs = new TilePane
   imageTabs.maxWidth = TriImage.previewSize
 
-  private val imageDisplay = new ImagePane(new ImageCollageImplOld(32))
+  private val imageDisplay: ImagePane = new ImagePane(new ImageCollageImplOld(32))
 
   private val toolbox = new TilePane
   toolbox.orientation = Orientation.Vertical
@@ -89,6 +89,28 @@ object TriPaint extends JFXApp {
     controls.Scramble.menuItem
   )
 
+  private val menuBar = {
+    val menuBar = new MenuBar
+    menuBar.useSystemMenuBar = true
+    menuBar.menus = Seq(menu_file, menu_edit, menu_organize, menu_effects)
+    menuBar
+  }
+
+  private val toolBar = new ToolBar {
+    items = Seq(
+      controls.New.button,
+      controls.Open.button,
+      controls.Save.button,
+      new Separator,
+      controls.Cut.button,
+      controls.Copy.button,
+      controls.Paste.button,
+      new Separator,
+      controls.Undo.button,
+      controls.Redo.button
+    )
+  }
+
   stage = new PrimaryStage {
     title = "TriPaint"
     onCloseRequest = e => {
@@ -97,27 +119,7 @@ object TriPaint extends JFXApp {
     scene = new Scene(720, 720) {
       delegate.getStylesheets.add(getClass.getResource("/styles/application.css").toExternalForm)
       root = new BorderPane {
-        top = new VBox({
-          val menuBar = new MenuBar
-          menuBar.useSystemMenuBar = true
-          menuBar.menus = Seq(menu_file, menu_edit, menu_organize, menu_effects)
-          menuBar
-        },
-          new ToolBar {
-            items = Seq(
-              controls.New.button,
-              controls.Open.button,
-              controls.Save.button,
-              new Separator,
-              controls.Cut.button,
-              controls.Copy.button,
-              controls.Paste.button,
-              new Separator,
-              controls.Undo.button,
-              controls.Redo.button
-            )
-          }
-        )
+        top = new VBox(menuBar, toolBar)
         center = new AnchorPane {
           //overlay and imageDisplay
           val colorPicker1 = new ColorPicker(new Color(imageDisplay.primaryColor()))
@@ -127,9 +129,9 @@ object TriPaint extends JFXApp {
           imageDisplay.secondaryColor <==> colorPicker2.value
 
           val colorBox = new VBox(
-            new Label("Color 1:"),
+            new Label("Primary color:"),
             colorPicker1,
-            new Label("Color 2:"),
+            new Label("Secondary color:"),
             colorPicker2
           )
 
@@ -225,7 +227,7 @@ object TriPaint extends JFXApp {
       stackPane.onMouseExited = _ => {
         closeButton.visible = false
       }
-      imageTabs.children add stackPane.delegate
+      imageTabs.children.add(stackPane.delegate)
 
       imageDisplay.selectImage(newImage, replace = true)
     }

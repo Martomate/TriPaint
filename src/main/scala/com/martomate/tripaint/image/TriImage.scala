@@ -67,35 +67,24 @@ class TriImageCanvas(init_width: Double) extends Canvas(init_width, init_width *
   }
 
   def drawTriangle(color: Color, strokeInstead: Boolean): Unit = {
-    val gcPrev = graphicsContext2D
+    val gc = graphicsContext2D
     if (strokeInstead) {
-      gcPrev.setStroke(color)
-      gcPrev.strokePolygon(points.x, points.y, 3)
+      gc.setStroke(color)
+      gc.strokePolygon(points.x, points.y, 3)
     } else {
-      gcPrev.setFill(color)
-      gcPrev.fillPolygon(points.x, points.y, 3)
+      gc.setFill(color)
+      gc.fillPolygon(points.x, points.y, 3)
     }
   }
 }
 
-class TriImage private(val coords: TriImageCoords, private[image] val storage: ImageStorage, val imagePane: ImagePane) extends Pane {
+class TriImage private(val coords: TriImageCoords, val storage: ImageStorage, val imagePane: ImagePane) extends Pane {
   private def panX = imagePane.xScroll + coords.xOff * imagePane.sideLength
   private def panY = imagePane.yScroll + coords.yOff * imagePane.sideLength
   private def zoom = imagePane.globalZoom
 
-  private object points {
-    val xInt:  Array[Int]    = new Array(3)
-    val yInt:  Array[Int]    = new Array(3)
-  }
-
   val canvas: TriImageCanvas = new TriImageCanvas(imagePane.imageSize)
   val preview: TriImageCanvas = new TriImageCanvas(TriImage.previewSize)
-
-  private object drag {
-    var x: Double = -1
-    var y: Double = -1
-    var startedHere: Boolean = false
-  }
 
   val selected = new BooleanProperty()
   def isSelected = selected()
@@ -104,7 +93,37 @@ class TriImage private(val coords: TriImageCoords, private[image] val storage: I
   if (coords.x % 2 == 1) canvas.rotate() += 180
   updateCanvasSize()
 
-  private val indexAtPos: BufferedImage = new BufferedImage(Math.ceil(canvas.width() / zoom * 3).toInt, Math.ceil(canvas.height() / zoom * 3).toInt, BufferedImage.TYPE_INT_RGB)
+  private object indexMap {
+    val xInt:  Array[Int] = new Array(3)
+    val yInt:  Array[Int] = new Array(3)
+    val image: BufferedImage = new BufferedImage(
+      Math.ceil(canvas.width()  / zoom * 3).toInt,
+      Math.ceil(canvas.height() / zoom * 3).toInt,
+      BufferedImage.TYPE_INT_RGB
+    )
+
+    def indexAt(x: Double, y: Double): Int = {
+      val xx = (x / canvas.width()  * image.getWidth ).toInt
+      val yy = (y / canvas.height() * image.getHeight).toInt
+
+      if (xx >= 0 && xx < image.getWidth() && yy >= 0 && yy < image.getHeight())
+        (image.getRGB(xx, yy) & 0xffffff) - 1
+      else -1
+    }
+
+    def performIndexMapping(index: Int): Unit = {
+      val indexGraphics = image.getGraphics
+      val indexColor = new java.awt.Color(index + 1)
+      indexGraphics.setColor(indexColor)
+      indexGraphics.drawPolygon(xInt, yInt, 3)
+      indexGraphics.fillPolygon(xInt, yInt, 3)
+    }
+
+    def storeCoords(index: Int, xx: Double, yy: Double): Unit = {
+      xInt(index) = Math.round(xx * image.getWidth).toInt
+      yInt(index) = Math.round(yy * image.getHeight).toInt
+    }
+  }
 
   redraw(true)
 
@@ -120,79 +139,6 @@ class TriImage private(val coords: TriImageCoords, private[image] val storage: I
     }
   }
 
-  private def mousePressedAt(x: Double, y: Double, e: MouseEvent, dragged: Boolean): Unit = {
-    EditMode.currentMode match {
-      case EditMode.Draw =>
-        e.getButton match {
-          case MouseButton.PRIMARY => drawAt(x, y, new Color(imagePane.primaryColor()))
-          case MouseButton.SECONDARY => drawAt(x, y, new Color(imagePane.secondaryColor()))
-          case _ =>
-        }
-      case EditMode.Fill =>
-        val index = indexAt(x, y)
-        e.getButton match {
-          case MouseButton.PRIMARY => fill(index, new Color(imagePane.primaryColor()))
-          case MouseButton.SECONDARY => fill(index, new Color(imagePane.secondaryColor()))
-          case _ =>
-        }
-      case EditMode.PickColor =>
-        val index = indexAt(x, y)
-        if (index != -1) {
-          e.getButton match {
-            case MouseButton.PRIMARY => imagePane.primaryColor = storage(index)
-            case MouseButton.SECONDARY => imagePane.secondaryColor = storage(index)
-            case _ =>
-          }
-        }
-      case _ =>
-    }
-  }
-
-  onMouseDragged = e => {
-    if (!e.isConsumed) {
-      val xPos = e.getX
-      val yPos = e.getY
-
-      EditMode.currentMode match {
-        case EditMode.Organize => // TODO: implement scale and rotation if (x, y) is close enough to a corner
-          ???
-/*          if (drag.startedHere) {
-            panX += xPos - drag.x
-            panY += yPos - drag.y
-
-            updateLocation()
-            e.consume()
-          }*/
-        case _ =>
-          if (isSelected) {
-            val xDiff = xPos - drag.x
-            val yDiff = yPos - drag.y
-            val dist = Math.hypot(xDiff, yDiff) / zoom
-
-            val steps = 4 * dist.toInt + 1
-            //		println(s"$steps\t$dist")
-            for (i <- 1 to steps) {
-              val point = canvas.sceneToLocal(e.getSceneX + xDiff / steps * (i - steps), e.getSceneY + yDiff / steps * (i - steps))
-              mousePressedAt(point.getX, point.getY, e, dragged = true)
-            }
-          }
-      }
-      drag.x = xPos
-      drag.y = yPos
-    }
-  }
-
-  onMousePressed = e => {
-    if (!e.isConsumed) {
-      drag.x = e.getX
-      drag.y = e.getY
-      val point = canvas.sceneToLocal(e.getSceneX, e.getSceneY)
-      drag.startedHere = indexAt(point.getX, point.getY) != -1
-
-      if (isSelected) mousePressedAt(point.getX, point.getY, e, dragged = false)
-    }
-  }
-
   onMouseReleased = e => {
     if (!e.isConsumed) {
       if (isSelected) updateAfterDraw()
@@ -200,13 +146,8 @@ class TriImage private(val coords: TriImageCoords, private[image] val storage: I
   }
 
   onScroll = e => {
-    val (dx, dy) = (e.getDeltaX, e.getDeltaY)
-
     if (e.isControlDown) {
-      canvas.clearCanvas()
-
       updateCanvasSize()
-      // TODO: rotate with dx?
 
       redraw(true)
     } else {
@@ -219,7 +160,7 @@ class TriImage private(val coords: TriImageCoords, private[image] val storage: I
     drawAt(indexAt(x, y), color)
   }
 
-  private def drawAt(index: Int, color: Color): Unit = {
+  def drawAt(index: Int, color: Color): Unit = {
     if (index >= 0 && index < storage.numPixels) {
       storage(index) = color
 
@@ -228,7 +169,7 @@ class TriImage private(val coords: TriImageCoords, private[image] val storage: I
     }
   }
 
-  private def drawAtCoords(coords: Coord, color: Color): Unit = {
+  def drawAtCoords(coords: Coord, color: Color): Unit = {
     val index = coords.index
     if (index >= 0 && index < storage.numPixels) {
       storage(index) = color
@@ -237,38 +178,21 @@ class TriImage private(val coords: TriImageCoords, private[image] val storage: I
     }
   }
 
-  private def indexAt(x: Double, y: Double): Int = {
-    val (xx, yy) = ((x / canvas.width() * indexAtPos.getWidth).toInt, (y / canvas.height() * indexAtPos.getHeight).toInt)
-    if (xx >= 0 && xx < indexAtPos.getWidth() && yy >= 0 && yy < indexAtPos.getHeight()) {
-      (indexAtPos.getRGB(xx, yy) & 0xffffff) - 1
-    } else -1
-  }
+  def pointToCoord(index: Int): Coord = Coord.fromIndex(index, storage.imageSize)
+
+  def indexAt(x: Double, y: Double): Int = indexMap.indexAt(x, y)
 
   private[image] def drawTriangle(coords: Coord, doIndexMapping: Boolean, strokeInstead: Boolean = false): Unit = {
     val Coord(x, y, index) = coords
     val yp = y
     val xp = x * 0.5 - (yp - storage.imageSize + 1) * 0.5
 
-    if (x % 2 == 1) {
-      storeCoords(0, xp, yp)
-      storeCoords(1, xp + 1.0, yp)
-      storeCoords(2, xp + 0.5, yp + 1.0)
-    } else {
-      storeCoords(0, xp, yp + 1.0)
-      storeCoords(1, xp + 1.0, yp + 1.0)
-      storeCoords(2, xp + 0.5, yp)
-    }
+    storeAllCoords(xp, yp, x % 2 == 1)
 
     canvas.drawTriangle(storage(index), strokeInstead)
     preview.drawTriangle(storage(index), strokeInstead)
 
-    if (doIndexMapping) {
-      val indexGraphics = indexAtPos.getGraphics
-      val indexColor = new java.awt.Color(index + 1)
-      indexGraphics.setColor(indexColor)
-      indexGraphics.drawPolygon(points.xInt, points.yInt, 3)
-      indexGraphics.fillPolygon(points.xInt, points.yInt, 3)
-    }
+    if (doIndexMapping) indexMap.performIndexMapping(index)
   }
 
   def redraw(doIndexMapping: Boolean): Unit = {
@@ -277,14 +201,26 @@ class TriImage private(val coords: TriImageCoords, private[image] val storage: I
 
     for (y <- 0 until storage.imageSize) {
       for (x <- 0 until y * 2 + 1) {
-        drawTriangle(Coord(x, y)(storage), doIndexMapping, strokeInstead = true)
+        drawTriangle(Coord.fromXY(x, y, storage.imageSize), doIndexMapping, strokeInstead = true)
       }
     }
 
     for (y <- 0 until storage.imageSize) {
       for (x <- 0 until y * 2 + 1) {
-        drawTriangle(Coord(x, y)(storage), doIndexMapping)
+        drawTriangle(Coord.fromXY(x, y, storage.imageSize), doIndexMapping)
       }
+    }
+  }
+
+  private def storeAllCoords(xp: Double, yp: Double, upsideDown: Boolean): Unit = {
+    if (upsideDown) {
+      storeCoords(0, xp,       yp)
+      storeCoords(1, xp + 1.0, yp)
+      storeCoords(2, xp + 0.5, yp + 1.0)
+    } else {
+      storeCoords(0, xp,       yp + 1.0)
+      storeCoords(1, xp + 1.0, yp + 1.0)
+      storeCoords(2, xp + 0.5, yp)
     }
   }
 
@@ -294,9 +230,7 @@ class TriImage private(val coords: TriImageCoords, private[image] val storage: I
 
     canvas.storeCoords(index, xx, yy)
     preview.storeCoords(index, xx, yy)
-
-    points.xInt(index) = Math.round(xx * indexAtPos.getWidth).toInt
-    points.yInt(index) = Math.round(yy * indexAtPos.getHeight).toInt
+    indexMap.storeCoords(index, xx, yy)
   }
 
   private def updateCanvasSize(): Unit = {

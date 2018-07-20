@@ -5,7 +5,7 @@ import scalafx.scene.paint.Color
 import scala.collection.mutable.ArrayBuffer
 
 class ImageChange(val description: String, val image: TriImage, pixelsChanged: Seq[(Int, Color, Color)]) extends Change {
-  def redo: Boolean = {
+  def redo(): Boolean = {
     val draw = image.storage
     val prevReg = draw.registerChanges
     draw.registerChanges = false
@@ -15,7 +15,7 @@ class ImageChange(val description: String, val image: TriImage, pixelsChanged: S
     true
   }
 
-  def undo: Boolean = {
+  def undo(): Boolean = {
     val draw = image.storage
     val prevReg = draw.registerChanges
     draw.registerChanges = false

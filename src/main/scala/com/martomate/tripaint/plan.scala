@@ -1,30 +1,88 @@
 package com.martomate.tripaint
 
+import com.martomate.tripaint.plan.model.image.storage.ImageStorage
+import scalafx.scene.canvas.Canvas
+import scalafx.scene.paint.Color
+
 object plan {
   object model {
     object image {
-      /** An entire image (on file). Can be referenced in several ImageSections */
-      trait ImageStorage
+      object storage {
+        trait PixelCoordsInStorage {
+          def x: Int
+          def y: Int
+        }
 
-      /** Part of an image, like a view of the image */
-      trait ImageSection {
-        val storage: ImageStorage
-        /** Location in the image */
-        val location: (Int, Int)
+        /** An entire image (on file). Can be referenced in several ImageSections */
+        trait ImageStorage {
+          def apply(coords: PixelCoordsInStorage): Color
+          def update(coords: PixelCoordsInStorage, color: Color): Unit
+
+          def addListener(listener: PixelCoordsInStorage => Unit): Unit
+
+          def hasChanged: Boolean
+          def save(): Unit
+        }
       }
 
-      /** An image as part of an image collection */
-      trait Image {
-        val image: ImageSection
-        val active: Boolean
-        val rotation: Double
+      object triimage {
+        import storage._
+
+        trait PixelCoordsInImage {
+          def x: Int
+          def y: Int
+          /** Calculated from x and y */
+          def index: Int
+        }
+
+        /** Part of an image, like a view of the image */
+        trait ImageSection {
+          val storage: ImageStorage
+          /** Location in the image */
+          val location: (Int, Int)
+
+          def apply(coords: PixelCoordsInImage): Color
+          def update(coords: PixelCoordsInImage, color: Color): Unit
+
+          def addListener(listener: PixelCoordsInImage => Unit): Unit
+        }
       }
 
-      trait ImageCollection {
-        val images: Seq[Image]
+      object imagegrid {
+        import triimage._
 
-        /** Reach into all active images starting at start. Flood fill search. */
-        def search(start: (Int, Int), pred: Int => Boolean): Seq[(Int, Int)]
+        trait ImageCoordsInGrid {
+          def x: Int
+          def y: Int
+        }
+
+        trait PixelCoords {
+          val pix: PixelCoordsInImage
+          val image: ImageCoordsInGrid
+        }
+
+        /** An image as part of an image grid */
+        trait Image {
+          val image: ImageSection
+          val coords: ImageCoordsInGrid
+          val active: Boolean
+
+          /** Rotation in units of 120 deg relative to the default (0 deg, or 180 deg if it's upside down) */
+          val rotation: Int
+
+          /** In degrees (because of JavaFX!) */
+          def actualRotation: Double = rotation * 120 + (coords.x % 2) * 180
+        }
+
+        trait ImageGrid {
+          def images: Seq[Image]
+
+          def apply(coords: ImageCoordsInGrid): Image
+          def update(coords: ImageCoordsInGrid, image: Image): Unit
+
+          /** Reach into all active images starting at start. Flood fill search. */
+          def search(start: PixelCoords, pred: Int => Boolean): Seq[PixelCoords]
+        }
       }
     }
   }
@@ -34,14 +92,15 @@ object plan {
     * register listeners on model
     */
   object view {
-    import model.image._
+    import model.image.imagegrid._
 
     trait ImagePane {
       val image: Image
+      val canvas: Canvas
     }
 
-    trait ImageCollectionPane {
-      val collection: ImageCollection
+    trait ImageGridPane {
+      val collection: ImageGrid
       val imagePanes: Seq[ImagePane]
     }
   }
