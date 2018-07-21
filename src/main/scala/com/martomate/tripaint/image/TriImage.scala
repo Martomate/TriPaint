@@ -4,10 +4,10 @@ import java.awt.image.BufferedImage
 import java.io.File
 
 import com.martomate.tripaint.image.effects.Effect
-import com.martomate.tripaint.{EditMode, ImagePane}
+import com.martomate.tripaint.image.storage.{Coord, ImageStorage, SaveLocation}
 import com.martomate.tripaint.undo.UndoManager
+import com.martomate.tripaint.{EditMode, ImagePane}
 import javafx.scene.control.Tooltip
-import javafx.scene.input.{MouseButton, MouseEvent, ScrollEvent}
 import scalafx.beans.property._
 import scalafx.scene.canvas.Canvas
 import scalafx.scene.layout.Pane
@@ -79,8 +79,8 @@ class TriImageCanvas(init_width: Double) extends Canvas(init_width, init_width *
 }
 
 class TriImage private(val coords: TriImageCoords, val storage: ImageStorage, val imagePane: ImagePane) extends Pane {
-  private def panX = imagePane.xScroll + coords.xOff * imagePane.sideLength
-  private def panY = imagePane.yScroll + coords.yOff * imagePane.sideLength
+  private def panX = coords.xOff * imagePane.sideLength
+  private def panY = coords.yOff * imagePane.sideLength
   private def zoom = imagePane.globalZoom
 
   val canvas: TriImageCanvas = new TriImageCanvas(imagePane.imageSize)
@@ -273,7 +273,7 @@ class TriImage private(val coords: TriImageCoords, val storage: ImageStorage, va
     val adjLen = canvas.height() / 6
     val angle = canvas.rotate() / 180 * math.Pi
     val (dx, dy) = (-adjLen * math.sin(angle), -adjLen * math.cos(angle))
-    canvas.relocate((imagePane.width() - canvas.width()) / 2 + panX + dx, (imagePane.height() - canvas.height()) / 2 + panY + dy)
+    canvas.relocate(-canvas.width() / 2 + panX + dx, -canvas.height() / 2 + panY + dy)
   }
 
   def save: Boolean = storage.save

@@ -3,7 +3,8 @@ package com.martomate.tripaint
 import java.io.File
 
 import com.martomate.tripaint.image.effects._
-import com.martomate.tripaint.image.{SaveLocation, TriImage, TriImageCoords}
+import com.martomate.tripaint.image.storage.SaveLocation
+import com.martomate.tripaint.image.{TriImage, TriImageCoords}
 import javafx.event.{ActionEvent, Event, EventHandler}
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage

@@ -1,6 +1,5 @@
 package com.martomate.tripaint
 
-import com.martomate.tripaint.plan.model.image.storage.ImageStorage
 import scalafx.scene.canvas.Canvas
 import scalafx.scene.paint.Color
 

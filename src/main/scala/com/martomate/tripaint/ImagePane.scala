@@ -1,6 +1,7 @@
 package com.martomate.tripaint
 
-import com.martomate.tripaint.image.{Coord, TriImage, TriImageCoords}
+import com.martomate.tripaint.image.storage.Coord
+import com.martomate.tripaint.image.{TriImage, TriImageCoords}
 import javafx.scene.input.{MouseButton, MouseEvent}
 import javafx.scene.paint
 import javafx.scene.shape.Rectangle
@@ -109,8 +110,7 @@ class ImagePane(collage: ImageCollage) extends Pane with ImageCollageListener {
 
       EditMode.currentMode match {
         case EditMode.Organize => // TODO: implement scale and rotation if (x, y) is close enough to a corner
-          _xScroll += xPos - drag.x
-          _yScroll += yPos - drag.y
+          setScroll(xScroll + xPos - drag.x, yScroll + yPos - drag.y)
 
           images.foreach(_.updateLocation())
         case _ =>
@@ -156,13 +156,17 @@ class ImagePane(collage: ImageCollage) extends Pane with ImageCollageListener {
     if (e.isControlDown) {
       val factor = Math.exp(e.getDeltaY * 0.01)
       _globalZoom *= factor
-      _xScroll *= factor
-      _yScroll *= factor
+      setScroll(xScroll * factor, yScroll * factor)
     } else {
-      _xScroll += dx
-      _yScroll += dy
+      setScroll(xScroll + dx, yScroll + dy)
     }
     images.reverse.foreach(_.onScroll.getValue.handle(e))
+  }
+
+  private def setScroll(sx: Double, sy: Double): Unit = {
+    _xScroll = sx
+    _yScroll = sy
+    relocateChildren()
   }
 
   private def mousePressedAt(coords: PixelCoords, e: MouseEvent, dragged: Boolean): Unit = {
@@ -242,10 +246,22 @@ class ImagePane(collage: ImageCollage) extends Pane with ImageCollageListener {
 
   def updateSize(): Unit = {
     this.clip() = new Rectangle(0, 0, width(), height())
-    images.foreach(_.updateLocation())
+    images.foreach(_.updateLocation())// TODO: remove this line
+    relocateChildren()
   }
 
-  override def onAddImage(image: TriImage): Unit = children add image
+  def relocateChildren(): Unit = {
+    images.foreach(relocateImage)
+  }
+
+  def relocateImage(image: TriImage): Unit = {
+    image.relocate(width() / 2 + xScroll, height() / 2 + yScroll)
+  }
+
+  override def onAddImage(image: TriImage): Unit = {
+    children add image
+    relocateImage(image)
+  }
 
   override def onRemoveImage(image: TriImage): Unit = {
     val index = children indexOf image

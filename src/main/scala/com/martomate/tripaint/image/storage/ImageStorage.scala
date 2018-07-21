@@ -1,75 +1,26 @@
-package com.martomate.tripaint.image
+package com.martomate.tripaint.image.storage
 
-import scalafx.beans.property.{ReadOnlyBooleanProperty, ReadOnlyBooleanWrapper, ReadOnlyStringProperty, ReadOnlyStringWrapper}
 import java.awt.image.BufferedImage
+import java.io.{File, IOException}
 
+import com.martomate.tripaint.image.CumulativeImageChange
 import javax.imageio.ImageIO
-import java.io.File
-import java.io.IOException
-
+import scalafx.beans.property._
 import scalafx.scene.paint.Color
 
-class ExtendedColor(val r: Double, val g: Double, val b: Double, val a: Double) {
-  def +(c2: ExtendedColor) = new ExtendedColor(r + c2.r, g + c2.g, b + c2.b, a + c2.a)
-
-  def -(c2: ExtendedColor) = new ExtendedColor(r - c2.r, g - c2.g, b - c2.b, a - c2.a)
-
-  def *(d: Double) = new ExtendedColor(r * d, g * d, b * d, a * d)
-
-  def /(d: Double) = new ExtendedColor(r / d, g / d, b / d, a / d)
-
-  def toColor: Color = Color.color(clamp(r), clamp(g), clamp(b), clamp(a))
-
-  private def clamp(v: Double, lo: Double = 0, hi: Double = 1) = math.min(math.max(v, lo), hi)
-}
-
-object ExtendedColor {
-  import scala.language.implicitConversions
-
-  implicit def colorToExtendedColor(c: Color): ExtendedColor = new ExtendedColor(c.red, c.green, c.blue, c.opacity)
-}
-
-class Coord private(val x: Int, val y: Int, val index: Int) {
-  def distanceSq(p2: Coord): Double = {
-    val dx = p2.x - x
-    val dy = p2.y - y
-    val xx = dx * 0.5 - dy * 0.5
-    // It's like magic!
-    val yy = dy * Coord.sqrt3 / 2
-    xx * xx + yy * yy
-  }
-
-  def distance(p2: Coord): Double = math.sqrt(distanceSq(p2))
-
-  override def equals(c2: Any): Boolean = c2 match {
-    case coord: Coord => index == coord.index
-    case _ => false
-  }
-
-  override def hashCode: Int = index.hashCode
-}
-
-object Coord {
-  private val sqrt3 = math.sqrt(3)
-
-  def fromXY(x: Int, y: Int, imageSize: Int) = new Coord(x, y, (if (x < y) x else y) + (y - (if (x > y) x - y else 0)) * imageSize)
-
-  def fromIndex(index: Int, imageSize: Int): Coord = {
-    val xx = index % imageSize
-    val yy = index / imageSize
-    if (yy < xx) new Coord(xx + xx - yy, xx, index)
-    else new Coord(xx, yy, index)
-  }
-
-  def unapply(c: Coord) = Some(c.x, c.y, c.index)
-}
+import scala.collection.mutable.ArrayBuffer
 
 case class SaveLocation(file: File, offset: Option[(Int, Int)])
 
-class ImageStorage(val imageSize: Int, initialColor: Color = null) {
-  private implicit val thisStorage: ImageStorage = this
+trait ImageStorageListener {
+  def onPixelChanged(coords: Coord): Unit
+}
 
+class ImageStorage(val imageSize: Int, initialColor: Color = null) {
   private val _pixels = Array.fill[Color](imageSize * imageSize)(initialColor)
+
+  private val imageStorageListeners: ArrayBuffer[ImageStorageListener] = ArrayBuffer.empty
+  def addImageStorageListener(listener: ImageStorageListener): Unit = imageStorageListeners += listener
 
   def numPixels: Int = _pixels.length
 
@@ -82,6 +33,8 @@ class ImageStorage(val imageSize: Int, initialColor: Color = null) {
     if (registerChanges) cumulativeChange.addChange(index, apply(index), newColor)
     _pixels(index) = newColor
     hasChanged = true
+
+    imageStorageListeners.foreach(_.onPixelChanged(Coord.fromIndex(index, imageSize)))
   }
 
   private val _hasChanged = new ReadOnlyBooleanWrapper
@@ -157,15 +110,15 @@ class ImageStorage(val imageSize: Int, initialColor: Color = null) {
           case None =>
             new BufferedImage(imageSize, imageSize, BufferedImage.TYPE_INT_ARGB)
         }
-        val (xOff, yOff) = saveLocation.offset.getOrElse((0, 0))
+        val off = saveLocation.offset.getOrElse((0, 0))
         for (y <- 0 until imageSize) {
           for (x <- 0 until imageSize) {
             val idx = x + y * imageSize
-            image.setRGB(xOff + x, yOff + y,
-              (_pixels(idx).opacity * 255).toInt << 24
-                | (_pixels(idx).red * 255).toInt << 16
-                | (_pixels(idx).green * 255).toInt << 8
-                | (_pixels(idx).blue * 255).toInt)
+            image.setRGB(off._1 + x, off._2 + y,
+              (_pixels(idx).opacity * 255).toInt << 24 |
+              (_pixels(idx).red     * 255).toInt << 16 |
+              (_pixels(idx).green   * 255).toInt <<  8 |
+              (_pixels(idx).blue    * 255).toInt)
           }
         }
 

@@ -37,5 +37,5 @@ private[image] class CumulativeImageChange {
 
   def addChange(index: Int, oldColor: Color, newColor: Color): Unit = addChange(change = (index, oldColor, newColor))
 
-  def addChange(change: (Int, Color, Color)): Unit = pixelsChanged append change
+  def addChange(change: (Int, Color, Color)): Unit = pixelsChanged += change
 }
