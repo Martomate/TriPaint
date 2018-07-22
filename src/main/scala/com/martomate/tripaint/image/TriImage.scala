@@ -4,7 +4,7 @@ import java.awt.image.BufferedImage
 import java.io.File
 
 import com.martomate.tripaint.image.effects.Effect
-import com.martomate.tripaint.image.storage.{Coord, ImageStorage, SaveLocation}
+import com.martomate.tripaint.image.storage.{Coord, ImageStorage, ImageStorageListener, SaveLocation}
 import com.martomate.tripaint.undo.UndoManager
 import com.martomate.tripaint.{EditMode, ImagePane}
 import javafx.scene.control.Tooltip
@@ -13,19 +13,23 @@ import scalafx.scene.canvas.Canvas
 import scalafx.scene.layout.Pane
 import scalafx.scene.paint.Color
 
+import scala.util.Try
+
 object TriImage {
   val previewSize = 64
 
-  def loadFromFile(coords: TriImageCoords, file: File, imagePane: ImagePane, offset: Option[(Int, Int)], imageSize: Int): TriImage = {
-    new TriImage(coords, ImageStorage.loadFromFile(file, offset, imageSize), imagePane)
+  def loadFromFile(coords: TriImageCoords, file: File, imagePane: ImagePane, offset: Option[(Int, Int)], imageSize: Int): Try[TriImage] = {
+    ImageStorage.loadFromFile(file, offset, imageSize) map { storage =>
+      new TriImage(coords, storage, imagePane)
+    }
   }
 
-  def loadFromFile(coords: TriImageCoords, file: File, imagePane: ImagePane): TriImage = {
-    new TriImage(coords, ImageStorage.loadFromFile(file), imagePane)
+  def loadFromFile(coords: TriImageCoords, file: File, imagePane: ImagePane): Try[TriImage] = {
+    loadFromFile(coords, file, imagePane, None, imagePane.imageSize)
   }
 
-  def apply(coords: TriImageCoords, imageSize: Int, imagePane: ImagePane) =
-    new TriImage(coords, new ImageStorage(imageSize, new Color(imagePane.secondaryColor())), imagePane)
+  def apply(coords: TriImageCoords, imageStorage: ImageStorage, imagePane: ImagePane) =
+    new TriImage(coords, imageStorage, imagePane)
 }
 
 case class TriImageCoords(x: Int, y: Int) {
@@ -78,10 +82,12 @@ class TriImageCanvas(init_width: Double) extends Canvas(init_width, init_width *
   }
 }
 
-class TriImage private(val coords: TriImageCoords, val storage: ImageStorage, val imagePane: ImagePane) extends Pane {
+class TriImage private(val coords: TriImageCoords, val storage: ImageStorage, val imagePane: ImagePane) extends Pane with ImageStorageListener {
   private def panX = coords.xOff * imagePane.sideLength
   private def panY = coords.yOff * imagePane.sideLength
   private def zoom = imagePane.globalZoom
+
+  storage.addListener(this)
 
   val canvas: TriImageCanvas = new TriImageCanvas(imagePane.imageSize)
   val preview: TriImageCanvas = new TriImageCanvas(TriImage.previewSize)
@@ -141,7 +147,8 @@ class TriImage private(val coords: TriImageCoords, val storage: ImageStorage, va
 
   onMouseReleased = e => {
     if (!e.isConsumed) {
-      if (isSelected) updateAfterDraw()
+      //if (isSelected)
+        updateAfterDraw()
     }
   }
 
@@ -163,9 +170,6 @@ class TriImage private(val coords: TriImageCoords, val storage: ImageStorage, va
   def drawAt(index: Int, color: Color): Unit = {
     if (index >= 0 && index < storage.numPixels) {
       storage(index) = color
-
-      val coords = storage.coordsFromIndex(index)
-      drawTriangle(coords, doIndexMapping = false)
     }
   }
 
@@ -173,8 +177,6 @@ class TriImage private(val coords: TriImageCoords, val storage: ImageStorage, va
     val index = coords.index
     if (index >= 0 && index < storage.numPixels) {
       storage(index) = color
-
-      drawTriangle(coords, doIndexMapping = false)
     }
   }
 
@@ -291,4 +293,8 @@ class TriImage private(val coords: TriImageCoords, val storage: ImageStorage, va
   def toolTip: ReadOnlyObjectProperty[Tooltip] = _toolTip.readOnlyProperty
 
   _toolTip().textProperty().bind(storage.infoText)
+
+  override def onPixelChanged(coords: Coord): Unit = {
+    drawTriangle(coords, false)
+  }
 }

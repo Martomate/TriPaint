@@ -3,24 +3,27 @@ package com.martomate.tripaint.image.storage
 import scalafx.scene.paint.Color
 
 abstract class ImageSourceLense(source: ImageSource) extends ImageSource {
-  source.addListener(new ImageSourceListener {
+  private val parentListener = new ImageSourceListener {
     override def onPixelChanged(x: Int, y: Int): Unit = if (inLense(x, y)) {
       notifyListeners(_.onPixelChanged(decode(x, y)))
-      if (!hasChanged) {
-        hasChanged = true
+      if (!hasChanged()) {
+        hasChanged() = true
         notifyListeners(_.onImageSourceSaved(false))
       }
     }
 
-    override def onImageSourceSaved(isSaved: Boolean): Unit = if (isSaved) hasChanged = false
-  })
+    override def onImageSourceSaved(isSaved: Boolean): Unit = if (isSaved) {
+      hasChanged() = false
+      notifyListeners(_.onImageSourceSaved(true))
+    }
+  }
+
+  source.addListener(parentListener)
 
   override def apply(x: Int, y: Int): Color = {
-    require(inLense(x, y))
     source(encode(x, y))
   }
   override def update(x: Int, y: Int, col: Color): Unit = {
-    require(inLense(x, y))
     source.update(encode(x, y), col)
   }
 
@@ -28,5 +31,7 @@ abstract class ImageSourceLense(source: ImageSource) extends ImageSource {
   protected def decode(x: Int, y: Int): (Int, Int)
   protected def inLense(x: Int, y: Int): Boolean
 
-  override def save(): Boolean = false
+  override def save(): Boolean = source.save()
+
+  override def imageSaver_=(saver: ImageSaver): Unit = source.imageSaver_=(saver)
 }

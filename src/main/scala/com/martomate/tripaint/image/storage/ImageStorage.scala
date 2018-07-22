@@ -1,14 +1,13 @@
 package com.martomate.tripaint.image.storage
 
-import java.awt.image.BufferedImage
-import java.io.{File, IOException}
+import java.io.File
 
+import com.martomate.tripaint.Listenable
 import com.martomate.tripaint.image.CumulativeImageChange
-import javax.imageio.ImageIO
 import scalafx.beans.property._
 import scalafx.scene.paint.Color
 
-import scala.collection.mutable.ArrayBuffer
+import scala.util.Try
 
 case class SaveLocation(file: File, offset: Option[(Int, Int)])
 
@@ -16,34 +15,37 @@ trait ImageStorageListener {
   def onPixelChanged(coords: Coord): Unit
 }
 
-class ImageStorage(val imageSize: Int, initialColor: Color = null) {
-  private val _pixels = Array.fill[Color](imageSize * imageSize)(initialColor)
+class ImageStorage(initialSource: SquareImageSource) extends Listenable[ImageStorageListener] {
+  private var imageSource: SquareImageSource = initialSource
+  private val imageSourceListener = new ImageSourceListener {
+    override def onPixelChanged(x: Int, y: Int): Unit = {
+      notifyListeners(_.onPixelChanged(coordsFromIndex(x + y * imageSize)))
+    }
 
-  private val imageStorageListeners: ArrayBuffer[ImageStorageListener] = ArrayBuffer.empty
-  def addImageStorageListener(listener: ImageStorageListener): Unit = imageStorageListeners += listener
+    override def onImageSourceSaved(isSaved: Boolean): Unit = {
+      hasChangedWrapper() = !isSaved
+    }
+  }
+  imageSource.addListener(imageSourceListener)
 
-  def numPixels: Int = _pixels.length
+  def imageSize: Int = imageSource.s
+
+  def numPixels: Int = imageSize * imageSize
 
   private[image] val cumulativeChange = new CumulativeImageChange
   private[image] var registerChanges = true
 
-  def apply(index: Int) = _pixels(index)
+  def apply(index: Int) = imageSource(index)
 
   def update(index: Int, newColor: Color): Unit = {
     if (registerChanges) cumulativeChange.addChange(index, apply(index), newColor)
-    _pixels(index) = newColor
-    hasChanged = true
-
-    imageStorageListeners.foreach(_.onPixelChanged(Coord.fromIndex(index, imageSize)))
+    imageSource(index) = newColor
   }
 
-  private val _hasChanged = new ReadOnlyBooleanWrapper
+  def hasChanged: Boolean = imageSource.changed
 
-  private def hasChanged_=(newVal: Boolean): Unit = _hasChanged() = newVal
-
-  def hasChanged: Boolean = _hasChanged.value
-
-  def hasChangedProperty: ReadOnlyBooleanProperty = _hasChanged.readOnlyProperty
+  private var hasChangedWrapper: ReadOnlyBooleanWrapper = ReadOnlyBooleanWrapper(hasChanged)
+  def hasChangedProperty: ReadOnlyBooleanProperty = hasChangedWrapper.readOnlyProperty
 
   private var _saveLocation: SaveLocation = _
 
@@ -52,7 +54,17 @@ class ImageStorage(val imageSize: Int, initialColor: Color = null) {
   def saveLocation_=(location: SaveLocation): Unit = {
     if (location.file == null || location.offset == null) throw new IllegalArgumentException("location mush have non-null file and offset")
     _saveLocation = location
-    hasChanged = true
+    //hasChanged = true
+    imageSource.imageSaver = new FileImageSaver(imageSource, location.file)
+    imageSource.save()
+    val offset = location.offset.getOrElse((0, 0))
+    ImageSourceImpl.fromFile(location.file) foreach { source =>
+      SquareImageSource(source, offset._1, offset._2, imageSize) foreach { sqImage =>
+        imageSource.removeListener(imageSourceListener)
+        imageSource = sqImage
+        imageSource.addListener(imageSourceListener)
+      }
+    }
 
     _infoText() = makeInfoText
   }
@@ -94,87 +106,33 @@ class ImageStorage(val imageSize: Int, initialColor: Color = null) {
 
   def coordsFromIndex(index: Int): Coord = Coord.fromIndex(index, imageSize)
 
-  def save: Boolean = {
-    var success = false
-    try {
-      if (saveLocation != null) {
-        if (!saveLocation.file.exists()) {
-          saveLocation.file.getParentFile.mkdirs()
-          saveLocation.file.createNewFile()
-        }
-        val image = saveLocation.offset match {
-          case Some((xOff, yOff)) =>
-            val _image = ImageIO.read(saveLocation.file)
-            if (xOff + imageSize > _image.getWidth || yOff + imageSize > _image.getHeight) throw new IOException("Image size too big for destination")
-            _image
-          case None =>
-            new BufferedImage(imageSize, imageSize, BufferedImage.TYPE_INT_ARGB)
-        }
-        val off = saveLocation.offset.getOrElse((0, 0))
-        for (y <- 0 until imageSize) {
-          for (x <- 0 until imageSize) {
-            val idx = x + y * imageSize
-            image.setRGB(off._1 + x, off._2 + y,
-              (_pixels(idx).opacity * 255).toInt << 24 |
-              (_pixels(idx).red     * 255).toInt << 16 |
-              (_pixels(idx).green   * 255).toInt <<  8 |
-              (_pixels(idx).blue    * 255).toInt)
-          }
-        }
-
-        if (ImageIO.write(image, saveLocation.file.getName.substring(saveLocation.file.getName.lastIndexOf('.') + 1), saveLocation.file)) {
-          hasChanged = false
-          success = true
-        }
-      }
-    } catch {
-      case e: IOException =>
-        e.printStackTrace()
-    }
-    success
-  }
+  def save: Boolean = imageSource.save()
 
   private val _infoText = new ReadOnlyStringWrapper
 
   def infoText: ReadOnlyStringProperty = _infoText.readOnlyProperty
 
-  private def makeInfoText =
+  private def makeInfoText: String = {
     if (saveLocation != null) {
       s"File: ${saveLocation.file.getName}\nSize: $imageSize" + (if (saveLocation.offset.isDefined) s"\nOffset: ${saveLocation.offset}" else "")
     } else s"Not saved\nSize: $imageSize"
+  }
 
   _infoText() = makeInfoText
 }
 
 object ImageStorage {
-  def loadFromFile(file: File, offset: Option[(Int, Int)] = None, imageSize: Int = -1): ImageStorage = {
-    try {
-      val image = ImageIO.read(file)
-      val size = if (imageSize != -1) imageSize else {
-        val s = image.getWidth()
-        if (s != image.getHeight())
-          throw new IOException("Image must be square!")
-        s
+  def loadFromFile(file: File, offset: Option[(Int, Int)] = None, imageSize: Int): Try[ImageStorage] = {
+    val (xOff, yOff) = offset.getOrElse((0, 0))
+    ImageSourceImpl.fromFile(file) flatMap {
+      SquareImageSource(_, xOff, yOff, imageSize) map {
+        new ImageStorage(_)
       }
-      val (xOff, yOff) = offset.getOrElse((0, 0))
-      val pix = image.getRGB(xOff, yOff, size, size, null, 0, size)
-      val storage = new ImageStorage(size)
-
-      for (i <- storage._pixels.indices) {
-        storage._pixels(i) = Color.rgb(
-          pix(i) >> 16 & 0xff,
-          pix(i) >> 8 & 0xff,
-          pix(i) >> 0 & 0xff,
-          (pix(i) >> 24 & 0xff) / 255.0)
-      }
-
-      storage.saveLocation = SaveLocation(file, offset)
-      storage.hasChanged = false
-      storage
-    } catch {
-      case e: IOException =>
-        e.printStackTrace()
-        null
     }
+  }
+
+  def unboundImage(imageSize: Int, initialColor: Color): ImageStorage = {
+    val imageSource = new UnboundImageSource(imageSize, initialColor)
+    SquareImageSource(imageSource, 0, 0, imageSize).map(new ImageStorage(_)).getOrElse(null)
   }
 }

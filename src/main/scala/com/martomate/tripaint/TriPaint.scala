@@ -3,9 +3,9 @@ package com.martomate.tripaint
 import java.io.File
 
 import com.martomate.tripaint.image.effects._
-import com.martomate.tripaint.image.storage.SaveLocation
+import com.martomate.tripaint.image.storage.{ImageStorage, SaveLocation}
 import com.martomate.tripaint.image.{TriImage, TriImageCoords}
-import javafx.event.{ActionEvent, Event, EventHandler}
+import javafx.event.{ActionEvent, EventHandler}
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.geometry.{Orientation, Pos}
@@ -21,7 +21,7 @@ import scalafx.scene.{Scene, SnapshotParameters}
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 
 object TriPaint extends JFXApp {
@@ -284,7 +284,12 @@ object TriPaint extends JFXApp {
       case Some((ix, iy)) =>
         askForWhereToPutImage() match {
           case Some((x, y)) =>
-            addImage(TriImage.loadFromFile(TriImageCoords(x, y), file, imageDisplay, Some(ix, iy), imageDisplay.imageSize))
+            TriImage.loadFromFile(TriImageCoords(x, y), file, imageDisplay, Some(ix, iy), imageDisplay.imageSize) match {
+              case Success(image) =>
+                addImage(image)
+              case Failure(exc) =>
+                exc.printStackTrace()
+            }
           case _ =>
         }
       case _ =>
@@ -337,7 +342,7 @@ object TriPaint extends JFXApp {
     alert
   }
 
-  private def save(images: TriImage*): Boolean = images.filter(!_.save).forall(saveAs)
+  private def save(images: TriImage*): Boolean = images.filter(!_.save).forall(im => im.storage.save || saveAs(im))
 
   private def saveAs(image: TriImage): Boolean = {
     val chooser = new FileChooser
@@ -374,7 +379,7 @@ object TriPaint extends JFXApp {
     val New: MenuBarAction = MenuBarAction.apply("New", "new", new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)) {
       askForWhereToPutImage() match {
         case Some((x, y)) =>
-          addImage(TriImage(TriImageCoords(x, y), imageDisplay.imageSize, imageDisplay))
+          addImage(TriImage(TriImageCoords(x, y), ImageStorage.unboundImage(imageDisplay.imageSize, new Color(imageDisplay.secondaryColor())), imageDisplay))
         case _ =>
       }
     }
@@ -402,7 +407,12 @@ object TriPaint extends JFXApp {
       val file = chooser.showOpenDialog(null)
       if (file != null) askForWhereToPutImage() match {
         case Some((x, y)) =>
-          addImage(TriImage.loadFromFile(TriImageCoords(x, y), file, imageDisplay))
+          TriImage.loadFromFile(TriImageCoords(x, y), file, imageDisplay) match {
+            case Success(image) =>
+              addImage(image)
+            case Failure(exc) =>
+              exc.printStackTrace()
+          }
         case _ =>
       }
     }

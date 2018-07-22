@@ -11,21 +11,16 @@ import scalafx.scene.paint.Color
 
 import scala.collection.mutable.ArrayBuffer
 
-trait ImageCollage {
+trait ImageCollage extends Listenable[ImageCollageListener] {
   def imageSize: Int
   def images: Seq[TriImage]
-
-  private val listeners: ArrayBuffer[ImageCollageListener] = ArrayBuffer.empty
 
   def apply(coords: TriImageCoords): TriImage
   def update(coords: TriImageCoords, image: TriImage): Unit
   def -=(coords: TriImageCoords): TriImage
 
-  final def addListener(listener: ImageCollageListener): Unit = listeners += listener
-  final def removeListener(listener: ImageCollageListener): Unit = listeners -= listener
-
-  protected final def onAddImage(image: TriImage): Unit = listeners.foreach(_.onAddImage(image))
-  protected final def onRemoveImage(image: TriImage): Unit = listeners.foreach(_.onRemoveImage(image))
+  protected final def onAddImage(image: TriImage): Unit = notifyListeners(_.onAddImage(image))
+  protected final def onRemoveImage(image: TriImage): Unit = notifyListeners(_.onRemoveImage(image))
 }
 
 class ImageCollageImplOld(val imageSize: Int) extends ImageCollage {
