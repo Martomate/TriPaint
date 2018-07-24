@@ -4,7 +4,7 @@ import java.awt.image.BufferedImage
 import java.io.File
 
 import com.martomate.tripaint.image.effects.Effect
-import com.martomate.tripaint.image.storage.{Coord, ImageStorage, ImageStorageListener, SaveLocation}
+import com.martomate.tripaint.image.storage._
 import com.martomate.tripaint.undo.UndoManager
 import com.martomate.tripaint.{EditMode, ImagePane}
 import javafx.scene.control.Tooltip
@@ -20,6 +20,12 @@ object TriImage {
 
   def loadFromFile(coords: TriImageCoords, file: File, imagePane: ImagePane, offset: Option[(Int, Int)], imageSize: Int): Try[TriImage] = {
     ImageStorage.loadFromFile(file, offset, imageSize) map { storage =>
+      new TriImage(coords, storage, imagePane)
+    }
+  }
+
+  def loadFromSource(coords: TriImageCoords, source: ImageSource, imagePane: ImagePane, offset: Option[(Int, Int)], imageSize: Int): Try[TriImage] = {
+    ImageStorage.fromSource(source, offset, imageSize) map { storage =>
       new TriImage(coords, storage, imagePane)
     }
   }

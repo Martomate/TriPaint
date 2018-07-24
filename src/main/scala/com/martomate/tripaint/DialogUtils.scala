@@ -1,13 +1,15 @@
 package com.martomate.tripaint
 
-import javafx.scene.control.DialogEvent
+import java.io.File
+
+import com.martomate.tripaint.image.{TriImage, TriImageCoords}
 import scalafx.application.Platform
 import scalafx.beans.property.StringProperty
 import scalafx.scene.Node
-import scalafx.scene.control.{ButtonType, Dialog, TextField, TitledPane}
+import scalafx.scene.control._
 import scalafx.scene.layout.{GridPane, Region, VBox}
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 
 object DialogUtils {
@@ -80,5 +82,51 @@ object DialogUtils {
     if (nodeWithFocus != null) dialog.setOnShowing(_ => Platform.runLater(nodeWithFocus.requestFocus()))
     val result = dialog.delegate.showAndWait()
     if (result.isPresent) Some(result.get) else None
+  }
+
+  def askForWhereToPutImage(): Option[(Int, Int)] = {
+    val xCoordTF = DialogUtils.uintTF
+    val yCoordTF = DialogUtils.uintTF
+
+    showInputDialog[(Int, Int)](
+      title = "New image",
+      headerText = "Please enter where it should be placed.",
+
+      content = Seq(makeGridPane(Seq(
+        Seq(new Label("X coordinate:"), xCoordTF),
+        Seq(new Label("Y coordinate:"), yCoordTF)
+      ))),
+
+      resultConverter = {
+        case ButtonType.OK => Try((xCoordTF.text().toInt, yCoordTF.text().toInt)).getOrElse(null)
+        case _ => null
+      },
+
+      nodeWithFocus = xCoordTF,
+
+      buttons = Seq(ButtonType.OK, ButtonType.Cancel)
+    )
+  }
+
+  def askForOffset(): Option[(Int, Int)] = {
+    val xCoordTF = DialogUtils.uintTF
+    val yCoordTF = DialogUtils.uintTF
+
+    showInputDialog[(Int, Int)](
+      title = "Open partial image",
+      headerText = "Which part of the image should be opened? Please enter the top left corner:",
+
+      content = Seq(makeGridPane(Seq(
+        Seq(new Label("X coordinate:"), xCoordTF),
+        Seq(new Label("Y coordinate:"), yCoordTF)
+      ))),
+
+      resultConverter = {
+        case ButtonType.OK => Try((xCoordTF.text().toInt, yCoordTF.text().toInt)).getOrElse(null)
+        case _ => null
+      },
+
+      buttons = Seq(ButtonType.OK, ButtonType.Cancel)
+    )
   }
 }

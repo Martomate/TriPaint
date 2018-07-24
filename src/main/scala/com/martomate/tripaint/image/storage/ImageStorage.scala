@@ -131,6 +131,12 @@ object ImageStorage {
     }
   }
 
+  def fromSource(imageSource: ImageSource, offset: Option[(Int, Int)], imageSize: Int): Try[ImageStorage] = {
+    val (xOff, yOff) = offset.getOrElse((0, 0))
+
+    SquareImageSource(imageSource, xOff, yOff, imageSize).map(new ImageStorage(_))
+  }
+
   def unboundImage(imageSize: Int, initialColor: Color): ImageStorage = {
     val imageSource = new UnboundImageSource(imageSize, initialColor)
     SquareImageSource(imageSource, 0, 0, imageSize).map(new ImageStorage(_)).getOrElse(null)
