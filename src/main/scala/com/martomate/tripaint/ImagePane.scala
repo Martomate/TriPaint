@@ -11,7 +11,7 @@ import scalafx.scene.paint.Color
 
 import scala.collection.mutable.ArrayBuffer
 
-trait ImageCollage extends Listenable[ImageCollageListener] {
+trait ImageGrid extends Listenable[ImageGridListener] {
   def imageSize: Int
   def images: Seq[TriImage]
 
@@ -21,9 +21,20 @@ trait ImageCollage extends Listenable[ImageCollageListener] {
 
   protected final def onAddImage(image: TriImage): Unit = notifyListeners(_.onAddImage(image))
   protected final def onRemoveImage(image: TriImage): Unit = notifyListeners(_.onRemoveImage(image))
+
+  def selectImage(image: TriImage, replace: Boolean): Unit = {
+    if (replace) images.foreach(im => im.selected() = im eq image)
+    else image.selected() = !image.selected()
+  }
+}
+class ImageGridSelectionHandler(grid: ImageGrid) {
+  def selectImage(image: TriImage, replace: Boolean): Unit = {
+    if (replace) grid.images.foreach(im => im.selected() = im eq image)
+    else image.selected() = !image.selected()
+  }
 }
 
-class ImageCollageImplOld(val imageSize: Int) extends ImageCollage {
+class ImageGridImplOld(val imageSize: Int) extends ImageGrid {
   val images: ArrayBuffer[TriImage] = ArrayBuffer.empty[TriImage]
 
   override def apply(coords: TriImageCoords): TriImage = images.find(_.coords == coords).orNull
@@ -48,7 +59,7 @@ class ImageCollageImplOld(val imageSize: Int) extends ImageCollage {
   }
 }
 
-trait ImageCollageListener {
+trait ImageGridListener {
   def onAddImage(image: TriImage): Unit
   def onRemoveImage(image: TriImage): Unit
 }
@@ -65,7 +76,7 @@ case class PixelCoords(pix: Coord, image: TriImageCoords) {
   }
 }
 
-class ImagePane(collage: ImageCollage) extends Pane with ImageCollageListener {
+class ImagePane(collage: ImageGrid) extends Pane with ImageGridListener {
   private val (_primaryColor, _secondaryColor) = (ObjectProperty(Color.Black), ObjectProperty(Color.White))
   private var _globalZoom = 1d
   private var _xScroll: Double = 0
@@ -228,10 +239,7 @@ class ImagePane(collage: ImageCollage) extends Pane with ImageCollageListener {
   def addImage(image: TriImage): Unit = collage(image.coords) = image
   def removeImage(image: TriImage): Unit = collage -= image.coords
 
-  def selectImage(image: TriImage, replace: Boolean): Unit = {
-    if (replace) images.foreach(im => im.selected() = im eq image)
-    else image.selected() = !image.selected()
-  }
+  def selectImage(image: TriImage, replace: Boolean): Unit = collage.selectImage(image, replace)
 
   def undo: Boolean = getSelectedImages.forall(_.undo)
   def redo: Boolean = getSelectedImages.forall(_.redo)

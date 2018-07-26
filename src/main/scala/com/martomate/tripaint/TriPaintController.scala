@@ -18,12 +18,19 @@ import scala.util.{Failure, Success, Try}
 
 trait TriPaintView {
   def imageDisplay: ImagePane
-  def addImage(newImage: TriImage): Unit
   def close(): Unit
 }
 
-class TriPaintController {
-  val view: TriPaintView = TriPaint
+class TriPaintController(view: TriPaintView) {
+  val imageGrid: ImageGrid = new ImageGridImplOld(32)
+
+  def addImage(newImage: TriImage): Unit = {
+    if (newImage != null) {
+      imageGrid(newImage.coords) = newImage
+
+      imageGrid.selectImage(newImage, replace = true)
+    }
+  }
 
   private def makeTextInputDialog[T](title: String, headerText: String, contentText: String, restriction: String => Boolean, stringToValue: String => T, action: (TriImage, T) => Unit): TextInputDialog = {
     val images = view.imageDisplay.getSelectedImages
@@ -107,7 +114,7 @@ class TriPaintController {
   val New: MenuBarAction = MenuBarAction.apply("New", "new", new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)) {
     DialogUtils.askForWhereToPutImage() match {
       case Some((x, y)) =>
-        view.addImage(TriImage(TriImageCoords(x, y),
+        addImage(TriImage(TriImageCoords(x, y),
           ImageStorage.unboundImage(view.imageDisplay.imageSize, new Color(view.imageDisplay.secondaryColor())), view.imageDisplay))
       case _ =>
     }
