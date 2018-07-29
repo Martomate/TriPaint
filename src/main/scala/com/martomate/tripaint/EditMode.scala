@@ -36,11 +36,11 @@ object EditMode {
 
   def currentModeProperty: ReadOnlyObjectProperty[EditMode] = _currentMode.readOnlyProperty
 
-  val Select = new EditMode("select", "Select", new KeyCodeCombination(KeyCode.S))
-  val Draw = new EditMode("draw", "Draw", new KeyCodeCombination(KeyCode.P))
-  val Fill = new EditMode("fill", "Fill", new KeyCodeCombination(KeyCode.F))
+  val Select    = new EditMode("select",    "Select",     new KeyCodeCombination(KeyCode.S))
+  val Draw      = new EditMode("draw",      "Draw",       new KeyCodeCombination(KeyCode.P))
+  val Fill      = new EditMode("fill",      "Fill",       new KeyCodeCombination(KeyCode.F))
   val PickColor = new EditMode("pickColor", "Pick Color", new KeyCodeCombination(KeyCode.K))
-  val Organize = new EditMode("organize", "Organize", new KeyCodeCombination(KeyCode.O))
+  val Organize  = new EditMode("organize",  "Organize",   new KeyCodeCombination(KeyCode.O))
 
   Draw.select()
 

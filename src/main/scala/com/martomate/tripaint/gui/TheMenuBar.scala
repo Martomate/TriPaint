@@ -41,7 +41,6 @@ class TheMenuBar(controls: TriPaintController) extends MenuBar {
   private val menu_effects = makeMenu("Effects",
     controls.Blur.menuItem,
     controls.MotionBlur.menuItem,
-    controls.PerlinNoise.menuItem,
     controls.RandomNoise.menuItem,
     controls.Scramble.menuItem
   )

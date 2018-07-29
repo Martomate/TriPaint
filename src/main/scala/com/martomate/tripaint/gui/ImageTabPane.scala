@@ -1,16 +1,15 @@
 package com.martomate.tripaint.gui
 
-import com.martomate.tripaint.image.TriImage
-import com.martomate.tripaint.{TriPaintController, TriPaintView}
+import com.martomate.tripaint.TriPaintController
+import com.martomate.tripaint.image.{TriImage, TriImagePreview}
 import scalafx.geometry.Pos
-import scalafx.scene.canvas.Canvas
 import scalafx.scene.control.ButtonBar.ButtonData
 import scalafx.scene.control.{Button, ToggleButton}
 import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout.StackPane
 
 class ImageTabPane(val image: TriImage, control: TriPaintController) extends StackPane {
-  private val preview = new Canvas(image.preview)
+  private val preview = new TriImagePreview(TriImage.previewSize, image)
 
   private val closeButton = new Button {
     text = "X"
@@ -19,12 +18,9 @@ class ImageTabPane(val image: TriImage, control: TriPaintController) extends Sta
 
     onAction = e => {
       if (image.hasChanged) {
-        control.saveBeforeClosing(image).showAndWait() match {
-          case Some(t) => t.buttonData match {
-            case ButtonData.Yes => if (!image.save) if (!control.saveAs(image)) e.consume()
-            case ButtonData.No =>
-            case _ => e.consume()
-          }
+        control.saveBeforeClosing(image) match {
+          case Some(shouldSave) =>
+            if (shouldSave && !image.save && !control.saveAs(image)) e.consume()
           case None => e.consume()
         }
       }

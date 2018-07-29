@@ -5,10 +5,11 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.collection.mutable.ArrayBuffer
 
 class ListenableTest extends FlatSpec with Matchers {
+  class LocalListenable[T] extends Listenable[T] {
+    def testNotify(func: T => Unit): Unit = notifyListeners(func)
+  }
   "addListener" should "notify it's listeners" in {
-    val listenable = new Listenable[Int] {
-      def testNotify(func: Int => Unit): Unit = notifyListeners(func)
-    }
+    val listenable = new LocalListenable[Int]
     listenable.addListener(7)
     var success = false
     listenable.testNotify(a => success = a == 7)
@@ -16,18 +17,14 @@ class ListenableTest extends FlatSpec with Matchers {
   }
 
   it should "not notify if no listeners were added" in {
-    val listenable = new Listenable[Int] {
-      def testNotify(func: Int => Unit): Unit = notifyListeners(func)
-    }
+    val listenable = new LocalListenable[Int]
     var success = false
     listenable.testNotify(_ => success = true)
     success shouldBe false
   }
 
   it should "notify ALL listeners once" in {
-    val listenable = new Listenable[Int] {
-      def testNotify(func: Int => Unit): Unit = notifyListeners(func)
-    }
+    val listenable = new LocalListenable[Int]
     listenable.addListener(7)
     listenable.addListener(9)
     listenable.addListener(2)
@@ -38,9 +35,7 @@ class ListenableTest extends FlatSpec with Matchers {
   }
 
   "removeListener" should "remove the listener" in {
-    val listenable = new Listenable[Int] {
-      def testNotify(func: Int => Unit): Unit = notifyListeners(func)
-    }
+    val listenable = new LocalListenable[Int]
     listenable.addListener(7)
     listenable.addListener(9)
     listenable.addListener(2)

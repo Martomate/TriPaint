@@ -1,22 +1,19 @@
-package com.martomate.tripaint
+package com.martomate.tripaint.gui
 
-import java.io.File
-
-import com.martomate.tripaint.image.{TriImage, TriImageCoords}
+import com.martomate.tripaint.image.TriImage
 import scalafx.application.Platform
 import scalafx.beans.property.StringProperty
 import scalafx.scene.Node
 import scalafx.scene.control._
 import scalafx.scene.layout.{GridPane, Region, VBox}
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 
 object DialogUtils {
   private def isTrue(pred: => Boolean): Boolean = Try(pred).getOrElse(false)
 
   def customIntRestriction(pred: Int => Boolean): String => Boolean = s => isTrue(pred(s.toInt)) || isTrue(pred((s + "1").toInt))
-
   def customDoubleRestriction(pred: Double => Boolean): String => Boolean = s => isTrue(pred(s.toDouble)) || isTrue(pred((s + "1").toDouble))
 
   val doubleRestriction: String => Boolean = customDoubleRestriction(_ => true)
@@ -24,9 +21,7 @@ object DialogUtils {
   val uintRestriction: String => Boolean = customIntRestriction(_ >= 0)
 
   def doubleTF: TextField = makeTF(doubleRestriction)
-
   def intTF: TextField = makeTF(doubleRestriction)
-
   def uintTF: TextField = makeTF(doubleRestriction)
 
   def makeTF(restriction: String => Boolean): TextField = {
@@ -37,8 +32,7 @@ object DialogUtils {
 
   def restrictTextField(tf: TextField, contentAllowed: String => Boolean): Unit = {
     tf.text.onChange((ob, oldVal, newVal) => {
-      if (contentAllowed(newVal)) ob.asInstanceOf[StringProperty].value = newVal
-      else ob.asInstanceOf[StringProperty].value = oldVal
+      ob.asInstanceOf[StringProperty].value = if (contentAllowed(newVal)) newVal else oldVal
     })
   }
 
@@ -52,25 +46,14 @@ object DialogUtils {
     gridPane
   }
 
-  def addTitle(title: String, gridPane: GridPane): TitledPane = {
-    val pane = new TitledPane {
-      this.collapsible = false
-      this.text = title
-      this.content = gridPane
-    }
-    pane
-  }
-
-  def showInputDialog[R](
-                          title: String,
-                          headerText: String = null,
-                          contentText: String = null,
-                          graphic: Node = null,
-                          content: Seq[Region] = Seq.empty,
-                          resultConverter: ButtonType => R,
-                          nodeWithFocus: Node = null,
-                          buttons: Seq[ButtonType] = Seq(ButtonType.OK, ButtonType.Cancel)): Option[R] = {
-
+  def getValueFromCustomDialog[R](title: String,
+                                  headerText: String = null,
+                                  contentText: String = null,
+                                  graphic: Node = null,
+                                  content: Seq[Region] = Seq.empty,
+                                  resultConverter: ButtonType => R,
+                                  nodeWithFocus: Node = null,
+                                  buttons: Seq[ButtonType] = Seq(ButtonType.OK, ButtonType.Cancel)): Option[R] = {
     val dialog = new Dialog[R]
     dialog.title = title
     dialog.headerText = headerText
@@ -84,13 +67,13 @@ object DialogUtils {
     if (result.isPresent) Some(result.get) else None
   }
 
-  def askForWhereToPutImage(): Option[(Int, Int)] = {
+  def askForXY(title: String, headerText: String): Option[(Int, Int)] = {
     val xCoordTF = DialogUtils.uintTF
     val yCoordTF = DialogUtils.uintTF
 
-    showInputDialog[(Int, Int)](
-      title = "New image",
-      headerText = "Please enter where it should be placed.",
+    getValueFromCustomDialog[(Int, Int)](
+      title = title,
+      headerText = headerText,
 
       content = Seq(makeGridPane(Seq(
         Seq(new Label("X coordinate:"), xCoordTF),
@@ -108,25 +91,37 @@ object DialogUtils {
     )
   }
 
-  def askForOffset(): Option[(Int, Int)] = {
-    val xCoordTF = DialogUtils.uintTF
-    val yCoordTF = DialogUtils.uintTF
+  def askForWhereToPutImage(): Option[(Int, Int)] = askForXY(
+    title = "New image",
+    headerText = "Please enter where it should be placed."
+  )
 
-    showInputDialog[(Int, Int)](
-      title = "Open partial image",
-      headerText = "Which part of the image should be opened? Please enter the top left corner:",
+  def askForOffset(): Option[(Int, Int)] = askForXY(
+    title = "Open partial image",
+    headerText = "Which part of the image should be opened? Please enter the top left corner:"
+  )
 
-      content = Seq(makeGridPane(Seq(
-        Seq(new Label("X coordinate:"), xCoordTF),
-        Seq(new Label("Y coordinate:"), yCoordTF)
-      ))),
-
-      resultConverter = {
-        case ButtonType.OK => Try((xCoordTF.text().toInt, yCoordTF.text().toInt)).getOrElse(null)
-        case _ => null
-      },
-
-      buttons = Seq(ButtonType.OK, ButtonType.Cancel)
-    )
+  def getValueFromDialog[T](images: Seq[TriImage],
+                            title: String,
+                            headerText: String,
+                            contentText: String,
+                            restriction: String => Boolean,
+                            stringToValue: String => T): Option[T] = {
+    val dialog = new TextInputDialog
+    dialog.title = title
+    dialog.headerText = headerText
+    dialog.contentText = contentText
+    dialog.graphic = makeImagePreviewList(images)
+    DialogUtils.restrictTextField(dialog.editor, restriction)
+    dialog.showAndWait match {
+      case Some(str) =>
+        val num = stringToValue(str)
+        Some(num)
+      case None =>
+        None
+    }
   }
+
+  def makeImagePreviewList(images: Seq[TriImage]): ScrollPane =
+    new ImagePreviewList(images, TriImage.previewSize)
 }
