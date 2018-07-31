@@ -7,10 +7,14 @@ import javax.imageio.ImageIO
 import scalafx.scene.paint.Color
 
 trait ImageSaver {
+  def sourceName: String
+
   def save(): Boolean
 }
 
 class FileImageSaver(source: ImageSource, file: File) extends ImageSaver {
+  override def sourceName: String = file.getName
+
   override def save(): Boolean = {
     try {
       if (!file.exists()) {

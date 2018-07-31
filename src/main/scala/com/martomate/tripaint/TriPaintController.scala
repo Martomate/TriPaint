@@ -24,7 +24,7 @@ class TriPaintController(view: TriPaintView) {
   }
 
   def do_exit(): Boolean = {
-    imageGrid.images.filter(_.hasChanged) match {
+    imageGrid.images.filter(_.changed) match {
       case Seq() => true
       case images =>
         saveBeforeClosing(images: _*) match {
@@ -103,7 +103,7 @@ class TriPaintController(view: TriPaintView) {
   }
 
   val Save: MenuBarAction = MenuBarAction.apply("Save", "save", new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown)) {
-    save(imageGrid.selectedImages.filter(_.hasChanged): _*)
+    save(imageGrid.selectedImages.filter(_.changed): _*)
   }
 
   val SaveAs: MenuBarAction = MenuBarAction.apply("Save As", accelerator = new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown, KeyCombination.ShiftDown)) {

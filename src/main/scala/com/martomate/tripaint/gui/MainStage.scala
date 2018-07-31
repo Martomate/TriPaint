@@ -76,13 +76,13 @@ class MainStage extends PrimaryStage with TriPaintView {
     val chooser = new FileChooser
     chooser.title = "Save file"
     chooser.extensionFilters.add(new ExtensionFilter("PNG", "*.png"))
-    Option(chooser.showSaveDialog(null))
+    Option(chooser.showSaveDialog(this))
   }
 
   override def askForFileToOpen(): Option[File] = {
     val chooser = new FileChooser
     chooser.title = "Open file"
-    Option(chooser.showOpenDialog(null))
+    Option(chooser.showOpenDialog(this))
   }
 
   override def askForWhereToPutImage(): Option[(Int, Int)] = {

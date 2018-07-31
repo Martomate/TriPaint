@@ -1,17 +1,16 @@
 package com.martomate.tripaint.image
 
 import java.awt.image.BufferedImage
-import java.io.File
 
 import com.martomate.tripaint.image.effects.Effect
 import com.martomate.tripaint.image.storage._
 import com.martomate.tripaint.undo.UndoManager
 import com.martomate.tripaint.{EditMode, ImagePane, Listenable}
-import javafx.scene.control.Tooltip
 import scalafx.beans.property._
 import scalafx.scene.SnapshotParameters
 import scalafx.scene.canvas.Canvas
-import scalafx.scene.image.{Image, WritableImage}
+import scalafx.scene.control.Tooltip
+import scalafx.scene.image.Image
 import scalafx.scene.layout.Pane
 import scalafx.scene.paint.Color
 
@@ -20,20 +19,10 @@ import scala.util.Try
 object TriImage {
   val previewSize = 64
 
-  def loadFromFile(coords: TriImageCoords, file: File, imagePane: ImagePane, offset: Option[(Int, Int)], imageSize: Int): Try[TriImage] = {
-    ImageStorage.loadFromFile(file, offset, imageSize) map { storage =>
-      new TriImage(coords, storage, imagePane)
-    }
-  }
-
   def loadFromSource(coords: TriImageCoords, source: ImageSource, imagePane: ImagePane, offset: Option[(Int, Int)], imageSize: Int): Try[TriImage] = {
     ImageStorage.fromSource(source, offset, imageSize) map { storage =>
       new TriImage(coords, storage, imagePane)
     }
-  }
-
-  def loadFromFile(coords: TriImageCoords, file: File, imagePane: ImagePane): Try[TriImage] = {
-    loadFromFile(coords, file, imagePane, None, imagePane.imageSize)
   }
 
   def apply(coords: TriImageCoords, imageStorage: ImageStorage, imagePane: ImagePane) =
@@ -225,16 +214,15 @@ class TriImage private(val coords: TriImageCoords, val storage: ImageStorage, va
   }
 
   private[image] def drawTriangle(coords: Coord, doIndexMapping: Boolean, strokeInstead: Boolean = false): Unit = {
-    val Coord(x, y, index) = coords
-    val yp = y
-    val xp = x * 0.5 - (yp - storage.imageSize + 1) * 0.5
+    val yp = coords.y
+    val xp = coords.x * 0.5 - (yp - storage.imageSize + 1) * 0.5
 
-    storeAllCoords(xp, yp, x % 2 == 1)
+    storeAllCoords(xp, yp, coords.x % 2 == 1)
 
-    canvas.drawTriangle(storage(index), strokeInstead)
-    notifyListeners(_.canvas.drawTriangle(storage(index), strokeInstead))
+    canvas.drawTriangle(storage(coords.index), strokeInstead)
+    notifyListeners(_.canvas.drawTriangle(storage(coords.index), strokeInstead))
 
-    if (doIndexMapping) indexMap.performIndexMapping(index)
+    if (doIndexMapping) indexMap.performIndexMapping(coords.index)
   }
 
   def redraw(doIndexMapping: Boolean): Unit = {
@@ -299,7 +287,7 @@ class TriImage private(val coords: TriImageCoords, val storage: ImageStorage, va
     updateAfterDraw()
   }
 
-  def updateLocation(): Unit = {
+  private def updateLocation(): Unit = {
     canvas.updateLocation(panX, panY)
   }
 
@@ -309,17 +297,14 @@ class TriImage private(val coords: TriImageCoords, val storage: ImageStorage, va
     storage.saveLocation = location
   }
 
-  def hasChanged: Boolean = storage.hasChanged
-
-  def hasChangedProperty: ReadOnlyBooleanProperty = storage.hasChangedProperty
-
-  private val _toolTip = new ReadOnlyObjectWrapper[Tooltip](null, null, new Tooltip("Not saved"))
-
-  def toolTip: ReadOnlyObjectProperty[Tooltip] = _toolTip.readOnlyProperty
-
-  _toolTip().textProperty().bind(storage.infoText)
+  def changed: Boolean = storage.hasChanged
+  def changedProperty: ReadOnlyBooleanProperty = storage.hasChangedProperty
 
   override def onPixelChanged(coords: Coord): Unit = {
     drawTriangle(coords, false)
   }
+}
+
+class TriImageTooltip(storage: ImageStorage) extends Tooltip {
+  text <== storage.infoText
 }

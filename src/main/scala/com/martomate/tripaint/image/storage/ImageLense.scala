@@ -1,8 +1,10 @@
 package com.martomate.tripaint.image.storage
 
+import com.martomate.tripaint.Listenable
+import scalafx.beans.property.{ReadOnlyBooleanProperty, ReadOnlyBooleanWrapper}
 import scalafx.scene.paint.Color
 
-abstract class ImageSourceLense(source: ImageSource) extends ImageSource {
+abstract class ImageLense(val source: ImageSource, val sideLength: Int) extends Listenable[ImageSourceListener] {
   private val parentListener = new ImageSourceListener {
     override def onPixelChanged(x: Int, y: Int): Unit = if (inLense(x, y)) {
       notifyListeners(_.onPixelChanged(decode(x, y)))
@@ -20,10 +22,13 @@ abstract class ImageSourceLense(source: ImageSource) extends ImageSource {
 
   source.addListener(parentListener)
 
-  override def apply(x: Int, y: Int): Color = {
+  def width: Int = sideLength
+  def height: Int = sideLength
+
+  def apply(x: Int, y: Int): Color = {
     source(encode(x, y))
   }
-  override def update(x: Int, y: Int, col: Color): Unit = {
+  def update(x: Int, y: Int, col: Color): Unit = {
     source.update(encode(x, y), col)
   }
 
@@ -31,7 +36,12 @@ abstract class ImageSourceLense(source: ImageSource) extends ImageSource {
   protected def decode(x: Int, y: Int): (Int, Int)
   protected def inLense(x: Int, y: Int): Boolean
 
-  override def save(): Boolean = source.save()
+  def save(): Boolean = source.save()
 
-  override def imageSaver_=(saver: ImageSaver): Unit = source.imageSaver_=(saver)
+  def imageSaver: ImageSaver = source.imageSaver
+  def imageSaver_=(saver: ImageSaver): Unit = source.imageSaver_=(saver)
+
+  final def changed: Boolean = hasChanged()
+  final def changedProperty: ReadOnlyBooleanProperty = hasChanged.readOnlyProperty
+  protected final var hasChanged: ReadOnlyBooleanWrapper = ReadOnlyBooleanWrapper(source.changed)
 }

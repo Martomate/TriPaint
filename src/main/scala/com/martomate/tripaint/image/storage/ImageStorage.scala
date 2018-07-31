@@ -15,8 +15,8 @@ trait ImageStorageListener {
   def onPixelChanged(coords: Coord): Unit
 }
 
-class ImageStorage(initialSource: SquareImageSource) extends Listenable[ImageStorageListener] {
-  private var imageSource: SquareImageSource = initialSource
+class ImageStorage(initialSource: SquareImageLense) extends Listenable[ImageStorageListener] {
+  private var imageSource: SquareImageLense = initialSource
   private val imageSourceListener = new ImageSourceListener {
     override def onPixelChanged(x: Int, y: Int): Unit = {
       notifyListeners(_.onPixelChanged(coordsFromIndex(x + y * imageSize)))
@@ -28,7 +28,7 @@ class ImageStorage(initialSource: SquareImageSource) extends Listenable[ImageSto
   }
   imageSource.addListener(imageSourceListener)
 
-  def imageSize: Int = imageSource.s
+  def imageSize: Int = imageSource.sideLength
 
   def numPixels: Int = imageSize * imageSize
 
@@ -55,11 +55,11 @@ class ImageStorage(initialSource: SquareImageSource) extends Listenable[ImageSto
     if (location.file == null || location.offset == null) throw new IllegalArgumentException("location mush have non-null file and offset")
     _saveLocation = location
     //hasChanged = true
-    imageSource.imageSaver = new FileImageSaver(imageSource, location.file)
+    imageSource.imageSaver = new FileImageSaver(imageSource.source, location.file)
     imageSource.save()
     val offset = location.offset.getOrElse((0, 0))
     ImageSourceImpl.fromFile(location.file) foreach { source =>
-      SquareImageSource(source, offset._1, offset._2, imageSize) foreach { sqImage =>
+      SquareImageLense(source, offset._1, offset._2, imageSize) foreach { sqImage =>
         imageSource.removeListener(imageSourceListener)
         imageSource = sqImage
         imageSource.addListener(imageSourceListener)
@@ -113,8 +113,8 @@ class ImageStorage(initialSource: SquareImageSource) extends Listenable[ImageSto
   def infoText: ReadOnlyStringProperty = _infoText.readOnlyProperty
 
   private def makeInfoText: String = {
-    if (saveLocation != null) {
-      s"File: ${saveLocation.file.getName}\nSize: $imageSize" + (if (saveLocation.offset.isDefined) s"\nOffset: ${saveLocation.offset}" else "")
+    if (imageSource.imageSaver != null) {
+      s"File: ${imageSource.imageSaver.sourceName}\nSize: $imageSize"
     } else s"Not saved\nSize: $imageSize"
   }
 
@@ -122,23 +122,14 @@ class ImageStorage(initialSource: SquareImageSource) extends Listenable[ImageSto
 }
 
 object ImageStorage {
-  def loadFromFile(file: File, offset: Option[(Int, Int)] = None, imageSize: Int): Try[ImageStorage] = {
-    val (xOff, yOff) = offset.getOrElse((0, 0))
-    ImageSourceImpl.fromFile(file) flatMap {
-      SquareImageSource(_, xOff, yOff, imageSize) map {
-        new ImageStorage(_)
-      }
-    }
-  }
-
   def fromSource(imageSource: ImageSource, offset: Option[(Int, Int)], imageSize: Int): Try[ImageStorage] = {
     val (xOff, yOff) = offset.getOrElse((0, 0))
 
-    SquareImageSource(imageSource, xOff, yOff, imageSize).map(new ImageStorage(_))
+    SquareImageLense(imageSource, xOff, yOff, imageSize).map(new ImageStorage(_))
   }
 
   def unboundImage(imageSize: Int, initialColor: Color): ImageStorage = {
     val imageSource = new UnboundImageSource(imageSize, initialColor)
-    SquareImageSource(imageSource, 0, 0, imageSize).map(new ImageStorage(_)).getOrElse(null)
+    SquareImageLense(imageSource, 0, 0, imageSize).map(new ImageStorage(_)).getOrElse(null)
   }
 }

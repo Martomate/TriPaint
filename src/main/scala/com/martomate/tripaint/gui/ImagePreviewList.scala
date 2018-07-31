@@ -1,8 +1,8 @@
 package com.martomate.tripaint.gui
 
-import com.martomate.tripaint.image.{TriImage, TriImagePreview}
+import com.martomate.tripaint.image.{TriImage, TriImagePreview, TriImageTooltip}
 import scalafx.scene.SnapshotParameters
-import scalafx.scene.control.ScrollPane
+import scalafx.scene.control.{ScrollPane, Tooltip}
 import scalafx.scene.image.ImageView
 import scalafx.scene.layout.HBox
 import scalafx.scene.paint.Color
@@ -20,7 +20,7 @@ class ImagePreviewList(images: Seq[TriImage], previewSize: Int) extends ScrollPa
   private def makeImageView(preview: TriImagePreview): ImageView = {
     val view = new ImageView
     view.image = preview.toImage(snapshotParams)
-    javafx.scene.control.Tooltip.install(view.delegate, preview.image.toolTip())
+    Tooltip.install(view, new TriImageTooltip(preview.image.storage))
     view
   }
 }

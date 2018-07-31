@@ -1,5 +1,7 @@
 package com.martomate.tripaint
 
+import com.martomate.tripaint.image.storage.SaveLocation
+import com.martomate.tripaint.plan.model.image2.coords.TriangleCoords
 import scalafx.scene.canvas.Canvas
 import scalafx.scene.paint.Color
 
@@ -81,6 +83,78 @@ object plan {
 
           /** Reach into all active images starting at start. Flood fill search. */
           def search(start: PixelCoords, pred: Int => Boolean): Seq[PixelCoords]
+        }
+      }
+    }
+
+    object image2 {
+      object coords {
+        trait TriangleCoords {
+          def x: Int
+
+          def y: Int
+        }
+
+        trait StorageCoords {
+          def x: Int
+
+          def y: Int
+        }
+      }
+
+      object format {
+        import coords._
+
+        trait StorageFormat {
+          def transformToStorage(coords: TriangleCoords): StorageCoords
+
+          def transformFromStorage(coords: StorageCoords): TriangleCoords
+        }
+
+        trait SimpleStorageFormat extends StorageFormat // current format
+
+        trait SubImageStorageFormat extends StorageFormat // new format where every quadrant can be read as an image
+      }
+
+      object save {
+        import format._
+        import storage._
+
+        trait ImageSaver {
+          def save(image: ImageStorage, saveInfo: ImageSaveInfo): Boolean
+        }
+
+        trait ImageSaveInfo {
+          val saveLocation: SaveLocation
+          val format: StorageFormat
+        }
+      }
+
+      object storage {
+        import save._
+
+        trait ImageStorageListener {
+          def onPixelChanged(coords: TriangleCoords, from: Color, to: Color): Unit
+        }
+
+        trait ImageStorage {
+          val imageSize: Int
+
+          def apply(coords: TriangleCoords): Color
+
+          def update(coords: TriangleCoords, col: Color): Unit
+        }
+
+        trait TriImage {
+          val storage: ImageStorage
+
+          var enabled: Boolean
+
+          def changed: Boolean
+
+          var saveInfo: ImageSaveInfo
+
+          def save(saver: ImageSaver): Boolean = saver.save(storage, saveInfo)
         }
       }
     }

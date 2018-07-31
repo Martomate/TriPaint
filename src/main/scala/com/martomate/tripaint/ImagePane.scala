@@ -49,8 +49,6 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridListener {
       EditMode.currentMode match {
         case EditMode.Organize => // TODO: implement scale and rotation if (x, y) is close enough to a corner
           setScroll(xScroll + xPos - drag.x, yScroll + yPos - drag.y)
-
-          images.foreach(_.updateLocation())
         case _ =>
           if (true) {
             val xDiff = xPos - drag.x
