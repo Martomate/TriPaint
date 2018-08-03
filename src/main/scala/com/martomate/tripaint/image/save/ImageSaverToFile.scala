@@ -1,29 +1,29 @@
-package com.martomate.tripaint.image2.save
+package com.martomate.tripaint.image.save
 
 import java.awt.image.BufferedImage
 import java.io.File
 
-import com.martomate.tripaint.image.storage.SaveLocation
-import com.martomate.tripaint.image2.coords.TriangleCoords
-import com.martomate.tripaint.image2.format.StorageFormat
-import com.martomate.tripaint.image2.storage.ImageStorage
+import com.martomate.tripaint.image.SaveLocation
+import com.martomate.tripaint.image.coords.TriangleCoords
+import com.martomate.tripaint.image.format.StorageFormat
+import com.martomate.tripaint.image.storage.ImageStorage
 import javax.imageio.ImageIO
 import scalafx.scene.paint.Color
 
 import scala.util.Try
 
-class ImageSaverToFile extends ImageSaver {
+class ImageSaverToFile(format: StorageFormat) extends ImageSaver {
 
-  def save(image: ImageStorage, saveInfo: ImageSaveInfo): Boolean = {
-    val SaveLocation(file, offset) = saveInfo.saveLocation
+  def save(image: ImageStorage, saveInfo: SaveLocation): Boolean = {
+    val SaveLocation(file, offset) = saveInfo
 
     val oldImage: Option[BufferedImage] = readImageAt(file)
 
     val bufImage: BufferedImage = oldImage
-      .map(im => resizeImageIfNeeded(im, offset.getOrElse(0, 0), image.imageSize))
+      .map(im => resizeImageIfNeeded(im, offset, image.imageSize))
       .getOrElse(makeNewImage(image.imageSize, image.imageSize))
 
-    writeImage(bufImage, image, saveInfo.format)
+    writeImage(bufImage, image, format)
     writeImageToFile(bufImage, file)
   }
 
@@ -57,7 +57,7 @@ class ImageSaverToFile extends ImageSaver {
 
   private def writeImage(dest: BufferedImage, source: ImageStorage, format: StorageFormat): Unit = {
     for (y <- 0 until source.imageSize) {
-      for (x <- 0 until source.imageSize) {
+      for (x <- 0 until 2 * y + 1) {
         val tCoords = TriangleCoords(x, y)
         val sCoords = format.transformToStorage(tCoords)
 

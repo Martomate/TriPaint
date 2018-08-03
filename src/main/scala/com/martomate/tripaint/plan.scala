@@ -1,92 +1,12 @@
 package com.martomate.tripaint
 
-import com.martomate.tripaint.image.storage.SaveLocation
-import com.martomate.tripaint.plan.model.image2.coords.TriangleCoords
-import scalafx.scene.canvas.Canvas
-import scalafx.scene.paint.Color
-
 object plan {
-  object model {
-    object image {
-      object storage {
-        trait PixelCoordsInStorage {
-          def x: Int
-          def y: Int
-        }
+  import com.martomate.tripaint.image.SaveLocation
+  import com.martomate.tripaint.plan.model.image2.storage.ImageStorage
+  import scalafx.scene.canvas.Canvas
+  import scalafx.scene.paint.Color
 
-        /** An entire image (on file). Can be referenced in several ImageSections */
-        trait ImageStorage {
-          def apply(coords: PixelCoordsInStorage): Color
-          def update(coords: PixelCoordsInStorage, color: Color): Unit
-
-          def addListener(listener: PixelCoordsInStorage => Unit): Unit
-
-          def hasChanged: Boolean
-          def save(): Unit
-        }
-      }
-
-      object triimage {
-        import storage._
-
-        trait PixelCoordsInImage {
-          def x: Int
-          def y: Int
-          /** Calculated from x and y */
-          def index: Int
-        }
-
-        /** Part of an image, like a view of the image */
-        trait ImageSection {
-          val storage: ImageStorage
-          /** Location in the image */
-          val location: (Int, Int)
-
-          def apply(coords: PixelCoordsInImage): Color
-          def update(coords: PixelCoordsInImage, color: Color): Unit
-
-          def addListener(listener: PixelCoordsInImage => Unit): Unit
-        }
-      }
-
-      object imagegrid {
-        import triimage._
-
-        trait ImageCoordsInGrid {
-          def x: Int
-          def y: Int
-        }
-
-        trait PixelCoords {
-          val pix: PixelCoordsInImage
-          val image: ImageCoordsInGrid
-        }
-
-        /** An image as part of an image grid */
-        trait Image {
-          val image: ImageSection
-          val coords: ImageCoordsInGrid
-          val active: Boolean
-
-          /** Rotation in units of 120 deg relative to the default (0 deg, or 180 deg if it's upside down) */
-          val rotation: Int
-
-          /** In degrees (because of JavaFX!) */
-          def actualRotation: Double = rotation * 120 + (coords.x % 2) * 180
-        }
-
-        trait ImageGrid {
-          def images: Seq[Image]
-
-          def apply(coords: ImageCoordsInGrid): Image
-          def update(coords: ImageCoordsInGrid, image: Image): Unit
-
-          /** Reach into all active images starting at start. Flood fill search. */
-          def search(start: PixelCoords, pred: Int => Boolean): Seq[PixelCoords]
-        }
-      }
-    }
-
+  private object model {
     object image2 {
       object coords {
         trait TriangleCoords {
@@ -121,16 +41,14 @@ object plan {
         import storage._
 
         trait ImageSaver {
-          def save(image: ImageStorage, saveInfo: ImageSaveInfo): Boolean
-        }
-
-        trait ImageSaveInfo {
-          val saveLocation: SaveLocation
           val format: StorageFormat
+
+          def save(image: ImageStorage, location: SaveLocation): Boolean
         }
       }
 
       object storage {
+        import coords._
         import save._
 
         trait ImageStorageListener {
@@ -145,16 +63,55 @@ object plan {
           def update(coords: TriangleCoords, col: Color): Unit
         }
 
-        trait TriImage {
-          val storage: ImageStorage
+        trait ImagePool extends Listenable[ImagePoolListener] {
+          val expert: ImagePoolCollisionExpert
 
-          var enabled: Boolean
+          def get(newLocation: SaveLocation): ImageStorage
+          def set(newLocation: SaveLocation, imageStorage: ImageStorage): Unit
+          protected def remove(imageStorage: ImageStorage): Unit
+
+          def move(image: ImageStorage, newLocation: SaveLocation): Unit = {
+            val currentImage = get(newLocation)
+            if (currentImage != image) {
+              expert.shouldReplaceImage(currentImage, image, newLocation) match {
+                case Some(replace) =>
+                  if (replace) {
+                    remove(currentImage)
+                    set(newLocation, image)
+                    notifyListeners(_.onImageReplaced(currentImage, image, newLocation))
+                  } else {
+                    remove(image)
+                    notifyListeners(_.onImageReplaced(image, currentImage, newLocation))
+                  }
+                case None =>
+              }
+            }
+          }
+
+          def save(image: ImageStorage, saver: ImageSaver): Boolean
+        }
+
+        trait ImagePoolListener {
+          def onImageReplaced(oldImage: ImageStorage, newImage: ImageStorage, location: SaveLocation): Unit
+        }
+
+        trait ImagePoolCollisionExpert {
+          def shouldReplaceImage(currentImage: ImageStorage, newImage: ImageStorage, location: SaveLocation): Option[Boolean]
+        }
+
+        trait ImageChangeTracker {
+          val storage: ImageStorage
+          val pool: ImagePool
 
           def changed: Boolean
+        }
 
-          var saveInfo: ImageSaveInfo
+        trait ImageContent {
+          val storage: ImageStorage
 
-          def save(saver: ImageSaver): Boolean = saver.save(storage, saveInfo)
+          var editable: Boolean
+
+          val changeTracker: ImageChangeTracker
         }
       }
     }
@@ -164,16 +121,14 @@ object plan {
     * read from model
     * register listeners on model
     */
-  object view {
-    import model.image.imagegrid._
-
+  private object view {
     trait ImagePane {
-      val image: Image
+      val image: ImageStorage
       val canvas: Canvas
     }
 
     trait ImageGridPane {
-      val collection: ImageGrid
+//      val collection: ImageGrid
       val imagePanes: Seq[ImagePane]
     }
   }

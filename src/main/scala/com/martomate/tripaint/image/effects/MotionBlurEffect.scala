@@ -1,24 +1,19 @@
 package com.martomate.tripaint.image.effects
 
+import com.martomate.tripaint.image.coords.TriangleCoords
 import com.martomate.tripaint.image.storage.ImageStorage
+import scalafx.scene.paint.Color
 
-class MotionBlurEffect(radius: Int) extends Effect {
+class MotionBlurEffect(radius: Int) extends LocalEffect {
   def name: String = "Motion blur"
 
-  override def action(image: ImageStorage): Unit = {
-    import com.martomate.tripaint.image.ExtendedColor._
-    if (radius > 0) {
-      val radiusSq = radius * radius
-      val newVals = for (i <- 0 until image.numPixels) yield {
-        val here = image.coordsFromIndex(i)
-        val cols = image.search(here, (p, _) => here.y == p.y && math.pow(here.x - p.x, 2) <= radiusSq * 1.5).map(c => {
-          (math.exp(-2 * math.pow(here.x - c.x, 2) / radiusSq), image(c.index))
-        })
-        val col = image(i)
-        val numCols = cols.foldLeft(1d)(_ + _._1)
-        (cols.foldLeft(col * 1)((now, next) => now + next._2 * next._1) / numCols).toColor
-      }
-      for (i <- 0 until image.numPixels) image(i) = newVals(i)
-    }
+  private val radiusSq = radius * radius
+
+  override def predicate(image: ImageStorage, here: TriangleCoords)(coords: TriangleCoords): Boolean = {
+    here.y == coords.y && math.pow(here.x - coords.x, 2) <= radiusSq * 1.5
+  }
+
+  override def weightedColor(image: ImageStorage, here: TriangleCoords)(coords: TriangleCoords): (Double, Color) = {
+    (math.exp(-2 * math.pow(here.x - coords.x, 2) / radiusSq), image(coords))
   }
 }

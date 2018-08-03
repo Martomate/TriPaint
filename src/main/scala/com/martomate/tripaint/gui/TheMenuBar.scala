@@ -34,8 +34,7 @@ class TheMenuBar(controls: TriPaintController) extends MenuBar {
   private val menu_organize = makeMenu("Organize",
     controls.Move.menuItem,
     controls.Scale.menuItem,
-    controls.Rotate.menuItem,
-    controls.Fit.menuItem
+    controls.Rotate.menuItem
   )
 
   private val menu_effects = makeMenu("Effects",

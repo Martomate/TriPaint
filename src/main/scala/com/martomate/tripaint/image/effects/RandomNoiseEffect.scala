@@ -7,8 +7,8 @@ class RandomNoiseEffect(min: Color, max: Color) extends Effect {
   override def name: String = "Random noise"
 
   override def action(image: ImageStorage): Unit = {
-    for (i <- 0 until image.numPixels) {
-      image(i) = Color.hsb(
+    for (coords <- image.allPixels) {
+      image(coords) = Color.hsb(
         math.random * (max.hue - min.hue) + min.hue,
         math.random * (max.saturation - min.saturation) + min.saturation,
         math.random * (max.brightness - min.brightness) + min.brightness,

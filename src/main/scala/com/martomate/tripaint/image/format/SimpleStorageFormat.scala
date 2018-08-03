@@ -1,9 +1,9 @@
-package com.martomate.tripaint.image2.format
+package com.martomate.tripaint.image.format
 
-import com.martomate.tripaint.image2.coords.{StorageCoords, TriangleCoords}
+import com.martomate.tripaint.image.coords.{StorageCoords, TriangleCoords}
 
 // current format
-class SimpleStorageFormat(imageSize: Int) extends StorageFormat {
+class SimpleStorageFormat extends StorageFormat {
   override def transformToStorage(coords: TriangleCoords): StorageCoords = {
     val TriangleCoords(x, y) = coords
     if (y < x) StorageCoords(y, y + y - x)

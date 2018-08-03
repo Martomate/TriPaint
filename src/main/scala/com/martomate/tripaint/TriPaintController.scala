@@ -1,8 +1,10 @@
 package com.martomate.tripaint
 
 import com.martomate.tripaint.image.effects._
-import com.martomate.tripaint.image.storage.{ImageSourceImpl, ImageStorage, SaveLocation}
-import com.martomate.tripaint.image.{ImageGrid, ImageGridImplOld, TriImage, TriImageCoords}
+import com.martomate.tripaint.image.format.SimpleStorageFormat
+import com.martomate.tripaint.image.save.{ImageSaver, ImageSaverToFile}
+import com.martomate.tripaint.image.storage._
+import com.martomate.tripaint.image._
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.paint.Color
 
@@ -10,6 +12,8 @@ import scala.util.{Failure, Success}
 
 class TriPaintController(view: TriPaintView) {
   val imageGrid: ImageGrid = new ImageGridImplOld(32)
+  val imagePool: ImagePool = new ImagePoolImpl(ImageStorageImpl, view)
+  val imageSaver: ImageSaver = new ImageSaverToFile(new SimpleStorageFormat)
 
   def addImage(newImage: TriImage): Unit = {
     if (newImage != null) {
@@ -36,15 +40,16 @@ class TriPaintController(view: TriPaintView) {
     }
   }
 
-  private def save(images: TriImage*): Boolean = images.filter(!_.save).forall(im => im.storage.save || saveAs(im))
+  def save(images: TriImage*): Boolean = images.filter(im => !imagePool.save(im.storage, imageSaver)).forall(im => imagePool.save(im.storage, imageSaver) || saveAs(im))
 
   def saveAs(image: TriImage): Boolean = {
     view.askForSaveFile(image) match {
       case Some(file) =>
-        image.setSaveLocation(SaveLocation(file, None))
-        val saved = image.save
-        if (!saved) println("Image could not be saved!!")
-        saved
+        if (imagePool.move(image.storage, SaveLocation(file))) {
+          val saved = imagePool.save(image.storage, imageSaver)
+          if (!saved) println("Image could not be saved!!")
+          saved
+        } else false
       case None =>
         false
     }
@@ -55,7 +60,7 @@ class TriPaintController(view: TriPaintView) {
       case Some((x, y)) =>
         addImage(TriImage(
           TriImageCoords(x, y),
-          ImageStorage.unboundImage(imageGrid.imageSize, new Color(view.imageDisplay.secondaryColor())),
+          makeImageContent(imagePool.fromBGColor(new Color(view.imageDisplay.secondaryColor()), imageGrid.imageSize)),
           view.imageDisplay
         ))
       case _ =>
@@ -82,24 +87,22 @@ class TriPaintController(view: TriPaintView) {
   val Open: MenuBarAction = MenuBarAction.apply("Open", "open", new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)) {
     view.askForFileToOpen() foreach { file =>
       val imageSize = imageGrid.imageSize
+      val offset = view.askForOffset().getOrElse(0, 0)
 
-      ImageSourceImpl.fromFile(file) match {
-        case Success(source) =>
-          val offset = if (source.width != imageSize || source.height != imageSize)
-            view.askForOffset()
-          else Some(0, 0)
-
-          if (offset.isDefined) {
-            view.askForWhereToPutImage() foreach { coords =>
-              TriImage.loadFromSource(TriImageCoords(coords._1, coords._2), source, view.imageDisplay, offset, imageSize) foreach { image =>
-                addImage(image)
-              }
-            }
+      imagePool.fromFile(SaveLocation(file, offset), imageSize) match {
+        case Success(storage) =>
+          view.askForWhereToPutImage() foreach { coords =>
+            val image = TriImage.apply(TriImageCoords(coords._1, coords._2), makeImageContent(storage), view.imageDisplay)
+            addImage(image)
           }
         case Failure(exc) =>
           exc.printStackTrace()
       }
     }
+  }
+
+  private def makeImageContent(storage: ImageStorage) = {
+    new ImageContent(new ImageChangeTracker(storage, imagePool, imageSaver))
   }
 
   val Save: MenuBarAction = MenuBarAction.apply("Save", "save", new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown)) {
@@ -181,10 +184,6 @@ class TriPaintController(view: TriPaintView) {
       str => Try(str.toDouble).getOrElse(0d),
       (im, rt) => ()//im rotate rt
     )*/
-  }
-
-  val Fit: MenuBarAction = MenuBarAction.apply("Fit") {
-    ???
   }
 
   val Blur: MenuBarAction = MenuBarAction.apply("Blur") {

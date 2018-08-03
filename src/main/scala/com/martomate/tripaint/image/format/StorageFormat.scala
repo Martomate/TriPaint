@@ -1,6 +1,6 @@
-package com.martomate.tripaint.image2.format
+package com.martomate.tripaint.image.format
 
-import com.martomate.tripaint.image2.coords.{StorageCoords, TriangleCoords}
+import com.martomate.tripaint.image.coords.{StorageCoords, TriangleCoords}
 
 trait StorageFormat {
   def transformToStorage(coords: TriangleCoords): StorageCoords

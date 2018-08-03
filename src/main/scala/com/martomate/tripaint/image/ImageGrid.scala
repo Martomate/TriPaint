@@ -1,7 +1,7 @@
 package com.martomate.tripaint.image
 
 import com.martomate.tripaint.Listenable
-import com.martomate.tripaint.image.storage.{Coord, ImageStorage, ImageStorageListener}
+import com.martomate.tripaint.image.coords.TriangleCoords
 import scalafx.scene.paint.Color
 
 import scala.collection.mutable.ArrayBuffer
@@ -17,11 +17,11 @@ trait ImageGrid extends Listenable[ImageGridListener] {
   protected final def onAddImage(image: TriImage): Unit = notifyListeners(_.onAddImage(image))
   protected final def onRemoveImage(image: TriImage): Unit = notifyListeners(_.onRemoveImage(image))
 
-  final def selectedImages: Seq[TriImage] = images.filter(_.isSelected)
+  final def selectedImages: Seq[TriImage] = images.filter(_.editable)
 
   def selectImage(image: TriImage, replace: Boolean): Unit = {
-    if (replace) images.foreach(im => im.selected() = im eq image)
-    else image.selected() = !image.selected()
+    if (replace) images.foreach(im => im.content.editableProperty.value = im eq image)
+    else image.content.editableProperty.value = !image.content.editableProperty.value
   }
 }
 
@@ -35,7 +35,7 @@ class ImageGridSearcher(imageGrid: ImageGrid) {
     while (q.nonEmpty) {
       val p = q.dequeue
       imageGrid(p.image) foreach { image =>
-        val color = image.storage(p.pix.index)
+        val color = image.storage(p.pix)
         if (predicate(p, color)) {
           result += p
 
@@ -79,13 +79,13 @@ trait ImageGridListener {
   def onRemoveImage(image: TriImage): Unit
 }
 
-case class PixelCoords(pix: Coord, image: TriImageCoords) {
+case class PixelCoords(pix: TriangleCoords, image: TriImageCoords) {
   def neighbours(imageSize: Int): Seq[PixelCoords] = {// TODO: reach into neighboring images
     val (x, y) = (pix.x, pix.y)
     val localCoords = Seq(
-      Coord.fromXY(x - 1, y, imageSize),
-      if (x % 2 == 0) Coord.fromXY(x + 1, y + 1, imageSize) else Coord.fromXY(x - 1, y - 1, imageSize),
-      Coord.fromXY(x + 1, y, imageSize)
+      TriangleCoords(x - 1, y),
+      if (x % 2 == 0) TriangleCoords(x + 1, y + 1) else TriangleCoords(x - 1, y - 1),
+      TriangleCoords(x + 1, y)
     ).filter(t => t.x >= 0 && t.y >= 0 && t.x < 2 * t.y + 1 && t.y < imageSize)
     localCoords.map(c => PixelCoords(c, image))
   }

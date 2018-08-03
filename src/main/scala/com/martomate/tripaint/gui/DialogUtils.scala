@@ -1,6 +1,7 @@
 package com.martomate.tripaint.gui
 
 import com.martomate.tripaint.image.TriImage
+import com.martomate.tripaint.image.storage.ImagePool
 import scalafx.application.Platform
 import scalafx.beans.property.StringProperty
 import scalafx.scene.Node
@@ -101,7 +102,8 @@ object DialogUtils {
     headerText = "Which part of the image should be opened? Please enter the top left corner:"
   )
 
-  def getValueFromDialog[T](images: Seq[TriImage],
+  def getValueFromDialog[T](imagePool: ImagePool,
+                            images: Seq[TriImage],
                             title: String,
                             headerText: String,
                             contentText: String,
@@ -111,7 +113,7 @@ object DialogUtils {
     dialog.title = title
     dialog.headerText = headerText
     dialog.contentText = contentText
-    dialog.graphic = makeImagePreviewList(images)
+    dialog.graphic = makeImagePreviewList(images, imagePool)
     DialogUtils.restrictTextField(dialog.editor, restriction)
     dialog.showAndWait match {
       case Some(str) =>
@@ -122,6 +124,6 @@ object DialogUtils {
     }
   }
 
-  def makeImagePreviewList(images: Seq[TriImage]): ScrollPane =
-    new ImagePreviewList(images, TriImage.previewSize)
+  def makeImagePreviewList(images: Seq[TriImage], imagePool: ImagePool): ScrollPane =
+    new ImagePreviewList(images, TriImage.previewSize, imagePool)
 }

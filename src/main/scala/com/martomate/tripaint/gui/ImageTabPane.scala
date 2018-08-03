@@ -1,7 +1,7 @@
 package com.martomate.tripaint.gui
 
 import com.martomate.tripaint.TriPaintController
-import com.martomate.tripaint.image.{TriImage, TriImagePreview, TriImageTooltip}
+import com.martomate.tripaint.image.{TriImage, TriImagePreview}
 import scalafx.geometry.Pos
 import scalafx.scene.control.ButtonBar.ButtonData
 import scalafx.scene.control.{Button, ToggleButton}
@@ -20,7 +20,7 @@ class ImageTabPane(val image: TriImage, control: TriPaintController) extends Sta
       if (image.changed) {
         control.saveBeforeClosing(image) match {
           case Some(shouldSave) =>
-            if (shouldSave && !image.save && !control.saveAs(image)) e.consume()
+            if (shouldSave && !control.save(image)) e.consume()
           case None => e.consume()
         }
       }
@@ -33,8 +33,8 @@ class ImageTabPane(val image: TriImage, control: TriPaintController) extends Sta
 
   private val previewButton = new ToggleButton {
     this.graphic = preview
-    this.tooltip = new TriImageTooltip(image.storage)
-    this.selected <==> image.selected
+    this.tooltip = new TriImageTooltip(image.content, control.imagePool)
+    this.selected <==> image.editableProperty
 
     this.onMouseClicked = e => {
       control.imageGrid.selectImage(image, !e.isControlDown)

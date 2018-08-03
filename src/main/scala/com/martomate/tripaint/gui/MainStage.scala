@@ -3,7 +3,8 @@ package com.martomate.tripaint.gui
 import java.io.File
 
 import com.martomate.tripaint._
-import com.martomate.tripaint.image.TriImage
+import com.martomate.tripaint.image.{SaveLocation, TriImage}
+import com.martomate.tripaint.image.storage.ImageStorage
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.scene.Scene
 import scalafx.scene.control.Alert.AlertType
@@ -91,6 +92,7 @@ class MainStage extends PrimaryStage with TriPaintView {
 
   override def askForBlurRadius(): Option[Int] = {
     DialogUtils.getValueFromDialog[Int](
+      controls.imagePool,
       controls.imageGrid.selectedImages,
       "Blur images",
       "How much should the images be blurred?",
@@ -102,6 +104,7 @@ class MainStage extends PrimaryStage with TriPaintView {
 
   override def askForMotionBlurRadius(): Option[Int] = {
     DialogUtils.getValueFromDialog[Int](
+      controls.imagePool,
       controls.imageGrid.selectedImages,
       "Motion blur images",
       "How much should the images be motion blurred?",
@@ -119,7 +122,7 @@ class MainStage extends PrimaryStage with TriPaintView {
     getValueFromCustomDialog[(Color, Color)](
       title = "Fill images randomly",
       headerText = "Which color-range should be used?",
-      graphic = DialogUtils.makeImagePreviewList(images),
+      graphic = DialogUtils.makeImagePreviewList(images, controls.imagePool),
 
       content = Seq(makeGridPane(Seq(
         Seq(new Label("Minimum color:"), loColorPicker),
@@ -147,7 +150,7 @@ class MainStage extends PrimaryStage with TriPaintView {
     val alert = new Alert(AlertType.Confirmation)
     alert.title = "Save before closing?"
     alert.headerText = "Do you want to save " + (if (images.size == 1) "this image" else "these images") + " before closing the tab?"
-    alert.graphic = DialogUtils.makeImagePreviewList(images)
+    alert.graphic = DialogUtils.makeImagePreviewList(images, controls.imagePool)
 
     alert.buttonTypes = Seq(
       new ButtonType("Save", ButtonData.Yes),
@@ -159,5 +162,21 @@ class MainStage extends PrimaryStage with TriPaintView {
 
   override def askForOffset(): Option[(Int, Int)] = {
     DialogUtils.askForOffset()
+  }
+
+  override def shouldReplaceImage(currentImage: ImageStorage, newImage: ImageStorage, location: SaveLocation): Option[Boolean] = {
+    val tri1 = controls.imageGrid.images.find(_.storage == newImage).orNull
+    val tri2 = controls.imageGrid.images.find(_.storage == currentImage).orNull
+    val alert = new Alert(AlertType.Confirmation)
+    alert.title = "Collision"
+    alert.headerText = "The image already exists on the screen. Which one should be used?"
+    alert.graphic = DialogUtils.makeImagePreviewList(Seq(tri1, tri2), controls.imagePool)
+
+    alert.buttonTypes = Seq(
+      new ButtonType("Left", ButtonData.Yes),
+      new ButtonType("Right", ButtonData.No),
+      new ButtonType("Cancel", ButtonData.CancelClose)
+    )
+    alert.showAndWait().map(_.buttonData == ButtonData.Yes)
   }
 }

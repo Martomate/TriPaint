@@ -3,9 +3,10 @@ package com.martomate.tripaint
 import java.io.File
 
 import com.martomate.tripaint.image.TriImage
+import com.martomate.tripaint.image.storage.ImageSaveCollisionHandler
 import scalafx.scene.paint.Color
 
-trait TriPaintView {
+trait TriPaintView extends ImageSaveCollisionHandler {
   def imageDisplay: ImagePane
 
   def askSaveBeforeClosing(images: Seq[TriImage]): Option[Boolean]
