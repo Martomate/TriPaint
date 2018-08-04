@@ -21,9 +21,9 @@ class ImageSaverToFile(format: StorageFormat) extends ImageSaver {
 
     val bufImage: BufferedImage = oldImage
       .map(im => resizeImageIfNeeded(im, offset, image.imageSize))
-      .getOrElse(makeNewImage(image.imageSize, image.imageSize))
+      .getOrElse(makeNewImage(image.imageSize + offset._1, image.imageSize + offset._2))
 
-    writeImage(bufImage, image, format)
+    writeImage(bufImage, image, offset, format)
     writeImageToFile(bufImage, file)
   }
 
@@ -55,13 +55,13 @@ class ImageSaverToFile(format: StorageFormat) extends ImageSaver {
     (col.blue    * 255).toInt
   }
 
-  private def writeImage(dest: BufferedImage, source: ImageStorage, format: StorageFormat): Unit = {
+  private def writeImage(dest: BufferedImage, source: ImageStorage, offset: (Int, Int), format: StorageFormat): Unit = {
     for (y <- 0 until source.imageSize) {
       for (x <- 0 until 2 * y + 1) {
         val tCoords = TriangleCoords(x, y)
         val sCoords = format.transformToStorage(tCoords)
 
-        dest.setRGB(sCoords.x, sCoords.y, colorToInt(source(tCoords)))
+        dest.setRGB(sCoords.x + offset._1, sCoords.y + offset._2, colorToInt(source(tCoords)))
       }
     }
   }

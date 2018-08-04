@@ -9,6 +9,7 @@ import scalafx.scene.paint.Color
 trait TriPaintView extends ImageSaveCollisionHandler {
   def imageDisplay: ImagePane
 
+  def askForImageSize(): Option[Int]
   def askSaveBeforeClosing(images: Seq[TriImage]): Option[Boolean]
   def askForWhereToPutImage(): Option[(Int, Int)]
   def askForSaveFile(image: TriImage): Option[File]

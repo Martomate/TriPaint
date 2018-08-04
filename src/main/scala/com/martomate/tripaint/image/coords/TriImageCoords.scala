@@ -2,14 +2,15 @@ package com.martomate.tripaint.image.coords
 
 case class TriImageCoords(x: Int, y: Int) {
   val vertices: Seq[(Double, Double)] = {
+    val xDiv2 = (x.toDouble / 2).floor
     val pts = if (x % 2 == 0) Seq(
-      (x / 2    , y),
-      (x / 2 + 1, y),
-      (x / 2    , y + 1)
+      (xDiv2    , y),
+      (xDiv2 + 1, y),
+      (xDiv2    , y + 1)
     ) else Seq(
-      (x / 2 + 1, y + 1),
-      (x / 2    , y + 1),
-      (x / 2 + 1, y)
+      (xDiv2 + 1, y + 1),
+      (xDiv2    , y + 1),
+      (xDiv2 + 1, y)
     )
     pts map {
       case (xx, yy) => (xx + yy * 0.5, -yy * Math.sqrt(3) / 2)

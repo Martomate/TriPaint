@@ -34,7 +34,7 @@ class TriImage private(val content: ImageContent, val imagePane: ImageGridView)
 
   content.changeTracker.addListener(this)
   children add canvas
-  if (content.coords.x % 2 == 1) canvas.rotate() += 180
+  if (content.coords.x % 2 != 0) canvas.rotate() += 180
   updateCanvasSize()
 
   private val indexMap = new IndexMap(canvas, zoom)
@@ -124,13 +124,13 @@ class TriImage private(val content: ImageContent, val imagePane: ImageGridView)
     storeNormalizedCoords(index, xx, yy)
   }
 
-  private def storeNormalizedCoords(index: Int, xx: Double, yy: Double) = {
+  private def storeNormalizedCoords(index: Int, xx: Double, yy: Double): Unit = {
     canvas.storeCoords(index, xx, yy)
     notifyListeners(_.canvas.storeCoords(index, xx, yy))
     storeCoordsInIndexMap(index, xx, yy)
   }
 
-  private def storeCoordsInIndexMap(index: Int, xx: Double, yy: Double) = {
+  private def storeCoordsInIndexMap(index: Int, xx: Double, yy: Double): Unit = {
     indexMap.storeCoords(index, xx, yy)
   }
 
@@ -156,7 +156,7 @@ class TriImage private(val content: ImageContent, val imagePane: ImageGridView)
   }
 
   override def onPixelChanged(coords: TriangleCoords, from: Color, to: Color): Unit = {
-    drawTriangle(coords, false)
+    drawTriangle(coords, doIndexMapping = false)
   }
 
   override def onImageReplaced(oldImage: ImageStorage, newImage: ImageStorage): Unit = redraw(false)

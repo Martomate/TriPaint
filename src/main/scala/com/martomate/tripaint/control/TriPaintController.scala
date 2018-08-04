@@ -17,7 +17,7 @@ import scalafx.scene.paint.Color
 import scala.util.{Failure, Success}
 
 class TriPaintController(view: TriPaintView) {
-  val imageGrid: ImageGrid = new ImageGridImplOld(32)
+  val imageGrid: ImageGrid = new ImageGridImplOld(view.askForImageSize().getOrElse(32))
   val imagePool: ImagePool = new ImagePoolImpl(ImageStorageImpl, view)
   val imageSaver: ImageSaver = new ImageSaverToFile(new SimpleStorageFormat)
 

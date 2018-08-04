@@ -181,4 +181,12 @@ class MainStage extends PrimaryStage with TriPaintView {
     )
     alert.showAndWait().map(_.buttonData == ButtonData.Yes)
   }
+
+  override def askForImageSize(): Option[Int] = {
+    val dialog = new TextInputDialog("32")
+    dialog.title = "Image Size"
+    dialog.headerText = "What should be the image size? (#rows)"
+    val sizeStr = dialog.showAndWait()
+    sizeStr.map(str => Try(str.toInt).toOption.filter(_ > 0).getOrElse(32))
+  }
 }
