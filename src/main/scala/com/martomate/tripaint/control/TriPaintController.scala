@@ -1,10 +1,16 @@
-package com.martomate.tripaint
+package com.martomate.tripaint.control
 
+import com.martomate.tripaint.image._
+import com.martomate.tripaint.image.coords.TriImageCoords
 import com.martomate.tripaint.image.effects._
 import com.martomate.tripaint.image.format.SimpleStorageFormat
+import com.martomate.tripaint.image.graphics.TriImage
+import com.martomate.tripaint.image.pool.{ImagePool, ImagePoolImpl}
 import com.martomate.tripaint.image.save.{ImageSaver, ImageSaverToFile}
 import com.martomate.tripaint.image.storage._
-import com.martomate.tripaint.image._
+import com.martomate.tripaint.TriPaintView
+import com.martomate.tripaint.image.content.{ImageChangeTracker, ImageContent}
+import com.martomate.tripaint.image.grid.{ImageGrid, ImageGridImplOld}
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.paint.Color
 
@@ -17,7 +23,7 @@ class TriPaintController(view: TriPaintView) {
 
   def addImage(newImage: TriImage): Unit = {
     if (newImage != null) {
-      imageGrid(newImage.coords) = newImage
+      imageGrid(newImage.content.coords) = newImage
 
       imageGrid.selectImage(newImage, replace = true)
     }
@@ -40,13 +46,13 @@ class TriPaintController(view: TriPaintView) {
     }
   }
 
-  def save(images: TriImage*): Boolean = images.filter(im => !imagePool.save(im.storage, imageSaver)).forall(im => imagePool.save(im.storage, imageSaver) || saveAs(im))
+  def save(images: TriImage*): Boolean = images.filter(im => !imagePool.save(im.content.storage, imageSaver)).forall(im => imagePool.save(im.content.storage, imageSaver) || saveAs(im))
 
   def saveAs(image: TriImage): Boolean = {
     view.askForSaveFile(image) match {
       case Some(file) =>
-        if (imagePool.move(image.storage, SaveLocation(file))) {
-          val saved = imagePool.save(image.storage, imageSaver)
+        if (imagePool.move(image.content.storage, SaveLocation(file))) {
+          val saved = imagePool.save(image.content.storage, imageSaver)
           if (!saved) println("Image could not be saved!!")
           saved
         } else false
@@ -59,8 +65,7 @@ class TriPaintController(view: TriPaintView) {
     view.askForWhereToPutImage() match {
       case Some((x, y)) =>
         addImage(TriImage(
-          TriImageCoords(x, y),
-          makeImageContent(imagePool.fromBGColor(new Color(view.imageDisplay.secondaryColor()), imageGrid.imageSize)),
+          makeImageContent(TriImageCoords(x, y), imagePool.fromBGColor(new Color(view.imageDisplay.secondaryColor()), imageGrid.imageSize)),
           view.imageDisplay
         ))
       case _ =>
@@ -92,7 +97,7 @@ class TriPaintController(view: TriPaintView) {
       imagePool.fromFile(SaveLocation(file, offset), imageSize) match {
         case Success(storage) =>
           view.askForWhereToPutImage() foreach { coords =>
-            val image = TriImage.apply(TriImageCoords(coords._1, coords._2), makeImageContent(storage), view.imageDisplay)
+            val image = TriImage.apply(makeImageContent(TriImageCoords(coords._1, coords._2), storage), view.imageDisplay)
             addImage(image)
           }
         case Failure(exc) =>
@@ -101,8 +106,8 @@ class TriPaintController(view: TriPaintView) {
     }
   }
 
-  private def makeImageContent(storage: ImageStorage) = {
-    new ImageContent(new ImageChangeTracker(storage, imagePool, imageSaver))
+  private def makeImageContent(coords: TriImageCoords, storage: ImageStorage) = {
+    new ImageContent(coords, new ImageChangeTracker(storage, imagePool, imageSaver))
   }
 
   val Save: MenuBarAction = MenuBarAction.apply("Save", "save", new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown)) {

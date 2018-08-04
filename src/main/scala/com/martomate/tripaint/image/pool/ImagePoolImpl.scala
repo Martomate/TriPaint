@@ -1,6 +1,7 @@
-package com.martomate.tripaint.image.storage
+package com.martomate.tripaint.image.pool
 
 import com.martomate.tripaint.image.SaveLocation
+import com.martomate.tripaint.image.storage.{ImageStorage, ImageStorageFactory}
 import com.martomate.tripaint.{InjectiveHashMap, InjectiveMap}
 
 class ImagePoolImpl(factory: ImageStorageFactory, handler: ImageSaveCollisionHandler) extends ImagePool(factory, handler) {

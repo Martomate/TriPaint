@@ -1,7 +1,7 @@
 package com.martomate.tripaint.gui
 
-import com.martomate.tripaint.image.TriImage
-import com.martomate.tripaint.image.storage.ImagePool
+import com.martomate.tripaint.image.graphics.TriImage
+import com.martomate.tripaint.image.pool.ImagePool
 import scalafx.application.Platform
 import scalafx.beans.property.StringProperty
 import scalafx.scene.Node

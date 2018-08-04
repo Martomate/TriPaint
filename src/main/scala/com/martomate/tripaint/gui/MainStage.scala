@@ -3,7 +3,9 @@ package com.martomate.tripaint.gui
 import java.io.File
 
 import com.martomate.tripaint._
-import com.martomate.tripaint.image.{SaveLocation, TriImage}
+import com.martomate.tripaint.control.TriPaintController
+import com.martomate.tripaint.image.SaveLocation
+import com.martomate.tripaint.image.graphics.{ImagePane, TriImage}
 import com.martomate.tripaint.image.storage.ImageStorage
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.scene.Scene
@@ -165,8 +167,8 @@ class MainStage extends PrimaryStage with TriPaintView {
   }
 
   override def shouldReplaceImage(currentImage: ImageStorage, newImage: ImageStorage, location: SaveLocation): Option[Boolean] = {
-    val tri1 = controls.imageGrid.images.find(_.storage == newImage).orNull
-    val tri2 = controls.imageGrid.images.find(_.storage == currentImage).orNull
+    val tri1 = controls.imageGrid.images.find(_.content.storage == newImage).orNull
+    val tri2 = controls.imageGrid.images.find(_.content.storage == currentImage).orNull
     val alert = new Alert(AlertType.Confirmation)
     alert.title = "Collision"
     alert.headerText = "The image already exists on the screen. Which one should be used?"

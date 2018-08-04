@@ -1,6 +1,6 @@
 package com.martomate.tripaint.gui
 
-import com.martomate.tripaint.TriPaintController
+import com.martomate.tripaint.control.TriPaintController
 import scalafx.scene.control.{Separator, ToolBar}
 
 class TheToolBar(controls: TriPaintController) extends ToolBar {

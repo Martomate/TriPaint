@@ -1,9 +1,11 @@
-package com.martomate.tripaint.image.storage
+package com.martomate.tripaint.image.content
 
 import com.martomate.tripaint.Listenable
 import com.martomate.tripaint.image.SaveLocation
 import com.martomate.tripaint.image.coords.TriangleCoords
+import com.martomate.tripaint.image.pool.{ImagePool, ImagePoolListener}
 import com.martomate.tripaint.image.save.ImageSaver
+import com.martomate.tripaint.image.storage.{ImageStorage, ImageStorageListener}
 import scalafx.beans.property.{ReadOnlyBooleanProperty, ReadOnlyBooleanWrapper}
 import scalafx.scene.paint.Color
 
@@ -37,8 +39,4 @@ class ImageChangeTracker(init_image: ImageStorage, pool: ImagePool, saver: Image
     _changed.value = true
     notifyListeners(_.onPixelChanged(coords, from, to))
   }
-}
-
-trait ImageChangeListener extends ImageStorageListener {
-  def onImageReplaced(oldImage: ImageStorage, newImage: ImageStorage): Unit
 }

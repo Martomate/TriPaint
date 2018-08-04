@@ -1,7 +1,8 @@
 package com.martomate.tripaint.gui
 
-import com.martomate.tripaint.TriPaintController
-import com.martomate.tripaint.image.{ImageGridListener, TriImage}
+import com.martomate.tripaint.control.TriPaintController
+import com.martomate.tripaint.image.graphics.TriImage
+import com.martomate.tripaint.image.grid.ImageGridListener
 import scalafx.scene.layout.TilePane
 
 import scala.collection.mutable

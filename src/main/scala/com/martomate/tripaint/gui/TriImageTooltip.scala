@@ -1,6 +1,7 @@
 package com.martomate.tripaint.gui
 
-import com.martomate.tripaint.image.storage.{ImageContent, ImagePool}
+import com.martomate.tripaint.image.content.ImageContent
+import com.martomate.tripaint.image.pool.ImagePool
 import scalafx.scene.control.Tooltip
 
 class TriImageTooltip(content: ImageContent, imagePool: ImagePool) extends Tooltip {

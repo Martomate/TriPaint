@@ -1,6 +1,8 @@
-package com.martomate.tripaint
+package com.martomate.tripaint.image.graphics
 
-import com.martomate.tripaint.image._
+import com.martomate.tripaint.EditMode
+import com.martomate.tripaint.image.coords.PixelCoords
+import com.martomate.tripaint.image.grid.{ImageGrid, ImageGridListener, ImageGridSearcher}
 import javafx.scene.input.{MouseButton, MouseEvent}
 import javafx.scene.paint
 import javafx.scene.shape.Rectangle
@@ -8,9 +10,9 @@ import scalafx.beans.property.ObjectProperty
 import scalafx.scene.layout.Pane
 import scalafx.scene.paint.Color
 
-class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridListener {
+class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with ImageGridListener {
   private val (_primaryColor, _secondaryColor) = (ObjectProperty(Color.Black), ObjectProperty(Color.White))
-  private var _globalZoom = 1d
+  private var _zoom = 1d
   private var _xScroll: Double = 0
   private var _yScroll: Double = 0
 
@@ -21,10 +23,10 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridListener {
   private def images: Seq[TriImage] = imageGrid.images
   def imageSize: Int = imageGrid.imageSize
 
-  def globalZoom: Double = _globalZoom
+  def zoom: Double = _zoom
   def xScroll: Double = _xScroll
   def yScroll: Double = _yScroll
-  def sideLength: Double = (imageGrid.imageSize * 2 + 1) * globalZoom
+  def sideLength: Double = (imageGrid.imageSize * 2 + 1) * zoom
 
   private object drag {
     var x: Double = -1
@@ -52,17 +54,17 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridListener {
           if (true) {
             val xDiff = xPos - drag.x
             val yDiff = yPos - drag.y
-            val dist = Math.hypot(xDiff, yDiff) / globalZoom
+            val dist = Math.hypot(xDiff, yDiff) / zoom
 
             val steps = 4 * dist.toInt + 1
             //		println(s"$steps\t$dist")
             for (i <- 1 to steps) {
               val xx = e.getSceneX + xDiff / steps * (i - steps)
               val yy = e.getSceneY + yDiff / steps * (i - steps)
-              imageAt(xx, yy).filter(_.editable) match {
+              imageAt(xx, yy).filter(_.content.editable) match {
                 case Some(image) =>
                   val internalCoords = image.coordsAt(xx, yy)
-                  mousePressedAt(PixelCoords(internalCoords, image.coords), e, dragged = true)
+                  mousePressedAt(PixelCoords(internalCoords, image.content.coords), e, dragged = true)
                 case _ =>
               }
             }
@@ -76,9 +78,9 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridListener {
     if (!e.isConsumed) {
       drag.x = e.getX
       drag.y = e.getY
-      imageAt(e.getSceneX, e.getSceneY).filter(_.editable) foreach { image =>
+      imageAt(e.getSceneX, e.getSceneY).filter(_.content.editable) foreach { image =>
         val internalCoords = image.coordsAt(e.getSceneX, e.getSceneY)
-        mousePressedAt(PixelCoords(internalCoords, image.coords), e, dragged = false)
+        mousePressedAt(PixelCoords(internalCoords, image.content.coords), e, dragged = false)
       }
     }
   }
@@ -88,7 +90,7 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridListener {
 
     if (e.isControlDown) {
       val factor = Math.exp(e.getDeltaY * 0.01)
-      _globalZoom *= factor
+      _zoom *= factor
       setScroll(xScroll * factor, yScroll * factor)
     } else {
       setScroll(xScroll + dx, yScroll + dy)
@@ -111,7 +113,7 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridListener {
           case EditMode.Fill =>
               fill(coords, new Color(color()))
           case EditMode.PickColor =>
-              color() = image.storage(coords.pix)
+              color() = image.content.storage(coords.pix)
           case _ =>
         }
       }
@@ -126,7 +128,7 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridListener {
 
   def fill(coords: PixelCoords, color: Color): Unit = {
     imageGrid(coords.image) foreach { image =>
-      val referenceColor = image.storage(coords.pix)
+      val referenceColor = image.content.storage(coords.pix)
       val places = gridSearcher.search(coords, (_, col) => col == referenceColor)
       places.foreach(p => imageGrid(p.image).foreach(_.drawAtCoords(p.pix, color)))
     }

@@ -1,4 +1,4 @@
-package com.martomate.tripaint.image
+package com.martomate.tripaint.image.coords
 
 case class TriImageCoords(x: Int, y: Int) {
   val vertices: Seq[(Double, Double)] = {
