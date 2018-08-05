@@ -1,4 +1,4 @@
-package com.martomate.tripaint
+package com.martomate.tripaint.gui
 
 import java.io.File
 

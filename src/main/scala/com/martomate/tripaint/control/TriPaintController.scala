@@ -1,5 +1,6 @@
 package com.martomate.tripaint.control
 
+import com.martomate.tripaint.gui.TriPaintView
 import com.martomate.tripaint.image._
 import com.martomate.tripaint.image.coords.TriImageCoords
 import com.martomate.tripaint.image.effects._
@@ -8,7 +9,6 @@ import com.martomate.tripaint.image.graphics.TriImage
 import com.martomate.tripaint.image.pool.{ImagePool, ImagePoolImpl}
 import com.martomate.tripaint.image.save.{ImageSaver, ImageSaverToFile}
 import com.martomate.tripaint.image.storage._
-import com.martomate.tripaint.TriPaintView
 import com.martomate.tripaint.image.content.{ImageChangeTracker, ImageContent}
 import com.martomate.tripaint.image.grid.{ImageGrid, ImageGridImplOld}
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
@@ -24,8 +24,6 @@ class TriPaintController(view: TriPaintView) {
   def addImage(newImage: TriImage): Unit = {
     if (newImage != null) {
       imageGrid(newImage.content.coords) = newImage
-
-      imageGrid.selectImage(newImage, replace = true)
     }
   }
 

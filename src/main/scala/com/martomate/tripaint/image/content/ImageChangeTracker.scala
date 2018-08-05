@@ -20,6 +20,8 @@ class ImageChangeTracker(init_image: ImageStorage, pool: ImagePool, saver: Image
   def changed: Boolean = _changed.value
   def changedProperty: ReadOnlyBooleanProperty = _changed.readOnlyProperty
 
+  def tellListenersAboutBigChange(): Unit = notifyListeners(_.onImageChangedALot())
+
   def onImageSaved(image: ImageStorage, saver: ImageSaver): Unit = {
     if (image == this.image && saver == this.saver) {
       _changed.value = false
@@ -31,7 +33,7 @@ class ImageChangeTracker(init_image: ImageStorage, pool: ImagePool, saver: Image
       image.removeListener(this)
       _image = newImage
       image.addListener(this)
-      notifyListeners(_.onImageReplaced(oldImage, newImage))
+      notifyListeners(_.onImageChangedALot())
     }
   }
 

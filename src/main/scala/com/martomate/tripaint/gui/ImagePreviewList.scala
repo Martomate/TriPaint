@@ -1,6 +1,6 @@
 package com.martomate.tripaint.gui
 
-import com.martomate.tripaint.image.graphics.{TriImage, TriImagePreview}
+import com.martomate.tripaint.image.graphics.{TriImage, TriImageForPreview}
 import com.martomate.tripaint.image.pool.ImagePool
 import scalafx.scene.SnapshotParameters
 import scalafx.scene.control.{ScrollPane, Tooltip}
@@ -12,16 +12,16 @@ class ImagePreviewList(images: Seq[TriImage], previewSize: Int, imagePool: Image
   private val snapshotParams = new SnapshotParameters
   snapshotParams.fill = Color.Transparent
 
-  private val imageViews = images.map(im => makeImageView(new TriImagePreview(previewSize, im)))
+  private val imageViews = images.map(im => makeImageView(new TriImageForPreview(im.content, previewSize)))
 
   maxWidth = previewSize * 5
   content = new HBox(children = imageViews: _*)
   minViewportHeight = previewSize * Math.sqrt(3) / 2
 
-  private def makeImageView(preview: TriImagePreview): ImageView = {
+  private def makeImageView(preview: TriImageForPreview): ImageView = {
     val view = new ImageView
     view.image = preview.toImage(snapshotParams)
-    Tooltip.install(view, new TriImageTooltip(preview.image.content, imagePool))
+    Tooltip.install(view, new TriImageTooltip(preview.content, imagePool))
     view
   }
 }

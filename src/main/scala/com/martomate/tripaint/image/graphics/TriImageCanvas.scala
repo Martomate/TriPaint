@@ -11,7 +11,7 @@ class TriImageCanvas(init_width: Double) extends Canvas(init_width, init_width *
 
   def clearCanvas(): Unit = graphicsContext2D.clearRect(0, 0, width(), height())
 
-  def storeCoords(index: Int, xx: Double, yy: Double): Unit = {
+  def storeNormalizedCoords(index: Int, xx: Double, yy: Double): Unit = {
     points.x(index) = xx * width()
     points.y(index) = yy * height()
   }

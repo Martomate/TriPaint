@@ -1,12 +1,13 @@
 package com.martomate.tripaint.image.graphics
 
-import com.martomate.tripaint.Listenable
 import com.martomate.tripaint.image.content.{ImageChangeListener, ImageContent}
 import com.martomate.tripaint.image.coords.TriangleCoords
 import com.martomate.tripaint.image.effects.Effect
 import com.martomate.tripaint.image.storage._
 import com.martomate.tripaint.undo.UndoManager
 import scalafx.beans.property._
+import scalafx.scene.SnapshotParameters
+import scalafx.scene.image.Image
 import scalafx.scene.layout.Pane
 import scalafx.scene.paint.Color
 
@@ -16,10 +17,7 @@ object TriImage {
   def apply(content: ImageContent, imagePane: ImageGridView) = new TriImage(content, imagePane)
 }
 
-class TriImage private(val content: ImageContent, val imagePane: ImageGridView)
-  extends Pane
-    with ImageChangeListener
-    with Listenable[TriImageView] {
+class TriImage private(val content: ImageContent, val imagePane: ImageGridView) extends Pane with ITriImage {
 
   private def panX = content.coords.xOff * imagePane.sideLength
   private def panY = content.coords.yOff * imagePane.sideLength
@@ -76,6 +74,8 @@ class TriImage private(val content: ImageContent, val imagePane: ImageGridView)
     indexMap.coordsAt(pt.getX, pt.getY)
   }
 
+  override protected def drawTriangle(coords: TriangleCoords): Unit = drawTriangle(coords, doIndexMapping = false)
+
   private[image] def drawTriangle(coords: TriangleCoords, doIndexMapping: Boolean, strokeInstead: Boolean = false): Unit = {
     val yp = coords.y
     val xp = coords.x * 0.5 - (yp - storage.imageSize + 1) * 0.5
@@ -83,14 +83,14 @@ class TriImage private(val content: ImageContent, val imagePane: ImageGridView)
     storeAllCoords(xp, yp, coords.x % 2 == 1)
 
     canvas.drawTriangle(storage(coords), strokeInstead)
-    notifyListeners(_.canvas.drawTriangle(storage(coords), strokeInstead))
 
     if (doIndexMapping) indexMap.performIndexMapping(coords)
   }
 
+  override def redraw(): Unit = redraw(false)
+
   def redraw(doIndexMapping: Boolean): Unit = {
     canvas.clearCanvas()
-    notifyListeners(_.canvas.clearCanvas())
 
     for (y <- 0 until storage.imageSize) {
       for (x <- 0 until y * 2 + 1) {
@@ -125,8 +125,7 @@ class TriImage private(val content: ImageContent, val imagePane: ImageGridView)
   }
 
   private def storeNormalizedCoords(index: Int, xx: Double, yy: Double): Unit = {
-    canvas.storeCoords(index, xx, yy)
-    notifyListeners(_.canvas.storeCoords(index, xx, yy))
+    canvas.storeNormalizedCoords(index, xx, yy)
     storeCoordsInIndexMap(index, xx, yy)
   }
 
@@ -142,7 +141,7 @@ class TriImage private(val content: ImageContent, val imagePane: ImageGridView)
   private def updateAfterDraw(): Unit = {
 //    undoManager.append(storage.cumulativeChange.done(EditMode.currentMode.tooltipText, this))
     // TODO: reintroduce the undo manager stuff somewhere else
-    redraw(false)
+    content.changeTracker.tellListenersAboutBigChange()
   }
 
   def applyEffect(effect: Effect): Unit = {
@@ -154,10 +153,4 @@ class TriImage private(val content: ImageContent, val imagePane: ImageGridView)
   private def updateLocation(): Unit = {
     canvas.updateLocation(panX, panY)
   }
-
-  override def onPixelChanged(coords: TriangleCoords, from: Color, to: Color): Unit = {
-    drawTriangle(coords, doIndexMapping = false)
-  }
-
-  override def onImageReplaced(oldImage: ImageStorage, newImage: ImageStorage): Unit = redraw(false)
 }

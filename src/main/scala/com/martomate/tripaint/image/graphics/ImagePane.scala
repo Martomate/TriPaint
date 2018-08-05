@@ -169,8 +169,6 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
 
     if (index != -1) {
       children.remove(index)
-      if (imageGrid.selectedImages.isEmpty && images.nonEmpty)
-        imageGrid.selectImage(images.last, false)
     }
   }
 }

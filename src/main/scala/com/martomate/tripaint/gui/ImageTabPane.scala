@@ -1,14 +1,14 @@
 package com.martomate.tripaint.gui
 
 import com.martomate.tripaint.control.TriPaintController
-import com.martomate.tripaint.image.graphics.{TriImage, TriImagePreview}
+import com.martomate.tripaint.image.graphics.{TriImage, TriImageForPreview}
 import scalafx.geometry.Pos
 import scalafx.scene.control.{Button, ToggleButton}
 import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout.StackPane
 
 class ImageTabPane(val image: TriImage, control: TriPaintController) extends StackPane {
-  private val preview = new TriImagePreview(TriImage.previewSize, image)
+  private val preview = new TriImageForPreview(image.content, TriImage.previewSize)
 
   private val closeButton = new Button {
     text = "X"
@@ -34,10 +34,6 @@ class ImageTabPane(val image: TriImage, control: TriPaintController) extends Sta
     this.graphic = preview
     this.tooltip = new TriImageTooltip(image.content, control.imagePool)
     this.selected <==> image.content.editableProperty
-
-    this.onMouseClicked = e => {
-      control.imageGrid.selectImage(image, !e.isControlDown)
-    }
   }
 
   private val starView: ImageView = makeStarView()
