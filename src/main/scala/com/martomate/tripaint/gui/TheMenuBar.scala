@@ -13,7 +13,6 @@ class TheMenuBar(controls: TriPaintController) extends MenuBar {
 
   private val menu_file = makeMenu("File",
     controls.New.menuItem,
-    controls.NewComp.menuItem,
     controls.Open.menuItem,
     new SeparatorMenuItem,
     controls.Save.menuItem,

@@ -1,13 +1,11 @@
 package com.martomate.tripaint.image.graphics
 
-import com.martomate.tripaint.image.content.{ImageChangeListener, ImageContent}
+import com.martomate.tripaint.image.content.ImageContent
 import com.martomate.tripaint.image.coords.TriangleCoords
 import com.martomate.tripaint.image.effects.Effect
 import com.martomate.tripaint.image.storage._
 import com.martomate.tripaint.undo.UndoManager
 import scalafx.beans.property._
-import scalafx.scene.SnapshotParameters
-import scalafx.scene.image.Image
 import scalafx.scene.layout.Pane
 import scalafx.scene.paint.Color
 
@@ -39,10 +37,6 @@ class TriImage private(val content: ImageContent, val imagePane: ImageGridView) 
 
   redraw(true)
 
-  private val undoManager = new UndoManager
-  def undo: Boolean = undoManager.undo
-  def redo: Boolean = undoManager.redo
-
   onMouseReleased = e => {
     if (!e.isConsumed) {
       //if (isSelected)
@@ -61,9 +55,7 @@ class TriImage private(val content: ImageContent, val imagePane: ImageGridView) 
     }
   }
 
-  def drawAt(coords: TriangleCoords, color: Color): Unit = drawAtCoords(coords, color)
-
-  def drawAtCoords(coords: TriangleCoords, color: Color): Unit = {
+  def drawAt(coords: TriangleCoords, color: Color): Unit = {
     if (storage.contains(coords)) {
       storage(coords) = color
     } else println("outside!!")
@@ -92,16 +84,12 @@ class TriImage private(val content: ImageContent, val imagePane: ImageGridView) 
   def redraw(doIndexMapping: Boolean): Unit = {
     canvas.clearCanvas()
 
-    for (y <- 0 until storage.imageSize) {
-      for (x <- 0 until y * 2 + 1) {
-        drawTriangle(TriangleCoords(x, y), doIndexMapping, strokeInstead = true)
-      }
+    for (c <- storage.allPixels) {
+      drawTriangle(c, doIndexMapping, strokeInstead = true)
     }
 
-    for (y <- 0 until storage.imageSize) {
-      for (x <- 0 until y * 2 + 1) {
-        drawTriangle(TriangleCoords(x, y), doIndexMapping)
-      }
+    for (c <- storage.allPixels) {
+      drawTriangle(c, doIndexMapping)
     }
   }
 

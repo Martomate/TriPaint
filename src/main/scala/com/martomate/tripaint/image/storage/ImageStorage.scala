@@ -23,7 +23,7 @@ trait ImageStorage extends Listenable[ImageStorageListener] {
 
   def allPixels: IndexedSeq[TriangleCoords] = for {
     y <- 0 until imageSize
-    x <- 0 until imageSize
+    x <- 0 until 2 * y + 1
   } yield TriangleCoords(x, y)
 }
 

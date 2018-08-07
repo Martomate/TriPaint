@@ -70,23 +70,6 @@ class TriPaintController(view: TriPaintView) {
     }
   }
 
-  val NewComp: MenuBarAction = MenuBarAction.apply("New composition", accelerator = new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown, KeyCombination.ShiftDown)) {
-/*    val dialog = new TextInputDialog
-    dialog.title = "New image composition"
-    dialog.headerText = "Please enter number of images."
-    dialog.contentText = "Number of images:"
-    DialogUtils.restrictTextField(dialog.editor, DialogUtils.uintRestriction)
-
-    dialog.showAndWait.foreach { result =>
-      try {
-        val num = result.toInt
-
-      } catch {
-        case _: Exception =>
-      }
-    }*/
-  }
-
   val Open: MenuBarAction = MenuBarAction.apply("Open", "open", new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)) {
     view.askForFileToOpen() foreach { file =>
       val imageSize = imageGrid.imageSize

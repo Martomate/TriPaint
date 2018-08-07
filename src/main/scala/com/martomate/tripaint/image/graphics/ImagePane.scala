@@ -3,6 +3,7 @@ package com.martomate.tripaint.image.graphics
 import com.martomate.tripaint.EditMode
 import com.martomate.tripaint.image.coords.PixelCoords
 import com.martomate.tripaint.image.grid.{ImageGrid, ImageGridListener, ImageGridSearcher}
+import com.martomate.tripaint.undo.UndoManager
 import javafx.scene.input.{MouseButton, MouseEvent}
 import javafx.scene.paint
 import javafx.scene.shape.Rectangle
@@ -130,7 +131,7 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
     imageGrid(coords.image) foreach { image =>
       val referenceColor = image.content.storage(coords.pix)
       val places = gridSearcher.search(coords, (_, col) => col == referenceColor)
-      places.foreach(p => imageGrid(p.image).foreach(_.drawAtCoords(p.pix, color)))
+      places.foreach(p => imageGrid(p.image).foreach(_.drawAt(p.pix, color)))
     }
   }
 
@@ -140,8 +141,9 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
   def secondaryColor: ObjectProperty[paint.Color] = _secondaryColor
   def secondaryColor_=(col: Color): Unit = secondaryColor.value = col
 
-  def undo: Boolean = imageGrid.selectedImages.forall(_.undo)
-  def redo: Boolean = imageGrid.selectedImages.forall(_.redo)
+  private val undoManager = new UndoManager
+  def undo: Boolean = undoManager.undo
+  def redo: Boolean = undoManager.redo
 
   this.width  onChange updateSize
   this.height onChange updateSize
