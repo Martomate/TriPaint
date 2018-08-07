@@ -11,10 +11,14 @@ import scalafx.scene.layout.Pane
 import scalafx.scene.paint.Color
 
 class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with ImageGridListener {
-  private val (_primaryColor, _secondaryColor) = (ObjectProperty(Color.Black), ObjectProperty(Color.White))
   private var _zoom = 1d
+  def zoom: Double = _zoom
+
   private var _xScroll: Double = 0
+  def xScroll: Double = _xScroll
+
   private var _yScroll: Double = 0
+  def yScroll: Double = _yScroll
 
   private val gridSearcher: ImageGridSearcher = new ImageGridSearcher(imageGrid)
 
@@ -23,9 +27,6 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
   private def images: Seq[TriImage] = imageGrid.images
   def imageSize: Int = imageGrid.imageSize
 
-  def zoom: Double = _zoom
-  def xScroll: Double = _xScroll
-  def yScroll: Double = _yScroll
   def sideLength: Double = (imageGrid.imageSize * 2 + 1) * zoom
 
   private object drag {
@@ -120,8 +121,8 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
     }
 
     def primaryOrSecondaryColor: Option[ObjectProperty[paint.Color]] = e.getButton match {
-      case MouseButton.PRIMARY => Some(primaryColor)
-      case MouseButton.SECONDARY => Some(secondaryColor)
+      case MouseButton.PRIMARY => Some(colors.primaryColor)
+      case MouseButton.SECONDARY => Some(colors.secondaryColor)
       case _ => None
     }
   }
@@ -134,11 +135,13 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
     }
   }
 
-  def primaryColor: ObjectProperty[paint.Color] = _primaryColor
-  def primaryColor_=(col: Color): Unit = primaryColor.value = col
+  object colors {
+    val primaryColor: ObjectProperty[paint.Color] = ObjectProperty(Color.Black)
+    def primaryColor_=(col: Color): Unit = primaryColor.value = col
 
-  def secondaryColor: ObjectProperty[paint.Color] = _secondaryColor
-  def secondaryColor_=(col: Color): Unit = secondaryColor.value = col
+    val secondaryColor: ObjectProperty[paint.Color] = ObjectProperty(Color.White)
+    def secondaryColor_=(col: Color): Unit = secondaryColor.value = col
+  }
 
   def undo: Boolean = imageGrid.selectedImages.forall(_.undo)
   def redo: Boolean = imageGrid.selectedImages.forall(_.redo)
@@ -146,16 +149,16 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
   this.width  onChange updateSize
   this.height onChange updateSize
 
-  def updateSize(): Unit = {
+  private def updateSize(): Unit = {
     this.clip() = new Rectangle(0, 0, width(), height())
     relocateChildren()
   }
 
-  def relocateChildren(): Unit = {
+  private def relocateChildren(): Unit = {
     images.foreach(relocateImage)
   }
 
-  def relocateImage(image: TriImage): Unit = {
+  private def relocateImage(image: TriImage): Unit = {
     image.relocate(width() / 2 + xScroll, height() / 2 + yScroll)
   }
 
