@@ -61,11 +61,11 @@ class MainStage extends PrimaryStage with TriPaintView {
 
   private def makeColorBox() = {
     //overlay and imageDisplay
-    val colorPicker1 = new ColorPicker(new Color(imageDisplay.primaryColor()))
-    val colorPicker2 = new ColorPicker(new Color(imageDisplay.secondaryColor()))
+    val colorPicker1 = new ColorPicker(new Color(imageDisplay.colors.primaryColor()))
+    val colorPicker2 = new ColorPicker(new Color(imageDisplay.colors.secondaryColor()))
 
-    imageDisplay.primaryColor <==> colorPicker1.value
-    imageDisplay.secondaryColor <==> colorPicker2.value
+    imageDisplay.colors.primaryColor <==> colorPicker1.value
+    imageDisplay.colors.secondaryColor <==> colorPicker2.value
 
     new VBox(
       new Label("Primary color:"),

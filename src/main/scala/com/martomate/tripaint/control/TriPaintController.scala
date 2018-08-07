@@ -63,7 +63,7 @@ class TriPaintController(view: TriPaintView) {
     view.askForWhereToPutImage() match {
       case Some((x, y)) =>
         addImage(TriImage(
-          makeImageContent(TriImageCoords(x, y), imagePool.fromBGColor(new Color(view.imageDisplay.secondaryColor()), imageGrid.imageSize)),
+          makeImageContent(TriImageCoords(x, y), imagePool.fromBGColor(new Color(view.imageDisplay.colors.secondaryColor()), imageGrid.imageSize)),
           view.imageDisplay
         ))
       case _ =>
