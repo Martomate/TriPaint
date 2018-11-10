@@ -1,6 +1,6 @@
 package com.martomate.tripaint.image.graphics
 
-class TriImageActualCanvas(init_width: Double) extends TriImageCanvas(init_width) {
+class TriImageActualCanvas(init_width: Double, _imageSize: Int) extends TriImageCanvas(init_width, _imageSize) {
   def updateLocation(panX: Double, panY: Double): Unit = {
     // adjustment caused by canvas center not being the wanted rotation center (i.e. the centroid)
     val adjLen = height() / 6

@@ -5,14 +5,17 @@ import java.awt.image.BufferedImage
 import com.martomate.tripaint.image.coords.TriangleCoords
 import scalafx.scene.canvas.Canvas
 
-class IndexMap(canvas: Canvas, init_zoom: Double) extends IndexMapper {
-  val xInt:  Array[Int] = new Array(3)
-  val yInt:  Array[Int] = new Array(3)
-  val image: BufferedImage = new BufferedImage(
+class IndexMap(canvas: Canvas, init_zoom: Double, imageSize: Int) extends IndexMapper {
+  private val image: BufferedImage = new BufferedImage(
     Math.ceil(canvas.width()  / init_zoom * 3).toInt,
     Math.ceil(canvas.height() / init_zoom * 3).toInt,
     BufferedImage.TYPE_INT_RGB
   )
+
+  private val coordsToRealConverter = new TriangleCoordsToReal[Int](imageSize, new Array(_), (xx, yy) => (
+    Math.round(xx * image.getWidth).toInt,
+    Math.round(yy * image.getHeight).toInt
+  ))
 
   def coordsAt(x: Double, y: Double): TriangleCoords = {
     val xx = (x / canvas.width()  * image.getWidth ).toInt
@@ -23,16 +26,13 @@ class IndexMap(canvas: Canvas, init_zoom: Double) extends IndexMapper {
     else null
   }
 
-  def performIndexMapping(coords: TriangleCoords): Unit = {
+  def drawTriangle(coords: TriangleCoords): Unit = {
+    val (xInt, yInt) = coordsToRealConverter.triangleCornerPoints(coords)
+
     val indexGraphics = image.getGraphics
     val indexColor = new java.awt.Color(coords.toInt + 1)
     indexGraphics.setColor(indexColor)
     indexGraphics.drawPolygon(xInt, yInt, 3)
     indexGraphics.fillPolygon(xInt, yInt, 3)
-  }
-
-  def storeCoords(index: Int, xx: Double, yy: Double): Unit = {
-    xInt(index) = Math.round(xx * image.getWidth).toInt
-    yInt(index) = Math.round(yy * image.getHeight).toInt
   }
 }
