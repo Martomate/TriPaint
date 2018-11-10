@@ -2,7 +2,7 @@ scalaVersion := "2.12.6"
 
 name := "TriPaint"
 organization := "com.martomate"
-version := "1.1-SNAPSHOT"
+version := "1.1"
 
 enablePlugins(LauncherJarPlugin)
 
