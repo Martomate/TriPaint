@@ -87,6 +87,38 @@ class TriPaintController(view: TriPaintView) {
     }
   }
 
+  val OpenHexagon: MenuBarAction = MenuBarAction.apply("Open hexagon") {
+    def coordOffset(idx: Int): (Int, Int) = {
+      idx match {
+        case 0 => (0, 0)
+        case 1 => (-1, 0)
+        case 2 => (-2, 0)
+        case 3 => (-1, -1)
+        case 4 => (0, -1)
+        case 5 => (1, -1)
+      }
+    }
+
+    view.askForFileToOpen() foreach { file =>
+      val imageSize = imageGrid.imageSize
+      val offset = view.askForOffset().getOrElse(0, 0)
+
+      view.askForWhereToPutImage() foreach { coords =>
+        for (idx <- 0 until 6) {
+          imagePool.fromFile(SaveLocation(file, (offset._1 + idx * imageSize, offset._2)), imageSize) match {
+            case Success(storage) =>
+              val off = coordOffset(idx)
+              val imageCoords = TriImageCoords(coords._1 + off._1, coords._2 + off._2)
+              val image = TriImage.apply(makeImageContent(imageCoords, storage), view.imageDisplay)
+              addImage(image)
+            case Failure(exc) =>
+              exc.printStackTrace()
+          }
+        }
+      }
+    }
+  }
+
   private def makeImageContent(coords: TriImageCoords, storage: ImageStorage) = {
     new ImageContent(coords, new ImageChangeTracker(storage, imagePool, imageSaver))
   }
