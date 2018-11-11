@@ -8,21 +8,21 @@ class UndoManager {
 
   def canUndo: Boolean = redoIndex > 0
 
-  def undo: Boolean = {
+  def undo(): Boolean = {
     if (canUndo) {
       redoIndex -= 1
-      println("Undo: " + changes(redoIndex).description)
-      changes(redoIndex).undo
+//      println("Undo: " + changes(redoIndex).description)
+      changes(redoIndex).undo()
     } else false
   }
 
   def canRedo: Boolean = redoIndex <= changes.size - 1
 
-  def redo: Boolean = {
+  def redo(): Boolean = {
     if (canRedo) {
       redoIndex += 1
-      println("Redo: " + changes(redoIndex - 1).description)
-      changes(redoIndex - 1).redo
+//      println("Redo: " + changes(redoIndex - 1).description)
+      changes(redoIndex - 1).redo()
     } else false
   }
 

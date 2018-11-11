@@ -1,9 +1,12 @@
 package com.martomate.tripaint.image.graphics
 
+import com.martomate.tripaint.image.{CumulativeImageChange, ImageChange}
 import com.martomate.tripaint.image.content.ImageContent
 import com.martomate.tripaint.image.coords.TriangleCoords
 import com.martomate.tripaint.image.effects.Effect
 import com.martomate.tripaint.image.storage._
+import com.martomate.tripaint.undo.UndoManager
+import javafx.scene.input.MouseEvent
 import scalafx.beans.property._
 import scalafx.scene.layout.Pane
 import scalafx.scene.paint.Color
@@ -36,10 +39,10 @@ class TriImage private(val content: ImageContent, val imagePane: ImageGridView) 
 
   redraw(true)
 
-  onMouseReleased = e => {
+  def onMouseReleased(e: MouseEvent): Unit = {
     if (!e.isConsumed) {
-      //if (isSelected)
-        updateAfterDraw()
+      finishCumulativeChange()
+      updateAfterDraw()
     }
   }
 
@@ -51,8 +54,17 @@ class TriImage private(val content: ImageContent, val imagePane: ImageGridView) 
     }
   }
 
+  private val undoManager = new UndoManager
+  def undo(): Unit = undoManager.undo()
+  def redo(): Unit = undoManager.redo()
+
+  private val cumulativeImageChange = new CumulativeImageChange
+  def finishCumulativeChange(): Unit =
+    undoManager.append(cumulativeImageChange.done("draw", this))
+
   def drawAt(coords: TriangleCoords, color: Color): Unit = {
     if (storage.contains(coords)) {
+      cumulativeImageChange.addChange(coords, storage(coords), color)
       storage(coords) = color
     } else println("outside!!")
   }
@@ -89,15 +101,15 @@ class TriImage private(val content: ImageContent, val imagePane: ImageGridView) 
     updateLocation()
   }
 
+  // TODO: move the undo manager stuff somewhere else
   private def updateAfterDraw(): Unit = {
-//    undoManager.append(storage.cumulativeChange.done(EditMode.currentMode.tooltipText, this))
-    // TODO: reintroduce the undo manager stuff somewhere else
     content.changeTracker.tellListenersAboutBigChange()
   }
 
   def applyEffect(effect: Effect): Unit = {
     effect.action(storage)
 
+    finishCumulativeChange()
     updateAfterDraw()
   }
 

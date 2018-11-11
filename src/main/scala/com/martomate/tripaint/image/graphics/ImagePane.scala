@@ -86,7 +86,7 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
       }
     }
   }
-  onMouseReleased = e => images.reverse.foreach(_.onMouseReleased.getValue.handle(e))
+  onMouseReleased = e => images.reverse.foreach(_.onMouseReleased(e))
   onScroll = e => {
     val (dx, dy) = (e.getDeltaX, e.getDeltaY)
 
@@ -144,9 +144,14 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
     def secondaryColor_=(col: Color): Unit = secondaryColor.value = col
   }
 
-  private val undoManager = new UndoManager
-  def undo: Boolean = undoManager.undo
-  def redo: Boolean = undoManager.redo
+  def undo: Boolean = {
+    images.foreach(_.undo())
+    true
+  }
+  def redo: Boolean = {
+    images.foreach(_.redo())
+    true
+  }
 
   this.width  onChange updateSize
   this.height onChange updateSize
