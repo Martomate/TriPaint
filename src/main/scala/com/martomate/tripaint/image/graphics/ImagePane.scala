@@ -97,7 +97,7 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
     } else {
       setScroll(xScroll + dx, yScroll + dy)
     }
-    images.reverse.foreach(_.onScroll.getValue.handle(e))
+    images.reverse.foreach(_.onScroll(e))
   }
 
   private def setScroll(sx: Double, sy: Double): Unit = {
@@ -170,7 +170,7 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
   }
 
   override def onAddImage(image: TriImage): Unit = {
-    children add image
+    children add image.pane
     relocateImage(image)
   }
 
