@@ -1,5 +1,6 @@
 package com.martomate.tripaint
 
+import com.martomate.tripaint.util.InjectiveMap
 import org.scalatest.{FlatSpec, Matchers}
 
 abstract class InjectiveMapTest extends FlatSpec with Matchers {

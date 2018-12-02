@@ -1,16 +1,16 @@
 package com.martomate.tripaint.control
 
-import com.martomate.tripaint.gui.TriPaintView
-import com.martomate.tripaint.image._
-import com.martomate.tripaint.image.content.{ImageChangeTrackerImpl, ImageContent}
-import com.martomate.tripaint.image.coords.TriImageCoords
-import com.martomate.tripaint.image.effects._
-import com.martomate.tripaint.image.format.SimpleStorageFormat
-import com.martomate.tripaint.image.graphics.TriImage
-import com.martomate.tripaint.image.grid.{ImageGrid, ImageGridImplOld}
-import com.martomate.tripaint.image.pool.{ImagePool, ImagePoolImpl}
-import com.martomate.tripaint.image.save.{ImageSaver, ImageSaverToFile}
-import com.martomate.tripaint.image.storage._
+import com.martomate.tripaint.model.content.{ImageChangeTrackerImpl, ImageContent}
+import com.martomate.tripaint.model.coords.TriImageCoords
+import com.martomate.tripaint.model.effects._
+import com.martomate.tripaint.model.format.SimpleStorageFormat
+import com.martomate.tripaint.model.SaveLocation
+import com.martomate.tripaint.view.image.grid.{ImageGrid, ImageGridImplOld}
+import com.martomate.tripaint.model.pool.{ImagePool, ImagePoolImpl}
+import com.martomate.tripaint.model.save.{ImageSaver, ImageSaverToFile}
+import com.martomate.tripaint.model.storage._
+import com.martomate.tripaint.view.image
+import com.martomate.tripaint.view.image.TriImage
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.paint.Color
 
@@ -21,13 +21,13 @@ class TriPaintController(view: TriPaintView) {
   val imagePool: ImagePool = new ImagePoolImpl(ImageStorageImpl, view)
   val imageSaver: ImageSaver = new ImageSaverToFile(new SimpleStorageFormat)
 
-  def addImage(newImage: TriImage): Unit = {
+  private def addImage(newImage: TriImage): Unit = {
     if (newImage != null) {
       imageGrid(newImage.content.coords) = newImage
     }
   }
 
-  def saveBeforeClosing(images: TriImage*): Option[Boolean] = {
+  def saveBeforeClosing(images: ImageContent*): Option[Boolean] = {
     view.askSaveBeforeClosing(images)
   }
 
@@ -35,7 +35,7 @@ class TriPaintController(view: TriPaintView) {
     imageGrid.images.filter(_.changed) match {
       case Seq() => true
       case images =>
-        saveBeforeClosing(images: _*) match {
+        saveBeforeClosing(images.map(_.content): _*) match {
           case Some(shouldSave) =>
             if (shouldSave) save(images: _*)
             else true
@@ -44,13 +44,13 @@ class TriPaintController(view: TriPaintView) {
     }
   }
 
-  def save(images: TriImage*): Boolean = images.filter(im => !imagePool.save(im.content.storage, imageSaver)).forall(im => imagePool.save(im.content.storage, imageSaver) || saveAs(im))
+  def save(images: TriImage*): Boolean = images.filter(im => !imagePool.save(im.content.storage, imageSaver)).forall(im => imagePool.save(im.content.storage, imageSaver) || saveAs(im.content))
 
-  def saveAs(image: TriImage): Boolean = {
+  def saveAs(image: ImageContent): Boolean = {
     view.askForSaveFile(image) match {
       case Some(file) =>
-        if (imagePool.move(image.content.storage, SaveLocation(file))) {
-          val saved = imagePool.save(image.content.storage, imageSaver)
+        if (imagePool.move(image.storage, SaveLocation(file))) {
+          val saved = imagePool.save(image.storage, imageSaver)
           if (!saved) println("Image could not be saved!!")
           saved
         } else false
@@ -62,7 +62,7 @@ class TriPaintController(view: TriPaintView) {
   val New: MenuBarAction = MenuBarAction.apply("New", "new", new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)) {
     view.askForWhereToPutImage() match {
       case Some((x, y)) =>
-        addImage(TriImage(
+        addImage(image.TriImage(
           makeImageContent(TriImageCoords(x, y), imagePool.fromBGColor(new Color(view.imageDisplay.colors.secondaryColor()), imageGrid.imageSize)),
           view.imageDisplay
         ))
@@ -128,7 +128,7 @@ class TriPaintController(view: TriPaintView) {
   }
 
   val SaveAs: MenuBarAction = MenuBarAction.apply("Save As", accelerator = new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown, KeyCombination.ShiftDown)) {
-    imageGrid.selectedImages.foreach(saveAs)
+    imageGrid.selectedImages.foreach(im => saveAs(im.content))
   }
 
   val Exit: MenuBarAction = MenuBarAction.apply("Exit") {
