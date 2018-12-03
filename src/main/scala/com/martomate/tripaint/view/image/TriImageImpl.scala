@@ -36,8 +36,7 @@ class TriImageImpl private(val content: ImageContent, val imagePane: ImageGridVi
 
   def onMouseReleased(e: MouseEvent): Unit = {
     if (!e.isConsumed) {
-      finishCumulativeChange()
-      updateAfterDraw()
+      onDrawActionFinished()
     }
   }
 
@@ -49,9 +48,9 @@ class TriImageImpl private(val content: ImageContent, val imagePane: ImageGridVi
     }
   }
 
-  private val undoManager = new UndoManager
-  def undo(): Unit = undoManager.undo()
-  def redo(): Unit = undoManager.redo()
+  private val undoManager = content.undoManager
+  def undo(): Unit = content.undo()
+  def redo(): Unit = content.redo()
 
   private val cumulativeImageChange = new CumulativeImageChange
   def finishCumulativeChange(): Unit =
@@ -101,9 +100,7 @@ class TriImageImpl private(val content: ImageContent, val imagePane: ImageGridVi
     content.changeTracker.tellListenersAboutBigChange()
   }
 
-  def applyEffect(effect: Effect): Unit = {
-    effect.action(storage)
-
+  override def onDrawActionFinished(): Unit = {
     finishCumulativeChange()
     updateAfterDraw()
   }

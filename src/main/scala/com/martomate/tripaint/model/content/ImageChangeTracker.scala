@@ -11,4 +11,5 @@ abstract class ImageChangeTracker extends Listenable[ImageChangeListener] {
   def changedProperty: ReadOnlyBooleanProperty
 
   def tellListenersAboutBigChange(): Unit
+  def tellListenersAboutDrawActionCompletion(): Unit
 }

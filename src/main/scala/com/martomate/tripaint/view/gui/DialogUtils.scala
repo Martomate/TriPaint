@@ -104,7 +104,7 @@ object DialogUtils {
   )
 
   def getValueFromDialog[T](imagePool: ImagePool,
-                            images: Seq[TriImage],
+                            images: Seq[ImageContent],
                             title: String,
                             headerText: String,
                             contentText: String,
@@ -114,7 +114,7 @@ object DialogUtils {
     dialog.title = title
     dialog.headerText = headerText
     dialog.contentText = contentText
-    dialog.graphic = makeImagePreviewList(images.map(_.content), imagePool)
+    dialog.graphic = makeImagePreviewList(images, imagePool)
     DialogUtils.restrictTextField(dialog.editor, restriction)
     dialog.showAndWait match {
       case Some(str) =>

@@ -9,11 +9,8 @@ import org.scalatest.{FlatSpec, Matchers}
 abstract class ImageGridTest extends FlatSpec with Matchers with MockFactory {
   def make: ImageGrid
 
-  def makeImage(x: Int, y: Int): TriImage = {
-    val image = stub[TriImage]
-    val content = new ImageContent(TriImageCoords(x, y), null)
-    image.content _ when () returns content
-    image
+  def makeImage(x: Int, y: Int): ImageContent = {
+    new ImageContent(TriImageCoords(x, y), null)
   }
 
   "apply" should "return None if there is no image there" in {
@@ -108,12 +105,12 @@ abstract class ImageGridTest extends FlatSpec with Matchers with MockFactory {
     f(TriImageCoords(2, 0)) = image2
 
     f.selectedImages.sortBy(_.##) shouldBe Seq(image, image2).sortBy(_.##)
-    image.content.editableProperty() = false
+    image.editableProperty() = false
     f.selectedImages.sortBy(_.##) shouldBe Seq(image2).sortBy(_.##)
-    image.content.editableProperty() = true
-    image2.content.editableProperty() = false
+    image.editableProperty() = true
+    image2.editableProperty() = false
     f.selectedImages.sortBy(_.##) shouldBe Seq(image).sortBy(_.##)
-    image2.content.editableProperty() = true
+    image2.editableProperty() = true
     f.selectedImages.sortBy(_.##) shouldBe Seq(image, image2).sortBy(_.##)
   }
 }

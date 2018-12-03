@@ -32,7 +32,5 @@ trait TriImage extends ITriImage {
 
   def relocate(x: Double, y: Double): Unit
 
-  def applyEffect(effect: Effect): Unit
-
   def pane: Pane
 }

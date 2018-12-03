@@ -13,7 +13,7 @@ class ImageGridSearcher(imageGrid: ImageGrid) {
     while (q.nonEmpty) {
       val p = q.dequeue
       imageGrid(p.image) foreach { image =>
-        val color = image.content.storage(p.pix)
+        val color = image.storage(p.pix)
         if (predicate(p, color)) {
           result += p
 

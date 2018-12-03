@@ -2,12 +2,12 @@ package com.martomate.tripaint.view.gui
 
 import java.io.File
 
-import com.martomate.tripaint.control.{TriPaintController, TriPaintView}
+import com.martomate.tripaint.control.{TriPaintController, TriPaintModel}
 import com.martomate.tripaint.model.SaveLocation
 import com.martomate.tripaint.model.content.ImageContent
 import com.martomate.tripaint.model.storage.ImageStorage
-import com.martomate.tripaint.view.EditMode
 import com.martomate.tripaint.view.image.ImagePane
+import com.martomate.tripaint.view.{EditMode, TriPaintView}
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.scene.Scene
 import scalafx.scene.control.Alert.AlertType
@@ -22,7 +22,8 @@ import scala.util.Try
 
 class MainStage extends PrimaryStage with TriPaintView {
   private val controls: TriPaintController = new TriPaintController(this)
-  val imageDisplay: ImagePane = new ImagePane(controls.imageGrid)
+  private val model: TriPaintModel = controls.model
+  val imageDisplay: ImagePane = new ImagePane(model.imageGrid)
 
   private val menuBar: TheMenuBar  = new TheMenuBar(controls)
   private val toolBar: TheToolBar  = new TheToolBar(controls)
@@ -95,8 +96,8 @@ class MainStage extends PrimaryStage with TriPaintView {
 
   override def askForBlurRadius(): Option[Int] = {
     DialogUtils.getValueFromDialog[Int](
-      controls.imagePool,
-      controls.imageGrid.selectedImages,
+      model.imagePool,
+      model.imageGrid.selectedImages,
       "Blur images",
       "How much should the images be blurred?",
       "Radius:",
@@ -107,8 +108,8 @@ class MainStage extends PrimaryStage with TriPaintView {
 
   override def askForMotionBlurRadius(): Option[Int] = {
     DialogUtils.getValueFromDialog[Int](
-      controls.imagePool,
-      controls.imageGrid.selectedImages,
+      model.imagePool,
+      model.imageGrid.selectedImages,
       "Motion blur images",
       "How much should the images be motion blurred?",
       "Radius:",
@@ -118,14 +119,14 @@ class MainStage extends PrimaryStage with TriPaintView {
   }
 
   override def askForRandomNoiseColors(): Option[(Color, Color)] = {
-    val images = controls.imageGrid.selectedImages
+    val images = model.imageGrid.selectedImages
     val loColorPicker = new ColorPicker(Color.Black)
     val hiColorPicker = new ColorPicker(Color.White)
     import DialogUtils._
     getValueFromCustomDialog[(Color, Color)](
       title = "Fill images randomly",
       headerText = "Which color-range should be used?",
-      graphic = DialogUtils.makeImagePreviewList(images.map(_.content), controls.imagePool),
+      graphic = DialogUtils.makeImagePreviewList(images, model.imagePool),
 
       content = Seq(makeGridPane(Seq(
         Seq(new Label("Minimum color:"), loColorPicker),
@@ -153,7 +154,7 @@ class MainStage extends PrimaryStage with TriPaintView {
     val alert = new Alert(AlertType.Confirmation)
     alert.title = "Save before closing?"
     alert.headerText = "Do you want to save " + (if (images.size == 1) "this image" else "these images") + " before closing the tab?"
-    alert.graphic = DialogUtils.makeImagePreviewList(images, controls.imagePool)
+    alert.graphic = DialogUtils.makeImagePreviewList(images, model.imagePool)
 
     alert.buttonTypes = Seq(
       new ButtonType("Save", ButtonData.Yes),
@@ -168,12 +169,12 @@ class MainStage extends PrimaryStage with TriPaintView {
   }
 
   override def shouldReplaceImage(currentImage: ImageStorage, newImage: ImageStorage, location: SaveLocation): Option[Boolean] = {
-    val tri1 = controls.imageGrid.images.find(_.content.storage == newImage).orNull
-    val tri2 = controls.imageGrid.images.find(_.content.storage == currentImage).orNull
+    val tri1 = model.imageGrid.images.find(_.storage == newImage).orNull
+    val tri2 = model.imageGrid.images.find(_.storage == currentImage).orNull
     val alert = new Alert(AlertType.Confirmation)
     alert.title = "Collision"
     alert.headerText = "The image already exists on the screen. Which one should be used?"
-    alert.graphic = DialogUtils.makeImagePreviewList(Seq(tri1.content, tri2.content), controls.imagePool)
+    alert.graphic = DialogUtils.makeImagePreviewList(Seq(tri1, tri2), model.imagePool)
 
     alert.buttonTypes = Seq(
       new ButtonType("Left", ButtonData.Yes),

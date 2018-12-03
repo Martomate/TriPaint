@@ -20,6 +20,7 @@ class ImageChangeTrackerImpl(init_image: ImageStorage, pool: ImagePool, saver: I
   def changedProperty: ReadOnlyBooleanProperty = _changed.readOnlyProperty
 
   def tellListenersAboutBigChange(): Unit = notifyListeners(_.onImageChangedALot())
+  def tellListenersAboutDrawActionCompletion(): Unit = notifyListeners(_.onDrawActionFinished())
 
   def onImageSaved(image: ImageStorage, saver: ImageSaver): Unit = {
     if (image == this.image && saver == this.saver) {

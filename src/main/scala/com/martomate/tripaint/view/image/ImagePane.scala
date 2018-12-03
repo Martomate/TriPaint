@@ -1,8 +1,8 @@
 package com.martomate.tripaint.view.image
 
-import com.martomate.tripaint.model.coords.PixelCoords
+import com.martomate.tripaint.model.content.ImageContent
+import com.martomate.tripaint.model.coords.{PixelCoords, TriImageCoords}
 import com.martomate.tripaint.view.image.grid.{ImageGrid, ImageGridListener, ImageGridSearcher}
-import com.martomate.tripaint.model.undo.UndoManager
 import com.martomate.tripaint.view.EditMode
 import javafx.scene.input.{MouseButton, MouseEvent}
 import javafx.scene.paint
@@ -10,6 +10,8 @@ import javafx.scene.shape.Rectangle
 import scalafx.beans.property.ObjectProperty
 import scalafx.scene.layout.Pane
 import scalafx.scene.paint.Color
+
+import scala.collection.mutable
 
 class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with ImageGridListener {
   private var _zoom = 1d
@@ -23,12 +25,15 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
 
   private val gridSearcher: ImageGridSearcher = new ImageGridSearcher(imageGrid)
 
+  private val imageMap: mutable.Map[TriImageCoords, TriImage] = mutable.Map.empty
+
   imageGrid.addListener(this)
 
-  private def images: Seq[TriImage] = imageGrid.images
+  private def images: Seq[ImageContent] = imageGrid.images
+  private def triImages: Seq[TriImage] = images.map(im => imageMap(im.coords))
   def imageSize: Int = imageGrid.imageSize
 
-  def sideLength: Double = (imageGrid.imageSize * 2 + 1) * zoom
+  def sideLength: Double = (imageSize * 2 + 1) * zoom
 
   private object drag {
     var x: Double = -1
@@ -39,7 +44,7 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
     //    val xx = (x - width() / 2 - xScroll) / sideLength
     //    val yy = (y - height() / 2 - yScroll) / sideLength
 
-    imageGrid.images find { im =>
+    triImages find { im =>
       im.coordsAt(x, y) != null
     }
   }
@@ -86,7 +91,7 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
       }
     }
   }
-  onMouseReleased = e => images.reverse.foreach(_.onMouseReleased(e))
+  onMouseReleased = e => triImages.reverse.foreach(_.onMouseReleased(e))
   onScroll = e => {
     val (dx, dy) = (e.getDeltaX, e.getDeltaY)
 
@@ -97,7 +102,7 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
     } else {
       setScroll(xScroll + dx, yScroll + dy)
     }
-    images.reverse.foreach(_.onScroll(e))
+    triImages.reverse.foreach(_.onScroll(e))
   }
 
   private def setScroll(sx: Double, sy: Double): Unit = {
@@ -111,11 +116,11 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
       primaryOrSecondaryColor foreach { color =>
         EditMode.currentMode match {
           case EditMode.Draw =>
-              image.drawAt(coords.pix, new Color(color()))
+              imageMap(image.coords).drawAt(coords.pix, new Color(color()))
           case EditMode.Fill =>
               fill(coords, new Color(color()))
           case EditMode.PickColor =>
-              color() = image.content.storage(coords.pix)
+              color() = image.storage(coords.pix)
           case _ =>
         }
       }
@@ -130,9 +135,9 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
 
   def fill(coords: PixelCoords, color: Color): Unit = {
     imageGrid(coords.image) foreach { image =>
-      val referenceColor = image.content.storage(coords.pix)
+      val referenceColor = imageMap(image.coords).content.storage(coords.pix)
       val places = gridSearcher.search(coords, (_, col) => col == referenceColor)
-      places.foreach(p => imageGrid(p.image).foreach(_.drawAt(p.pix, color)))
+      places.foreach(p => imageGrid(p.image).foreach(im => imageMap(im.coords).drawAt(p.pix, color)))
     }
   }
 
@@ -145,11 +150,11 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
   }
 
   def undo: Boolean = {
-    images.foreach(_.undo())
+    triImages.foreach(_.undo())
     true
   }
   def redo: Boolean = {
-    images.foreach(_.redo())
+    triImages.foreach(_.redo())
     true
   }
 
@@ -165,17 +170,19 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
     images.foreach(relocateImage)
   }
 
-  private def relocateImage(image: TriImage): Unit = {
-    image.relocate(width() / 2 + xScroll, height() / 2 + yScroll)
+  private def relocateImage(image: ImageContent): Unit = {
+    imageMap(image.coords).relocate(width() / 2 + xScroll, height() / 2 + yScroll)
   }
 
-  override def onAddImage(image: TriImage): Unit = {
-    children add image.pane
+  override def onAddImage(image: ImageContent): Unit = {
+    val triImage = TriImage(image, this)
+    children add triImage.pane
+    imageMap(image.coords) = triImage
     relocateImage(image)
   }
 
-  override def onRemoveImage(image: TriImage): Unit = {
-    val index = children indexOf image
+  override def onRemoveImage(image: ImageContent): Unit = {
+    val index = children indexOf imageMap(image.coords)
 
     if (index != -1) {
       children.remove(index)

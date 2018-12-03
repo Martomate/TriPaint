@@ -32,4 +32,6 @@ class TriImageForPreview (val content: ImageContent, previewWidth: Double) exten
   }
 
   def toImage(params: SnapshotParameters): Image = canvas.snapshot(params, null)
+
+  override def onDrawActionFinished(): Unit = ()
 }

@@ -1,13 +1,14 @@
-package com.martomate.tripaint.control
+package com.martomate.tripaint.view
 
 import java.io.File
 
 import com.martomate.tripaint.model.content.ImageContent
 import com.martomate.tripaint.model.pool.ImageSaveCollisionHandler
+import com.martomate.tripaint.util.Listenable
 import com.martomate.tripaint.view.image.ImagePane
 import scalafx.scene.paint.Color
 
-trait TriPaintView extends ImageSaveCollisionHandler {
+trait TriPaintView extends ImageSaveCollisionHandler with Listenable[TriPaintViewListener] {
   def imageDisplay: ImagePane
 
   def askForImageSize(): Option[Int]
