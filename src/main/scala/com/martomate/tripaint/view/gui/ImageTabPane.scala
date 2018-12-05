@@ -1,14 +1,16 @@
 package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.control.TriPaintController
+import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.content.ImageContent
+import com.martomate.tripaint.view.TriPaintViewListener
 import com.martomate.tripaint.view.image.{TriImage, TriImageForPreview}
 import scalafx.geometry.Pos
 import scalafx.scene.control.{Button, ToggleButton}
 import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout.StackPane
 
-class ImageTabPane(val image: ImageContent, control: TriPaintController) extends StackPane {
+class ImageTabPane(val image: ImageContent, control: TriPaintViewListener, model: TriPaintModel) extends StackPane {
   private val preview = new TriImageForPreview(image, TriImage.previewSize)
 
   private val closeButton = new Button {
@@ -17,23 +19,13 @@ class ImageTabPane(val image: ImageContent, control: TriPaintController) extends
     alignmentInParent = Pos.TopRight
 
     onAction = e => {
-      if (image.changeTracker.changed) {
-        control.saveBeforeClosing(image) match {
-          case Some(shouldSave) =>
-            if (shouldSave && !control.save(image)) e.consume()
-          case None => e.consume()
-        }
-      }
-
-      if (!e.isConsumed) {
-        control.removeImageAt(image.coords)
-      }
+      control.requestImageRemoval(image)
     }
   }
 
   private val previewButton = new ToggleButton {
     this.graphic = preview
-    this.tooltip = new TriImageTooltip(image, control.model.imagePool)
+    this.tooltip = new TriImageTooltip(image, model.imagePool)
     this.selected <==> image.editableProperty
   }
 
@@ -57,7 +49,7 @@ class ImageTabPane(val image: ImageContent, control: TriPaintController) extends
 }
 
 object ImageTabPane {
-  def apply(image: ImageContent, control: TriPaintController): ImageTabPane = {
-    new ImageTabPane(image, control)
+  def apply(image: ImageContent, control: TriPaintViewListener, model: TriPaintModel): ImageTabPane = {
+    new ImageTabPane(image, control, model)
   }
 }

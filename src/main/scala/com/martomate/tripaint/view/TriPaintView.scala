@@ -8,8 +8,8 @@ import com.martomate.tripaint.util.Listenable
 import com.martomate.tripaint.view.image.ImagePane
 import scalafx.scene.paint.Color
 
-trait TriPaintView extends ImageSaveCollisionHandler with Listenable[TriPaintViewListener] {
-  def imageDisplay: ImagePane
+trait TriPaintView extends ImageSaveCollisionHandler {
+  def backgroundColor: Color
 
   def askForImageSize(): Option[Int]
   def askSaveBeforeClosing(images: Seq[ImageContent]): Option[Boolean]

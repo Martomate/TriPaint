@@ -1,4 +1,4 @@
-package com.martomate.tripaint.view.image.grid
+package com.martomate.tripaint.model.grid
 
 import com.martomate.tripaint.model.content.ImageContent
 

@@ -10,6 +10,8 @@ import scalafx.scene.paint.Color
 import scala.util.{Failure, Success}
 
 abstract class ImagePoolTest extends FlatSpec with Matchers with MockFactory {
+  implicit val collisionHandler: ImageSaveCollisionHandler = mock[ImageSaveCollisionHandler]
+
   def make(factory: ImageStorageFactory = null): ImagePool
 
   "save" should "return false if the image doesn't exist" in {

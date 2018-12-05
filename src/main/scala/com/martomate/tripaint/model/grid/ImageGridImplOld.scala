@@ -1,11 +1,14 @@
-package com.martomate.tripaint.view.image.grid
+package com.martomate.tripaint.model.grid
 
 import com.martomate.tripaint.model.content.ImageContent
 import com.martomate.tripaint.model.coords.TriImageCoords
 
 import scala.collection.mutable.ArrayBuffer
 
-class ImageGridImplOld(val imageSize: Int) extends ImageGrid {
+class ImageGridImplOld(init_imageSize: Int) extends ImageGrid {
+  private var _imageSize: Int = init_imageSize
+  def imageSize: Int = _imageSize
+
   val images: ArrayBuffer[ImageContent] = ArrayBuffer.empty
 
   override def apply(coords: TriImageCoords): Option[ImageContent] = images.find(_.coords == coords)
@@ -27,5 +30,12 @@ class ImageGridImplOld(val imageSize: Int) extends ImageGrid {
       ret
     }
     else null
+  }
+
+  override def setImageSizeIfEmpty(size: Int): Boolean = {
+    if (images.isEmpty) {
+      _imageSize = size
+      true
+    } else false
   }
 }

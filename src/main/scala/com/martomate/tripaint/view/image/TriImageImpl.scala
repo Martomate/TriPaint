@@ -36,7 +36,8 @@ class TriImageImpl private(val content: ImageContent, val imagePane: ImageGridVi
 
   def onMouseReleased(e: MouseEvent): Unit = {
     if (!e.isConsumed) {
-      onDrawActionFinished()
+      finishCumulativeChange()
+      updateAfterDraw()
     }
   }
 
@@ -98,11 +99,6 @@ class TriImageImpl private(val content: ImageContent, val imagePane: ImageGridVi
   // TODO: move the undo manager stuff somewhere else
   private def updateAfterDraw(): Unit = {
     content.changeTracker.tellListenersAboutBigChange()
-  }
-
-  override def onDrawActionFinished(): Unit = {
-    finishCumulativeChange()
-    updateAfterDraw()
   }
 
   private def updateLocation(): Unit = {

@@ -1,4 +1,4 @@
-package com.martomate.tripaint.control
+package com.martomate.tripaint.view
 
 import javafx.event.{ActionEvent, EventHandler}
 import scalafx.scene.control.{Button, MenuItem, Tooltip}

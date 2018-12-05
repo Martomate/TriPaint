@@ -1,9 +1,8 @@
 package com.martomate.tripaint.view.gui
 
-import com.martomate.tripaint.control.TriPaintController
 import scalafx.scene.control.{Menu, MenuBar, MenuItem, SeparatorMenuItem}
 
-class TheMenuBar(controls: TriPaintController) extends MenuBar {
+class TheMenuBar(controls: MainStageButtons) extends MenuBar {
 
   private def makeMenu(text: String, menuItems: MenuItem*): Menu = {
     val menu = new Menu(text)

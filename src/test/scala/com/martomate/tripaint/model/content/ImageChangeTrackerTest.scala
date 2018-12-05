@@ -40,8 +40,8 @@ class ImageChangeTrackerTest extends FlatSpec with Matchers with MockFactory {
     val image = stub[ImageStorage]
     val location = SaveLocation(null)
     val saver = stub[ImageSaver]
-    val pool = new ImagePoolImpl(null, null)
-    pool.move(image, location)
+    val pool = new ImagePoolImpl(null)
+    pool.move(image, location)(null)
     val f = make(image, pool, saver)
 
     saver.save _ when(image, *) returns true

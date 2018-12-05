@@ -2,7 +2,7 @@ package com.martomate.tripaint.view.image
 
 import com.martomate.tripaint.model.content.ImageContent
 import com.martomate.tripaint.model.coords.{PixelCoords, TriImageCoords}
-import com.martomate.tripaint.view.image.grid.{ImageGrid, ImageGridListener, ImageGridSearcher}
+import com.martomate.tripaint.model.grid.{ImageGrid, ImageGridListener, ImageGridSearcher}
 import com.martomate.tripaint.view.EditMode
 import javafx.scene.input.{MouseButton, MouseEvent}
 import javafx.scene.paint

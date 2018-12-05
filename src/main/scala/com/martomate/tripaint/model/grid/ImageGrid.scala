@@ -1,4 +1,4 @@
-package com.martomate.tripaint.view.image.grid
+package com.martomate.tripaint.model.grid
 
 import com.martomate.tripaint.model.content.ImageContent
 import com.martomate.tripaint.model.coords.TriImageCoords
@@ -6,6 +6,8 @@ import com.martomate.tripaint.util.Listenable
 
 trait ImageGrid extends Listenable[ImageGridListener] {
   def imageSize: Int
+  def setImageSizeIfEmpty(size: Int): Boolean
+
   def images: Seq[ImageContent]
 
   def apply(coords: TriImageCoords): Option[ImageContent]

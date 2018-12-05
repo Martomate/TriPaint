@@ -2,17 +2,17 @@ package com.martomate.tripaint.view.gui
 
 import java.io.File
 
-import com.martomate.tripaint.control.{TriPaintController, TriPaintModel}
-import com.martomate.tripaint.model.SaveLocation
 import com.martomate.tripaint.model.content.ImageContent
 import com.martomate.tripaint.model.storage.ImageStorage
+import com.martomate.tripaint.model.{SaveLocation, TriPaintModel}
 import com.martomate.tripaint.view.image.ImagePane
-import com.martomate.tripaint.view.{EditMode, TriPaintView}
+import com.martomate.tripaint.view.{EditMode, MenuBarAction, TriPaintView, TriPaintViewListener}
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.scene.Scene
 import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.control.ButtonBar.ButtonData
 import scalafx.scene.control._
+import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.{AnchorPane, BorderPane, VBox}
 import scalafx.scene.paint.Color
 import scalafx.stage.FileChooser
@@ -20,20 +20,41 @@ import scalafx.stage.FileChooser.ExtensionFilter
 
 import scala.util.Try
 
-class MainStage extends PrimaryStage with TriPaintView {
-  private val controls: TriPaintController = new TriPaintController(this)
-  private val model: TriPaintModel = controls.model
-  val imageDisplay: ImagePane = new ImagePane(model.imageGrid)
+class MainStageButtons(control: TriPaintViewListener) {
+  val New: MenuBarAction = MenuBarAction.apply("New", "new", new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)) (control.action_new())
+  val Open: MenuBarAction = MenuBarAction.apply("Open", "open", new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)) (control.action_open())
+  val OpenHexagon: MenuBarAction = MenuBarAction.apply("Open hexagon") (control.action_openHexagon())
+  val Save: MenuBarAction = MenuBarAction.apply("Save", "save", new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown)) (control.action_save())
+  val SaveAs: MenuBarAction = MenuBarAction.apply("Save As", accelerator = new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown, KeyCombination.ShiftDown)) (control.action_saveAs())
+  val Exit: MenuBarAction = MenuBarAction.apply("Exit") (control.action_exit())
+  val Undo: MenuBarAction = MenuBarAction.apply("Undo", "undo", new KeyCodeCombination(KeyCode.Z, KeyCombination.ControlDown)) (control.action_undo())
+  val Redo: MenuBarAction = MenuBarAction.apply("Redo", "redo", new KeyCodeCombination(KeyCode.Y, KeyCombination.ControlDown)) (control.action_redo())
+  val Cut: MenuBarAction = MenuBarAction.apply("Cut", "cut") ()
+  val Copy: MenuBarAction = MenuBarAction.apply("Copy", "copy") ()
+  val Paste: MenuBarAction = MenuBarAction.apply("Paste", "paste") ()
+  val Move: MenuBarAction = MenuBarAction.apply("Move", "move") ()
+  val Scale: MenuBarAction = MenuBarAction.apply("Scale", "scale") ()
+  val Rotate: MenuBarAction = MenuBarAction.apply("Rotate", "rotate") ()
+  val Blur: MenuBarAction = MenuBarAction.apply("Blur") (control.action_blur())
+  val MotionBlur: MenuBarAction = MenuBarAction.apply("Motion blur") (control.action_motionBlur())
+  val RandomNoise: MenuBarAction = MenuBarAction.apply("Random noise") (control.action_randomNoise())
+  val Scramble: MenuBarAction = MenuBarAction.apply("Scramble") (control.action_scramble())
+}
 
-  private val menuBar: TheMenuBar  = new TheMenuBar(controls)
-  private val toolBar: TheToolBar  = new TheToolBar(controls)
+class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends PrimaryStage with TriPaintView {
+  private val imageDisplay: ImagePane = new ImagePane(model.imageGrid)
+
+  private val buttons = new MainStageButtons(controls)
+
+  private val menuBar: TheMenuBar  = new TheMenuBar(buttons)
+  private val toolBar: TheToolBar  = new TheToolBar(buttons)
   private val toolBox: ToolBox     = new ToolBox
-  private val imageTabs: ImageTabs = new ImageTabs(controls)
+  private val imageTabs: ImageTabs = new ImageTabs(controls, model)
   private val colorBox: VBox       = makeColorBox()
 
   title = "TriPaint"
   onCloseRequest = e => {
-    if (!controls.do_exit()) e.consume()
+    if (!controls.requestExit()) e.consume()
   }
   scene = new Scene(720, 720) {
     delegate.getStylesheets.add(getClass.getResource("/styles/application.css").toExternalForm)
@@ -76,6 +97,8 @@ class MainStage extends PrimaryStage with TriPaintView {
       colorPicker2
     )
   }
+
+  override def backgroundColor: Color = new Color(imageDisplay.colors.secondaryColor())
 
   override def askForSaveFile(image: ImageContent): Option[File] = {
     val chooser = new FileChooser

@@ -14,7 +14,7 @@ import scala.util.{Success, Try}
   * like e.g. when you save A into the same place as B the user should be asked which image to keep,
   * and after that they will share the same ImageStorage.
   */
-abstract class ImagePool(factory: ImageStorageFactory, collisionHandler: ImageSaveCollisionHandler) extends ImageStorageFactory with Listenable[ImagePoolListener] {
+abstract class ImagePool(factory: ImageStorageFactory) extends ImageStorageFactory with Listenable[ImagePoolListener] {
 
   protected val mapping: InjectiveMap[SaveLocation, ImageStorage]
 
@@ -24,7 +24,7 @@ abstract class ImagePool(factory: ImageStorageFactory, collisionHandler: ImageSa
 
   final def locationOf(image: ImageStorage): Option[SaveLocation] = mapping.getLeft(image)
 
-  def move(image: ImageStorage, to: SaveLocation): Boolean
+  def move(image: ImageStorage, to: SaveLocation)(implicit collisionHandler: ImageSaveCollisionHandler): Boolean
 
   def save(image: ImageStorage, saver: ImageSaver): Boolean = {
     val success = mapping.getLeft(image).exists(loc => saver.save(image, loc))

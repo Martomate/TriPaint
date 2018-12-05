@@ -1,4 +1,4 @@
-package com.martomate.tripaint.view.image.grid
+package com.martomate.tripaint.model.grid
 
 import com.martomate.tripaint.model.content.ImageContent
 import com.martomate.tripaint.model.coords.TriImageCoords
@@ -11,6 +11,34 @@ abstract class ImageGridTest extends FlatSpec with Matchers with MockFactory {
 
   def makeImage(x: Int, y: Int): ImageContent = {
     new ImageContent(TriImageCoords(x, y), null)
+  }
+
+  "setImageSizeIfEmpty" should "set the image size and return true if the grid is new" in {
+    val f = make
+    val initSize = f.imageSize
+    f.setImageSizeIfEmpty(initSize + 16) shouldBe true
+    f.imageSize shouldBe initSize + 16
+  }
+
+  it should "not set the image size and return false if the grid contains images" in {
+    val f = make
+    val initSize = f.imageSize
+
+    f(TriImageCoords(0, 0)) = makeImage(0, 0)
+
+    f.setImageSizeIfEmpty(initSize + 16) shouldBe false
+    f.imageSize shouldBe initSize
+  }
+
+  it should "set the image size and return true if the grid no longer contains images" in {
+    val f = make
+    val initSize = f.imageSize
+
+    f(TriImageCoords(0, 0)) = makeImage(0, 0)
+    f -= TriImageCoords(0, 0)
+
+    f.setImageSizeIfEmpty(initSize + 16) shouldBe true
+    f.imageSize shouldBe initSize + 16
   }
 
   "apply" should "return None if there is no image there" in {
