@@ -1,12 +1,14 @@
 package com.martomate.tripaint.model.effects
 
-import com.martomate.tripaint.model.storage.ImageStorage
+import com.martomate.tripaint.model.coords.TriImageCoords
+import com.martomate.tripaint.model.grid.ImageGrid
 import scalafx.scene.paint.Color
 
 class RandomNoiseEffect(min: Color, max: Color) extends Effect {
   override def name: String = "Random noise"
 
-  override def action(image: ImageStorage): Unit = {
+  override def action(imageCoords: TriImageCoords, grid: ImageGrid): Unit = {
+    val image = grid(imageCoords).get.storage
     for (coords <- image.allPixels) {
       image(coords) = Color.hsb(
         math.random * (max.hue - min.hue) + min.hue,

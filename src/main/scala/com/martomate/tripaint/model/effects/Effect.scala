@@ -1,8 +1,9 @@
 package com.martomate.tripaint.model.effects
 
-import com.martomate.tripaint.model.storage.ImageStorage
+import com.martomate.tripaint.model.coords.TriImageCoords
+import com.martomate.tripaint.model.grid.ImageGrid
 
 trait Effect {
   def name: String
-  def action(image: ImageStorage): Unit
+  def action(imageCoords: TriImageCoords, grid: ImageGrid): Unit
 }

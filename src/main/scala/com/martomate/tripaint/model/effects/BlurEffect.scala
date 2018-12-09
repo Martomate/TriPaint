@@ -1,6 +1,6 @@
 package com.martomate.tripaint.model.effects
 
-import com.martomate.tripaint.model.coords.TriangleCoords
+import com.martomate.tripaint.model.coords.PixelCoords
 import com.martomate.tripaint.model.storage.ImageStorage
 import scalafx.scene.paint.Color
 
@@ -9,11 +9,11 @@ class BlurEffect(radius: Int) extends LocalEffect {
 
   private val radiusSq = radius * radius
 
-  override def predicate(image: ImageStorage, here: TriangleCoords)(coords: TriangleCoords): Boolean = {
-    coords.distanceSq(here) <= radiusSq * 1.5
+  override def predicate(image: ImageStorage, here: PixelCoords)(coords: PixelCoords, color: Color): Boolean = {
+    coords.image == here.image && coords.pix.distanceSq(here.pix) <= radiusSq * 1.5
   }
 
-  override def weightedColor(image: ImageStorage, here: TriangleCoords)(coords: TriangleCoords): (Double, Color) = {
-    (math.exp(-2 * coords.distanceSq(here) / radiusSq), image(coords))
+  override def weightedColor(image: ImageStorage, here: PixelCoords)(coords: PixelCoords): (Double, Color) = {
+    if (coords.image == here.image) (math.exp(-2 * coords.pix.distanceSq(here.pix) / radiusSq), image(coords.pix)) else (0, Color.Black)
   }
 }

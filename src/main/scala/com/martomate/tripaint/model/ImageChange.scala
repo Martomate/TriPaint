@@ -8,10 +8,10 @@ import scalafx.scene.paint.Color
 import scala.collection.mutable.ArrayBuffer
 
 object ImageChange {
-  def makeTotalChange(description: String, image: ImageContent)(action: ImageContent => Unit): ImageChange = {
+  def makeTotalChange(description: String, image: ImageContent)(action: => Unit): ImageChange = {
     val allPixels = image.storage.allPixels
     val start = allPixels.map(image.storage(_))
-    action(image)
+    action
     val end = allPixels.map(image.storage(_))
 
     val changed = allPixels.indices.map(i => (allPixels(i), start(i), end(i))).filter(p => p._2 != p._3)
