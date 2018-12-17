@@ -1,29 +1,37 @@
 package com.martomate.tripaint.model.effects
 
-import com.martomate.tripaint.model.coords.{PixelCoords, TriImageCoords}
-import com.martomate.tripaint.model.grid.{ImageGrid, ImageGridSearcher}
-import com.martomate.tripaint.model.storage.ImageStorage
+import com.martomate.tripaint.model.coords.{GlobalPixCoords, PixelCoords, TriImageCoords}
+import com.martomate.tripaint.model.grid.{ColorLookup, ImageGrid, ImageGridColorLookup, ImageGridSearcher}
 import scalafx.scene.paint.Color
 
 abstract class LocalEffect extends Effect {
 
-  def predicate(image: ImageStorage, here: PixelCoords)(coords: PixelCoords, color: Color): Boolean
+  protected def predicate(image: ColorLookup, here: GlobalPixCoords)(coords: GlobalPixCoords, color: Color): Boolean
 
-  def weightedColor(image: ImageStorage, here: PixelCoords)(coords: PixelCoords): (Double, Color)
+  protected def weightedColor(image: ColorLookup, here: GlobalPixCoords)(coords: GlobalPixCoords): (Double, Color)
 
-  override def action(imageCoords: TriImageCoords, grid: ImageGrid): Unit = {
+  override def action(images: Seq[TriImageCoords], grid: ImageGrid): Unit = {
     import com.martomate.tripaint.model.ExtendedColor._
 
-    val searcher = new ImageGridSearcher(grid)
-    val image = grid(imageCoords).get.storage
+    val colorLookup = new ImageGridColorLookup(grid)
 
-    val newVals = for (here <- image.allPixels) yield {
-      val coords = PixelCoords(here, imageCoords)
-      val cols = searcher.search(coords, predicate(image, coords)).map(weightedColor(image, coords))
-      val col = image(here)
-      val numCols = cols.foldLeft(1d)(_ + _._1)
-      here -> (cols.foldLeft(col * 1)((now, next) => now + next._2 * next._1) / numCols).toColor
+    val searcher = new ImageGridSearcher(colorLookup)
+    val allChanges = for (imageCoords <- images) yield {
+      val image = grid(imageCoords).get.storage
+
+      val newVals = for (here <- image.allPixels) yield {
+        val coords = PixelCoords(here, imageCoords)
+        val coordsGlobal = coords.toGlobal(grid.imageSize)
+        val cols = searcher.search(coordsGlobal, predicate(colorLookup, coordsGlobal)).map(weightedColor(colorLookup, coordsGlobal))
+
+        val numCols = cols.foldLeft(0d)(_ + _._1)
+        here -> (cols.foldLeft(Color.Black * 1)((now, next) => now + next._2 * next._1) / numCols).toColor
+      }
+      imageCoords -> newVals
     }
-    for ((coords, color) <- newVals) image(coords) = color
+    for ((im, vals) <- allChanges) {
+      val image = grid(im).get.storage
+      for ((coords, color) <- vals) image(coords) = color
+    }
   }
 }

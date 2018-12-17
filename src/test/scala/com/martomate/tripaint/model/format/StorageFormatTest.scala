@@ -22,7 +22,6 @@ abstract class StorageFormatTest extends FlatSpec with Matchers {
     val f = make
 
     comp(0, 0)
-    comp(10, 0)
     comp(0, 10)
     comp(10, 10)
     comp(20, 10)

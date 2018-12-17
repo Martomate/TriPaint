@@ -1,23 +1,22 @@
 package com.martomate.tripaint.model.grid
 
-import com.martomate.tripaint.model.coords.PixelCoords
+import com.martomate.tripaint.model.coords.GlobalPixCoords
 import scalafx.scene.paint.Color
 
-class ImageGridSearcher(imageGrid: ImageGrid) {
-  def search(startPos: PixelCoords, predicate: (PixelCoords, Color) => Boolean): Seq[PixelCoords] = {
-    val visited = collection.mutable.Set.empty[PixelCoords]
-    val result = collection.mutable.ArrayBuffer.empty[PixelCoords]
+class ImageGridSearcher(colorLookup: ColorLookup) {
+  def search(startPos: GlobalPixCoords, predicate: (GlobalPixCoords, Color) => Boolean): Seq[GlobalPixCoords] = {
+    val visited = collection.mutable.Set.empty[GlobalPixCoords]
+    val result = collection.mutable.ArrayBuffer.empty[GlobalPixCoords]
     val q = collection.mutable.Queue(startPos)
     visited += startPos
 
     while (q.nonEmpty) {
       val p = q.dequeue
-      imageGrid(p.image) foreach { image =>
-        val color = image.storage(p.pix)
+      colorLookup.lookup(p) foreach { color =>
         if (predicate(p, color)) {
           result += p
 
-          val newOnes = p.neighbours(imageGrid.imageSize).filter(!visited(_))
+          val newOnes = p.neighbours.filter(!visited(_))
           visited ++= newOnes
           q ++= newOnes
         }

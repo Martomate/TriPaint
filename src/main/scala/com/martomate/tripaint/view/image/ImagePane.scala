@@ -2,7 +2,7 @@ package com.martomate.tripaint.view.image
 
 import com.martomate.tripaint.model.content.ImageContent
 import com.martomate.tripaint.model.coords.{PixelCoords, TriImageCoords}
-import com.martomate.tripaint.model.grid.{ImageGrid, ImageGridListener, ImageGridSearcher}
+import com.martomate.tripaint.model.grid.{ImageGrid, ImageGridColorLookup, ImageGridListener, ImageGridSearcher}
 import com.martomate.tripaint.view.EditMode
 import javafx.scene.input.{MouseButton, MouseEvent}
 import javafx.scene.paint
@@ -23,7 +23,7 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
   private var _yScroll: Double = 0
   def yScroll: Double = _yScroll
 
-  private val gridSearcher: ImageGridSearcher = new ImageGridSearcher(imageGrid)
+  private val gridSearcher: ImageGridSearcher = new ImageGridSearcher(new ImageGridColorLookup(imageGrid))
 
   private val imageMap: mutable.Map[TriImageCoords, TriImage] = mutable.Map.empty
 
@@ -112,6 +112,7 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
   }
 
   private def mousePressedAt(coords: PixelCoords, e: MouseEvent, dragged: Boolean): Unit = {
+    println(coords.toGlobal(imageSize) + "\t" + coords)
     imageGrid(coords.image) foreach { image =>
       primaryOrSecondaryColor foreach { color =>
         EditMode.currentMode match {
@@ -136,7 +137,7 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
   def fill(coords: PixelCoords, color: Color): Unit = {
     imageGrid(coords.image) foreach { image =>
       val referenceColor = imageMap(image.coords).content.storage(coords.pix)
-      val places = gridSearcher.search(coords, (_, col) => col == referenceColor)
+      val places = gridSearcher.search(coords.toGlobal(imageSize), (_, col) => col == referenceColor).map(p => PixelCoords(p, imageSize))
       places.foreach(p => imageGrid(p.image).foreach(im => imageMap(im.coords).drawAt(p.pix, color)))
     }
   }

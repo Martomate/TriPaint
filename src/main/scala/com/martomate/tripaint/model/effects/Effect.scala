@@ -5,5 +5,5 @@ import com.martomate.tripaint.model.grid.ImageGrid
 
 trait Effect {
   def name: String
-  def action(imageCoords: TriImageCoords, grid: ImageGrid): Unit
+  def action(images: Seq[TriImageCoords], grid: ImageGrid): Unit
 }

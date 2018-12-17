@@ -140,7 +140,7 @@ class TriPaintController(val model: TriPaintModel) extends TriPaintViewListener 
   override def action_redo(): Unit = model.imageGrid.images.foreach(_.redo())
 
   private def applyEffect(effect: Effect): Unit = {
-    allSelectedImages.foreach(_.applyEffect(effect, model.imageGrid))
+    model.imageGrid.applyEffect(effect)
   }
 
   override def action_blur(): Unit = {
