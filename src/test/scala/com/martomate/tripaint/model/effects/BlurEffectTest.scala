@@ -10,6 +10,10 @@ import org.scalatest.{FlatSpec, Matchers}
 import scalafx.scene.paint.Color
 
 class BlurEffectTest extends FlatSpec with Matchers with MockFactory {
+  "name" should "be 'Blur'" in {
+    new BlurEffect(3).name shouldBe "Blur"
+  }
+
   "the effect" should "be symmetric far from border" in {
     val radius = 2
     val imageSize = 32
