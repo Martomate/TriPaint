@@ -1,38 +1,35 @@
 package com.martomate.tripaint.control
 
-import com.martomate.tripaint.gui.TriPaintView
-import com.martomate.tripaint.image._
-import com.martomate.tripaint.image.coords.TriImageCoords
-import com.martomate.tripaint.image.effects._
-import com.martomate.tripaint.image.format.SimpleStorageFormat
-import com.martomate.tripaint.image.graphics.TriImage
-import com.martomate.tripaint.image.pool.{ImagePool, ImagePoolImpl}
-import com.martomate.tripaint.image.save.{ImageSaver, ImageSaverToFile}
-import com.martomate.tripaint.image.storage._
-import com.martomate.tripaint.image.content.{ImageChangeTracker, ImageContent}
-import com.martomate.tripaint.image.grid.{ImageGrid, ImageGridImplOld}
-import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
+import com.martomate.tripaint.model.content.{ImageChangeTrackerImpl, ImageContent}
+import com.martomate.tripaint.model.coords.TriImageCoords
+import com.martomate.tripaint.model.effects._
+import com.martomate.tripaint.model.storage._
+import com.martomate.tripaint.model.{SaveLocation, TriPaintModel}
+import com.martomate.tripaint.view.gui.MainStage
+import com.martomate.tripaint.view.{TriPaintView, TriPaintViewListener}
 import scalafx.scene.paint.Color
 
 import scala.util.{Failure, Success}
 
-class TriPaintController(view: TriPaintView) {
-  val imageGrid: ImageGrid = new ImageGridImplOld(view.askForImageSize().getOrElse(32))
-  val imagePool: ImagePool = new ImagePoolImpl(ImageStorageImpl, view)
-  val imageSaver: ImageSaver = new ImageSaverToFile(new SimpleStorageFormat)
+class TriPaintController(val model: TriPaintModel) extends TriPaintViewListener {
+  val view: TriPaintView = new MainStage(this, model)
 
-  def addImage(newImage: TriImage): Unit = {
+  model.imageGrid.setImageSizeIfEmpty(view.askForImageSize().getOrElse(32))
+
+  private def addImage(newImage: ImageContent): Unit = {
     if (newImage != null) {
-      imageGrid(newImage.content.coords) = newImage
+      model.imageGrid(newImage.coords) = newImage
     }
   }
 
-  def saveBeforeClosing(images: TriImage*): Option[Boolean] = {
+  def removeImageAt(coords: TriImageCoords): Unit = model.imageGrid -= coords
+
+  def saveBeforeClosing(images: ImageContent*): Option[Boolean] = {
     view.askSaveBeforeClosing(images)
   }
 
   def do_exit(): Boolean = {
-    imageGrid.images.filter(_.changed) match {
+    allImages.filter(_.changeTracker.changed) match {
       case Seq() => true
       case images =>
         saveBeforeClosing(images: _*) match {
@@ -44,13 +41,17 @@ class TriPaintController(view: TriPaintView) {
     }
   }
 
-  def save(images: TriImage*): Boolean = images.filter(im => !imagePool.save(im.content.storage, imageSaver)).forall(im => imagePool.save(im.content.storage, imageSaver) || saveAs(im))
+  private def allImages: Seq[ImageContent] = {
+    model.imageGrid.images
+  }
 
-  def saveAs(image: TriImage): Boolean = {
+  def save(images: ImageContent*): Boolean = images.filter(im => !model.imagePool.save(im.storage, model.imageSaver)).forall(im => model.imagePool.save(im.storage, model.imageSaver) || saveAs(im))
+
+  def saveAs(image: ImageContent): Boolean = {
     view.askForSaveFile(image) match {
       case Some(file) =>
-        if (imagePool.move(image.content.storage, SaveLocation(file))) {
-          val saved = imagePool.save(image.content.storage, imageSaver)
+        if (model.imagePool.move(image.storage, SaveLocation(file))(view)) {
+          val saved = model.imagePool.save(image.storage, model.imageSaver)
           if (!saved) println("Image could not be saved!!")
           saved
         } else false
@@ -59,26 +60,31 @@ class TriPaintController(view: TriPaintView) {
     }
   }
 
-  val New: MenuBarAction = MenuBarAction.apply("New", "new", new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)) {
+  private def makeImageContent(coords: TriImageCoords, storage: ImageStorage) = {
+    new ImageContent(coords, new ImageChangeTrackerImpl(storage, model.imagePool, model.imageSaver))
+  }
+
+  private def allSelectedImages: Seq[ImageContent] = {
+    model.imageGrid.selectedImages
+  }
+
+  override def action_new(): Unit = {
     view.askForWhereToPutImage() match {
       case Some((x, y)) =>
-        addImage(TriImage(
-          makeImageContent(TriImageCoords(x, y), imagePool.fromBGColor(new Color(view.imageDisplay.colors.secondaryColor()), imageGrid.imageSize)),
-          view.imageDisplay
-        ))
+        addImage(makeImageContent(TriImageCoords(x, y), model.imagePool.fromBGColor(new Color(view.backgroundColor), model.imageGrid.imageSize)))
       case _ =>
     }
   }
 
-  val Open: MenuBarAction = MenuBarAction.apply("Open", "open", new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)) {
+  override def action_open(): Unit = {
     view.askForFileToOpen() foreach { file =>
-      val imageSize = imageGrid.imageSize
+      val imageSize = model.imageGrid.imageSize
       val offset = view.askForOffset().getOrElse(0, 0)
 
-      imagePool.fromFile(SaveLocation(file, offset), imageSize) match {
+      model.imagePool.fromFile(SaveLocation(file, offset), imageSize) match {
         case Success(storage) =>
           view.askForWhereToPutImage() foreach { coords =>
-            val image = TriImage.apply(makeImageContent(TriImageCoords(coords._1, coords._2), storage), view.imageDisplay)
+            val image = makeImageContent(TriImageCoords(coords._1, coords._2), storage)
             addImage(image)
           }
         case Failure(exc) =>
@@ -87,113 +93,92 @@ class TriPaintController(view: TriPaintView) {
     }
   }
 
-  private def makeImageContent(coords: TriImageCoords, storage: ImageStorage) = {
-    new ImageContent(coords, new ImageChangeTracker(storage, imagePool, imageSaver))
+  override def action_openHexagon(): Unit = {
+    def coordOffset(idx: Int): (Int, Int) = {
+      idx match {
+        case 0 => (0, 0)
+        case 1 => (-1, 0)
+        case 2 => (-2, 0)
+        case 3 => (-1, -1)
+        case 4 => (0, -1)
+        case 5 => (1, -1)
+      }
+    }
+
+    view.askForFileToOpen() foreach { file =>
+      val imageSize = model.imageGrid.imageSize
+      val offset = view.askForOffset().getOrElse(0, 0)
+
+      view.askForWhereToPutImage() foreach { coords =>
+        for (idx <- 0 until 6) {
+          model.imagePool.fromFile(SaveLocation(file, (offset._1 + idx * imageSize, offset._2)), imageSize) match {
+            case Success(storage) =>
+              val off = coordOffset(idx)
+              val imageCoords = TriImageCoords(coords._1 + off._1, coords._2 + off._2)
+              val image = makeImageContent(imageCoords, storage)
+              addImage(image)
+            case Failure(exc) =>
+              exc.printStackTrace()
+          }
+        }
+      }
+    }
   }
 
-  val Save: MenuBarAction = MenuBarAction.apply("Save", "save", new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown)) {
-    save(imageGrid.selectedImages.filter(_.changed): _*)
+  override def action_save(): Unit = {
+    save(allSelectedImages.filter(_.changeTracker.changed): _*)
   }
 
-  val SaveAs: MenuBarAction = MenuBarAction.apply("Save As", accelerator = new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown, KeyCombination.ShiftDown)) {
-    imageGrid.selectedImages.foreach(saveAs)
+  override def action_saveAs(): Unit = {
+    allSelectedImages.foreach(im => saveAs(im))
   }
 
-  val Exit: MenuBarAction = MenuBarAction.apply("Exit") {
-    if (do_exit()) view.close()
+  override def action_exit(): Unit = if (do_exit()) view.close()
+
+  override def action_undo(): Unit = model.imageGrid.images.foreach(_.undo())
+
+  override def action_redo(): Unit = model.imageGrid.images.foreach(_.redo())
+
+  private def applyEffect(effect: Effect): Unit = {
+    model.imageGrid.applyEffect(effect)
   }
 
-  val Undo: MenuBarAction = MenuBarAction.apply("Undo", "undo", new KeyCodeCombination(KeyCode.Z, KeyCombination.ControlDown)) {
-    view.imageDisplay.undo
-  }
-
-  val Redo: MenuBarAction = MenuBarAction.apply("Redo", "redo", new KeyCodeCombination(KeyCode.Y, KeyCombination.ControlDown)) {
-    view.imageDisplay.redo
-  }
-
-  val Cut: MenuBarAction = MenuBarAction.apply("Cut", "cut", new KeyCodeCombination(KeyCode.X, KeyCombination.ControlDown)) {
-    ???
-  }
-
-  val Copy: MenuBarAction = MenuBarAction.apply("Copy", "copy", new KeyCodeCombination(KeyCode.C, KeyCombination.ControlDown)) {
-    ???
-  }
-
-  val Paste: MenuBarAction = MenuBarAction.apply("Paste", "paste", new KeyCodeCombination(KeyCode.V, KeyCombination.ControlDown)) {
-    ???
-  }
-
-  val Move: MenuBarAction = MenuBarAction.apply("Move", "move") {
-/*    val images = imageGrid.selectedImages
-    val horizTextField = DialogUtils.doubleTF
-    val vertTextField = DialogUtils.doubleTF
-    import DialogUtils._
-    showInputDialog[(Double, Double)](
-      title = "Move images",
-      headerText = "How far should the images move?",
-      graphic = makeImagePreviewList(images),
-
-      content = Seq(makeGridPane(Seq(
-        Seq(new Label("Horizontal movement:"), horizTextField),
-        Seq(new Label("Vertical movement:"), vertTextField)
-      ))),
-
-      resultConverter = {
-        case ButtonType.OK => Try((horizTextField.text().toDouble, vertTextField.text().toDouble)).getOrElse(null)
-        case _ => null
-      },
-
-      buttons = Seq(ButtonType.OK, ButtonType.Cancel)
-    ) match {
-      case Some((h, v)) => //images.foreach(_.move(h, v))
-      case _ =>
-    }*/
-  }
-
-  val Scale: MenuBarAction = MenuBarAction.apply("Scale", "scale") {
-/*    makeTextInputDialog[Double](
-      "Scale images",
-      "How much should the images be scaled?",
-      "Scale factor:",
-      DialogUtils.doubleRestriction,
-      str => Try(str.toDouble).getOrElse(0d),
-      (im, sc) => ()//im scale sc
-    )*/
-  }
-
-  val Rotate: MenuBarAction = MenuBarAction.apply("Rotate", "rotate") {
-/*    makeTextInputDialog[Double](
-      "Rotate images",
-      "How much should the images be rotated (degrees)?",
-      "Angle:",
-      DialogUtils.doubleRestriction,
-      str => Try(str.toDouble).getOrElse(0d),
-      (im, rt) => ()//im rotate rt
-    )*/
-  }
-
-  val Blur: MenuBarAction = MenuBarAction.apply("Blur") {
+  override def action_blur(): Unit = {
     view.askForBlurRadius() foreach { radius =>
-      val effect = new BlurEffect(radius)
-      imageGrid.selectedImages.foreach(_.applyEffect(effect))
+      applyEffect(new BlurEffect(radius))
     }
   }
 
-  val MotionBlur: MenuBarAction = MenuBarAction.apply("Motion blur") {
+  override def action_motionBlur(): Unit = {
     view.askForMotionBlurRadius() foreach { radius =>
-      val effect = new MotionBlurEffect(radius)
-      imageGrid.selectedImages.foreach(_.applyEffect(effect))
+      applyEffect(new MotionBlurEffect(radius))
     }
   }
 
-  val RandomNoise: MenuBarAction = MenuBarAction.apply("Random noise") {
+  override def action_randomNoise(): Unit = {
     view.askForRandomNoiseColors() foreach { case (lo, hi) =>
-      val effect = new RandomNoiseEffect(lo, hi)
-      imageGrid.selectedImages.foreach(_.applyEffect(effect))
+      applyEffect(new RandomNoiseEffect(lo, hi))
     }
   }
 
-  val Scramble: MenuBarAction = MenuBarAction.apply("Scramble") {
-    imageGrid.selectedImages.foreach(_.applyEffect(ScrambleEffect))
+  override def action_scramble(): Unit = applyEffect(ScrambleEffect)
+
+  override def requestExit(): Boolean = {
+    do_exit()
+  }
+
+  override def requestImageRemoval(image: ImageContent): Unit = {
+    var abortRemoval = false
+    if (image.changeTracker.changed) {
+      saveBeforeClosing(image) match {
+        case Some(shouldSave) =>
+          if (shouldSave && !save(image)) abortRemoval = true
+        case None => abortRemoval = true
+      }
+    }
+
+    if (!abortRemoval) {
+      removeImageAt(image.coords)
+    }
   }
 }

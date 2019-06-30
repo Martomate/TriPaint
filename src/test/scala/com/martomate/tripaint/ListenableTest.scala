@@ -1,5 +1,6 @@
 package com.martomate.tripaint
 
+import com.martomate.tripaint.util.Listenable
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
