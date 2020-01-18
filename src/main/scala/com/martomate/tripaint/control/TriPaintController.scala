@@ -12,21 +12,23 @@ class TriPaintController(val model: TriPaintModel) extends TriPaintViewListener 
 
   model.imageGrid.setImageSizeIfEmpty(view.askForImageSize().getOrElse(32))
 
-  override def action_new(): Unit = NewAction.perform(model, view)
-  override def action_open(): Unit = OpenAction.perform(model, view)
-  override def action_openHexagon(): Unit = OpenHexagonAction.perform(model, view)
-  override def action_save(): Unit = SaveAction.perform(model, view)
-  override def action_saveAs(): Unit = SaveAsAction.perform(model, view)
-  override def action_exit(): Unit = ExitAction.perform(model, view)
+  private def perform(action: Action): Unit = action.perform(model, view)
 
-  override def action_undo(): Unit = UndoAction.perform(model, view)
-  override def action_redo(): Unit = RedoAction.perform(model, view)
+  override def action_new(): Unit = perform(NewAction)
+  override def action_open(): Unit = perform(OpenAction)
+  override def action_openHexagon(): Unit = perform(OpenHexagonAction)
+  override def action_save(): Unit = perform(SaveAction)
+  override def action_saveAs(): Unit = perform(SaveAsAction)
+  override def action_exit(): Unit = perform(ExitAction)
 
-  override def action_blur(): Unit = BlurAction.perform(model, view)
-  override def action_motionBlur(): Unit = MotionBlurAction.perform(model, view)
-  override def action_randomNoise(): Unit = RandomNoiseAction.perform(model, view)
-  override def action_scramble(): Unit = ScrambleAction.perform(model, view)
+  override def action_undo(): Unit = perform(UndoAction)
+  override def action_redo(): Unit = perform(RedoAction)
+
+  override def action_blur(): Unit = perform(BlurAction)
+  override def action_motionBlur(): Unit = perform(MotionBlurAction)
+  override def action_randomNoise(): Unit = perform(RandomNoiseAction)
+  override def action_scramble(): Unit = perform(ScrambleAction)
 
   override def requestExit(): Boolean = ExitAction.do_exit(model, view)
-  override def requestImageRemoval(image: ImageContent): Unit = new RemoveImageAction(image).perform(model, view)
+  override def requestImageRemoval(image: ImageContent): Unit = perform(new RemoveImageAction(image))
 }

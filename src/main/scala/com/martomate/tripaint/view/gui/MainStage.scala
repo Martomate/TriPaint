@@ -21,24 +21,24 @@ import scalafx.stage.FileChooser.ExtensionFilter
 import scala.util.Try
 
 class MainStageButtons(control: TriPaintViewListener) {
-  val New: MenuBarAction = MenuBarAction.apply("New", "new", new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)) (control.action_new())
-  val Open: MenuBarAction = MenuBarAction.apply("Open", "open", new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)) (control.action_open())
-  val OpenHexagon: MenuBarAction = MenuBarAction.apply("Open hexagon") (control.action_openHexagon())
-  val Save: MenuBarAction = MenuBarAction.apply("Save", "save", new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown)) (control.action_save())
-  val SaveAs: MenuBarAction = MenuBarAction.apply("Save As", accelerator = new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown, KeyCombination.ShiftDown)) (control.action_saveAs())
-  val Exit: MenuBarAction = MenuBarAction.apply("Exit") (control.action_exit())
-  val Undo: MenuBarAction = MenuBarAction.apply("Undo", "undo", new KeyCodeCombination(KeyCode.Z, KeyCombination.ControlDown)) (control.action_undo())
-  val Redo: MenuBarAction = MenuBarAction.apply("Redo", "redo", new KeyCodeCombination(KeyCode.Y, KeyCombination.ControlDown)) (control.action_redo())
-  val Cut: MenuBarAction = MenuBarAction.apply("Cut", "cut") ()
-  val Copy: MenuBarAction = MenuBarAction.apply("Copy", "copy") ()
-  val Paste: MenuBarAction = MenuBarAction.apply("Paste", "paste") ()
-  val Move: MenuBarAction = MenuBarAction.apply("Move", "move") ()
-  val Scale: MenuBarAction = MenuBarAction.apply("Scale", "scale") ()
-  val Rotate: MenuBarAction = MenuBarAction.apply("Rotate", "rotate") ()
-  val Blur: MenuBarAction = MenuBarAction.apply("Blur") (control.action_blur())
-  val MotionBlur: MenuBarAction = MenuBarAction.apply("Motion blur") (control.action_motionBlur())
-  val RandomNoise: MenuBarAction = MenuBarAction.apply("Random noise") (control.action_randomNoise())
-  val Scramble: MenuBarAction = MenuBarAction.apply("Scramble") (control.action_scramble())
+  val New: MenuBarAction = MenuBarAction("New", "new", new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)) (control.action_new())
+  val Open: MenuBarAction = MenuBarAction("Open", "open", new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)) (control.action_open())
+  val OpenHexagon: MenuBarAction = MenuBarAction("Open hexagon", "open_hexagon", new KeyCodeCombination(KeyCode.H, KeyCombination.ControlDown)) (control.action_openHexagon())
+  val Save: MenuBarAction = MenuBarAction("Save", "save", new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown)) (control.action_save())
+  val SaveAs: MenuBarAction = MenuBarAction("Save As", accelerator = new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown, KeyCombination.ShiftDown)) (control.action_saveAs())
+  val Exit: MenuBarAction = MenuBarAction("Exit") (control.action_exit())
+  val Undo: MenuBarAction = MenuBarAction("Undo", "undo", new KeyCodeCombination(KeyCode.Z, KeyCombination.ControlDown)) (control.action_undo())
+  val Redo: MenuBarAction = MenuBarAction("Redo", "redo", new KeyCodeCombination(KeyCode.Y, KeyCombination.ControlDown)) (control.action_redo())
+  val Cut: MenuBarAction = MenuBarAction("Cut", "cut") ()
+  val Copy: MenuBarAction = MenuBarAction("Copy", "copy") ()
+  val Paste: MenuBarAction = MenuBarAction("Paste", "paste") ()
+  val Move: MenuBarAction = MenuBarAction("Move", "move") ()
+  val Scale: MenuBarAction = MenuBarAction("Scale", "scale") ()
+  val Rotate: MenuBarAction = MenuBarAction("Rotate", "rotate") ()
+  val Blur: MenuBarAction = MenuBarAction("Blur") (control.action_blur())
+  val MotionBlur: MenuBarAction = MenuBarAction("Motion blur") (control.action_motionBlur())
+  val RandomNoise: MenuBarAction = MenuBarAction("Random noise") (control.action_randomNoise())
+  val Scramble: MenuBarAction = MenuBarAction("Scramble") (control.action_scramble())
 }
 
 class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends PrimaryStage with TriPaintView {
@@ -51,6 +51,8 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends Pr
   private val toolBox: ToolBox     = new ToolBox
   private val imageTabs: ImageTabs = new ImageTabs(controls, model)
   private val colorBox: VBox       = makeColorBox()
+
+  private var currentFolder: Option[File] = None
 
   title = "TriPaint"
   onCloseRequest = e => {
@@ -109,8 +111,11 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends Pr
 
   override def askForFileToOpen(): Option[File] = {
     val chooser = new FileChooser
+    currentFolder.foreach(chooser.initialDirectory = _)
     chooser.title = "Open file"
-    Option(chooser.showOpenDialog(this))
+    val result = Option(chooser.showOpenDialog(this))
+    result.foreach(r => currentFolder = Some(r.getParentFile))
+    result
   }
 
   override def askForWhereToPutImage(): Option[(Int, Int)] = {
@@ -187,8 +192,8 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends Pr
     alert
   }
 
-  override def askForOffset(): Option[(Int, Int)] = {
-    DialogUtils.askForOffset()
+  override def askForOffset(file: File, width: Int, height: Int): Option[(Int, Int)] = {
+    DialogUtils.askForOffset(file, width, height)
   }
 
   override def shouldReplaceImage(currentImage: ImageStorage, newImage: ImageStorage, location: SaveLocation): Option[Boolean] = {

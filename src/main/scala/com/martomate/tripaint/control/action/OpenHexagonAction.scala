@@ -8,22 +8,20 @@ import scala.util.{Failure, Success}
 
 object OpenHexagonAction extends Action {
   override def perform(model: TriPaintModel, view: TriPaintView): Unit = {
-    view.askForFileToOpen() foreach { file =>
-      val imageSize = model.imageGrid.imageSize
-      val offset = view.askForOffset().getOrElse(0, 0)
-
-      view.askForWhereToPutImage() foreach { coords =>
-        for (idx <- 0 until 6) {
-          model.imagePool.fromFile(SaveLocation(file, (offset._1 + idx * imageSize, offset._2)), imageSize) match {
-            case Success(storage) =>
-              val off = coordOffset(idx)
-              val imageCoords = TriImageCoords(coords._1 + off._1, coords._2 + off._2)
-              val image = makeImageContent(model, imageCoords, storage)
-              addImage(model, image)
-            case Failure(exc) =>
-              exc.printStackTrace()
-          }
-        }
+    val imageSize = model.imageGrid.imageSize
+    for {
+      file <- view.askForFileToOpen()
+      offset <- view.askForOffset(file, imageSize * 6, imageSize)
+      coords <- view.askForWhereToPutImage()
+    } for (idx <- 0 until 6) {
+      model.imagePool.fromFile(SaveLocation(file, (offset._1 + idx * imageSize, offset._2)), imageSize) match {
+        case Success(storage) =>
+          val off = coordOffset(idx)
+          val imageCoords = TriImageCoords(coords._1 + off._1, coords._2 + off._2)
+          val image = makeImageContent(model, imageCoords, storage)
+          addImage(model, image)
+        case Failure(exc) =>
+          exc.printStackTrace()
       }
     }
   }
