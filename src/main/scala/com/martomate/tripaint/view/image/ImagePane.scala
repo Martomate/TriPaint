@@ -112,7 +112,6 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
   }
 
   private def mousePressedAt(coords: PixelCoords, e: MouseEvent, dragged: Boolean): Unit = {
-    println(coords.toGlobal(imageSize) + "\t" + coords)
     imageGrid(coords.image) foreach { image =>
       primaryOrSecondaryColor foreach { color =>
         EditMode.currentMode match {
