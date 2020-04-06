@@ -1,14 +1,13 @@
 package com.martomate.tripaint.control
 
-import com.martomate.tripaint.control.action.effect.{BlurAction, MotionBlurAction, RandomNoiseAction, ScrambleAction}
 import com.martomate.tripaint.control.action._
+import com.martomate.tripaint.control.action.effect.{BlurAction, MotionBlurAction, RandomNoiseAction, ScrambleAction}
 import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.content.ImageContent
-import com.martomate.tripaint.view.gui.MainStage
-import com.martomate.tripaint.view.{TriPaintView, TriPaintViewListener}
+import com.martomate.tripaint.view.{TriPaintView, TriPaintViewFactory, TriPaintViewListener}
 
-class TriPaintController(val model: TriPaintModel) extends TriPaintViewListener {
-  val view: TriPaintView = new MainStage(this, model)
+class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFactory) extends TriPaintViewListener {
+  val view: TriPaintView = viewFactory.createView(this, model)
 
   model.imageGrid.setImageSizeIfEmpty(view.askForImageSize().getOrElse(32))
 
