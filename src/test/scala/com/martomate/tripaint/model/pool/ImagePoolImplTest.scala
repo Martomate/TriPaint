@@ -1,6 +1,6 @@
 package com.martomate.tripaint.model.pool
 
-import com.martomate.tripaint.model.SaveLocation
+import com.martomate.tripaint.model.{SaveInfo, SaveLocation}
 import com.martomate.tripaint.model.storage.{ImageStorage, ImageStorageFactory}
 
 class ImagePoolImplTest extends ImagePoolTest {
@@ -10,7 +10,8 @@ class ImagePoolImplTest extends ImagePoolTest {
     val p = make()
     val image = stub[ImageStorage]
     val location = SaveLocation(null)
-    p.move(image, location) shouldBe true
+    val info = SaveInfo(null)
+    p.move(image, location, info) shouldBe true
     p.locationOf(image) shouldBe Some(location)
   }
 
@@ -18,8 +19,9 @@ class ImagePoolImplTest extends ImagePoolTest {
     val p = make()
     val image = stub[ImageStorage]
     val location = SaveLocation(null)
-    p.move(image, location)
-    p.move(image, location) shouldBe true
+    val info = SaveInfo(null)
+    p.move(image, location, info)
+    p.move(image, location, info) shouldBe true
     p.locationOf(image) shouldBe Some(location)
   }
 
@@ -29,11 +31,12 @@ class ImagePoolImplTest extends ImagePoolTest {
     val currentImage = stub[ImageStorage]
     val newImage = stub[ImageStorage]
     val location = SaveLocation(null)
+    val info = SaveInfo(null)
 
     (handler.shouldReplaceImage _).expects(currentImage, newImage, location).returns(None)
 
-    p.move(currentImage, location)
-    p.move(newImage, location) shouldBe false
+    p.move(currentImage, location, info)
+    p.move(newImage, location, info) shouldBe false
   }
 
   it should "replace the current image, notify listeners, and return true if the handler wants to replace it" in {
@@ -45,12 +48,13 @@ class ImagePoolImplTest extends ImagePoolTest {
     val currentImage = stub[ImageStorage]
     val newImage = stub[ImageStorage]
     val location = SaveLocation(null)
+    val info = SaveInfo(null)
 
     (handler.shouldReplaceImage _).expects(currentImage, newImage, location).returns(Some(true))
     (listener.onImageReplaced _).expects(currentImage, newImage, location)
 
-    p.move(currentImage, location)
-    p.move(newImage, location) shouldBe true
+    p.move(currentImage, location, info)
+    p.move(newImage, location, info) shouldBe true
     p.locationOf(currentImage) shouldBe None
     p.locationOf(newImage) shouldBe Some(location)
   }
@@ -64,12 +68,13 @@ class ImagePoolImplTest extends ImagePoolTest {
     val currentImage = stub[ImageStorage]
     val newImage = stub[ImageStorage]
     val location = SaveLocation(null)
+    val info = SaveInfo(null)
 
     (handler.shouldReplaceImage _).expects(currentImage, newImage, location).returns(Some(false))
     (listener.onImageReplaced _).expects(newImage, currentImage, location)
 
-    p.move(currentImage, location)
-    p.move(newImage, location) shouldBe true
+    p.move(currentImage, location, info)
+    p.move(newImage, location, info) shouldBe true
     p.locationOf(currentImage) shouldBe Some(location)
     p.locationOf(newImage) shouldBe None
   }

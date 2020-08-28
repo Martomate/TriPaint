@@ -1,11 +1,12 @@
 package com.martomate.tripaint
 
 import com.martomate.tripaint.util.Listenable
-import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class ListenableTest extends FlatSpec with Matchers {
+class ListenableTest extends AnyFlatSpec with Matchers {
   class LocalListenable[T] extends Listenable[T] {
     def testNotify(func: T => Unit): Unit = notifyListeners(func)
   }

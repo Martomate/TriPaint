@@ -3,9 +3,8 @@ package com.martomate.tripaint.view
 import java.io.File
 
 import com.martomate.tripaint.model.content.ImageContent
+import com.martomate.tripaint.model.format.StorageFormat
 import com.martomate.tripaint.model.pool.ImageSaveCollisionHandler
-import com.martomate.tripaint.util.Listenable
-import com.martomate.tripaint.view.image.ImagePane
 import scalafx.scene.paint.Color
 
 trait TriPaintView extends ImageSaveCollisionHandler {
@@ -14,9 +13,12 @@ trait TriPaintView extends ImageSaveCollisionHandler {
   def askForImageSize(): Option[Int]
   def askSaveBeforeClosing(images: Seq[ImageContent]): Option[Boolean]
   def askForWhereToPutImage(): Option[(Int, Int)]
+
   def askForSaveFile(image: ImageContent): Option[File]
+  def askForFileSaveSettings(file: File, image: ImageContent): Option[FileSaveSettings]
+
   def askForFileToOpen(): Option[File]
-  def askForOffset(file: File, width: Int, height: Int): Option[(Int, Int)]
+  def askForFileOpenSettings(file: File, width: Int, height: Int): Option[FileOpenSettings]
 
   def askForBlurRadius(): Option[Int]
   def askForMotionBlurRadius(): Option[Int]
@@ -24,3 +26,6 @@ trait TriPaintView extends ImageSaveCollisionHandler {
 
   def close(): Unit
 }
+
+case class FileSaveSettings(offset: (Int, Int), format: StorageFormat)
+case class FileOpenSettings(offset: (Int, Int), format: StorageFormat)

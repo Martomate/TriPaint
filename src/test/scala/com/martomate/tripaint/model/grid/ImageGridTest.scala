@@ -2,11 +2,11 @@ package com.martomate.tripaint.model.grid
 
 import com.martomate.tripaint.model.content.ImageContent
 import com.martomate.tripaint.model.coords.TriImageCoords
-import com.martomate.tripaint.view.image.TriImage
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-abstract class ImageGridTest extends FlatSpec with Matchers with MockFactory {
+abstract class ImageGridTest extends AnyFlatSpec with Matchers with MockFactory {
   def make: ImageGrid
 
   def makeImage(x: Int, y: Int): ImageContent = {

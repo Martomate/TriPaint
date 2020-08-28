@@ -1,6 +1,7 @@
 package com.martomate.tripaint.model.storage
 
 import com.martomate.tripaint.model.coords.TriangleCoords
+import com.martomate.tripaint.model.format.StorageFormat
 import com.martomate.tripaint.util.Listenable
 import scalafx.scene.paint.Color
 

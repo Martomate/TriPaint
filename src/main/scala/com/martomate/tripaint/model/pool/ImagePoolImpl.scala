@@ -1,15 +1,20 @@
 package com.martomate.tripaint.model.pool
 
-import com.martomate.tripaint.model.SaveLocation
+import com.martomate.tripaint.model.{SaveInfo, SaveLocation}
 import com.martomate.tripaint.model.storage.{ImageStorage, ImageStorageFactory}
 import com.martomate.tripaint.util.{InjectiveHashMap, InjectiveMap}
 
-class ImagePoolImpl(factory: ImageStorageFactory) extends ImagePool(factory) {
-  override protected val mapping: InjectiveMap[SaveLocation, ImageStorage] = new InjectiveHashMap[SaveLocation, ImageStorage]
+import scala.collection.mutable
 
-  override def move(image: ImageStorage, to: SaveLocation)(implicit handler: ImageSaveCollisionHandler): Boolean = {
+class ImagePoolImpl(factory: ImageStorageFactory) extends ImagePool(factory) {
+  override protected val mapping: InjectiveMap[SaveLocation, ImageStorage] = new InjectiveHashMap
+  override protected val saveInfo: mutable.Map[ImageStorage, SaveInfo] = mutable.Map.empty
+
+  override def move(image: ImageStorage, to: SaveLocation, info: SaveInfo)(implicit handler: ImageSaveCollisionHandler): Boolean = {
     val newLocation = to
     val currentImage = get(newLocation)
+
+    saveInfo(image) = info
 
     if (currentImage == null) {
       mapping.set(to, image)

@@ -29,8 +29,8 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
 
   imageGrid.addListener(this)
 
-  private def images: Seq[ImageContent] = imageGrid.images
-  private def triImages: Seq[TriImage] = images.map(im => imageMap(im.coords))
+  private def images: mutable.Seq[ImageContent] = imageGrid.images
+  private def triImages: mutable.Seq[TriImage] = images.map(im => imageMap(im.coords))
   def imageSize: Int = imageGrid.imageSize
 
   def sideLength: Double = (imageSize * 2 + 1) * zoom

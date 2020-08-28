@@ -9,5 +9,5 @@ import com.martomate.tripaint.model.storage.ImageStorageImpl
 class TriPaintModel {
   val imageGrid: ImageGrid = new ImageGridImplOld(-1)
   val imagePool: ImagePool = new ImagePoolImpl(ImageStorageImpl)
-  val imageSaver: ImageSaver = new ImageSaverToFile(new SimpleStorageFormat)
+  val imageSaver: ImageSaver = new ImageSaverToFile
 }

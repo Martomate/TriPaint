@@ -1,9 +1,10 @@
 package com.martomate.tripaint
 
 import com.martomate.tripaint.util.InjectiveMap
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-abstract class InjectiveMapTest extends FlatSpec with Matchers {
+abstract class InjectiveMapTest extends AnyFlatSpec with Matchers {
   def createMap[L, R]: InjectiveMap[L, R]
 
   "InjectiveMap" should "work with L = R" in {

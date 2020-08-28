@@ -2,15 +2,15 @@ package com.martomate.tripaint.model.storage
 
 import com.martomate.tripaint.model.SaveLocation
 import com.martomate.tripaint.model.coords.{StorageCoords, TriangleCoords}
-import com.martomate.tripaint.model.format.SimpleStorageFormat
+import com.martomate.tripaint.model.format.{SimpleStorageFormat, StorageFormat}
 import javax.imageio.ImageIO
 import scalafx.scene.paint.Color
 
 import scala.util.Try
 
-class ImageStorageImpl private (val imageSize: Int, initialPixels: StorageCoords => Color) extends ImageStorage {
+class ImageStorageImpl private (val imageSize: Int, initialPixels: TriangleCoords => Color) extends ImageStorage {
   private val coordsFormatter = new SimpleStorageFormat
-  private val pixels = Array.tabulate(imageSize, imageSize)((x, y) => initialPixels(StorageCoords(x, y)))
+  private val pixels = Array.tabulate(imageSize, imageSize)((x, y) => initialPixels(coordsFormatter.transformFromStorage(StorageCoords(x, y))))
 
   private def toStorage(coords: TriangleCoords): StorageCoords = coordsFormatter.transformToStorage(coords)
   private def fromStorage(coords: StorageCoords): TriangleCoords = coordsFormatter.transformFromStorage(coords)
@@ -31,11 +31,17 @@ object ImageStorageImpl extends ImageStorageFactory {
     new ImageStorageImpl(imageSize, _ => bgColor)
   }
 
-  def fromFile(saveInfo: SaveLocation, imageSize: Int): Try[ImageStorageImpl] = Try {
+  def fromFile(saveInfo: SaveLocation, format: StorageFormat, imageSize: Int): Try[ImageStorageImpl] = Try {
     val image = ImageIO.read(saveInfo.file)
     val (xOff, yOff) = saveInfo.offset
     val pixels = image.getRGB(xOff, yOff, imageSize, imageSize, null, 0, imageSize)
-    new ImageStorageImpl(imageSize, coords => intToColor(pixels(coords.x + coords.y * imageSize)))
+
+    def colorAt(coords: TriangleCoords) = {
+      val stCoords = format.transformToStorage(coords)
+      intToColor(pixels(stCoords.x + stCoords.y * imageSize))
+    }
+
+    new ImageStorageImpl(imageSize, coords => colorAt(coords))
   }
 
   private def intToColor(value: Int): Color = Color.rgb(

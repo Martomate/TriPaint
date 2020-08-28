@@ -4,10 +4,11 @@ import com.martomate.tripaint.model.content.ImageContent
 import com.martomate.tripaint.model.coords.{GlobalPixCoords, TriImageCoords, TriangleCoords}
 import com.martomate.tripaint.model.storage.{ImageStorage, ImageStorageImpl}
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{FlatSpec, Matchers}
 import scalafx.scene.paint.Color
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class ImageGridColorLookupTest extends FlatSpec with Matchers with MockFactory {
+class ImageGridColorLookupTest extends AnyFlatSpec with Matchers with MockFactory {
   "lookup" should "return None if there is no image" in {
     val grid = new ImageGridImplOld(16)
     val lookup = new ImageGridColorLookup(grid)

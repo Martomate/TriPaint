@@ -6,10 +6,11 @@ import com.martomate.tripaint.model.coords.{GlobalPixCoords, PixelCoords, TriIma
 import com.martomate.tripaint.model.grid.{ImageGrid, ImageGridColorLookup}
 import com.martomate.tripaint.model.storage.ImageStorageImpl
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{FlatSpec, Matchers}
 import scalafx.scene.paint.Color
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class BlurEffectTest extends FlatSpec with Matchers with MockFactory {
+class BlurEffectTest extends AnyFlatSpec with Matchers with MockFactory {
   "name" should "be 'Blur'" in {
     new BlurEffect(3).name shouldBe "Blur"
   }
@@ -30,11 +31,11 @@ class BlurEffectTest extends FlatSpec with Matchers with MockFactory {
     val image = stub[ImageContent]
     val storage = ImageStorageImpl.fromBGColor(Color.Black, imageSize)
 
-    grid.imageSize _ when() returns imageSize
-    grid.apply _ when thisImage returns Some(image)
-    grid.apply _ when * returns None
+    (() => grid.imageSize).when() returns imageSize
+    (grid.apply _).when(thisImage) returns Some(image)
+    (grid.apply _).when(*) returns None
 
-    image.storage _ when() returns storage
+    (() => image.storage).when() returns storage
 
     storage(dotLocation) = Color.White
 
@@ -72,12 +73,12 @@ class BlurEffectTest extends FlatSpec with Matchers with MockFactory {
     val storage = ImageStorageImpl.fromBGColor(Color.Black, imageSize)
     val storage2 = ImageStorageImpl.fromBGColor(Color.Black, imageSize)
 
-    grid.imageSize _ when() returns imageSize
-    grid.apply _ when thisImage returns Some(image)
-    grid.apply _ when * returns Some(image2)
+    (() => grid.imageSize).when() returns imageSize
+    (grid.apply _).when(thisImage) returns Some(image)
+    (grid.apply _).when(*) returns Some(image2)
 
-    image.storage _ when() returns storage
-    image2.storage _ when() returns storage2
+    (() => image.storage).when().returns(storage)
+    (() => image2.storage).when().returns(storage2)
 
     storage(dotLocation) = Color.White
 

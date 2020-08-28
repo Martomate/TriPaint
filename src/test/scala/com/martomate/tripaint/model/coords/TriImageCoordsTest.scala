@@ -1,8 +1,9 @@
 package com.martomate.tripaint.model.coords
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class TriImageCoordsTest extends FlatSpec with Matchers {
+class TriImageCoordsTest extends AnyFlatSpec with Matchers {
   private val epsilon: Double = 1e-6
   private val unitHeight: Double = math.sqrt(3) / 2
   private val aThirdHeight: Double = unitHeight / 3
@@ -28,5 +29,5 @@ class TriImageCoordsTest extends FlatSpec with Matchers {
     -TriImageCoords(-7, 3).yOff shouldBe  3 * unitHeight + 2 * aThirdHeight +- epsilon
     -TriImageCoords(-7,-3).yOff shouldBe -3 * unitHeight + 2 * aThirdHeight +- epsilon
   }
-  "centroid seems to be something else"
+  //"centroid seems to be something else"
 }

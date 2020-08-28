@@ -12,9 +12,9 @@ import scalafx.scene.paint.Color
 
 import scala.util.Try
 
-class ImageSaverToFile(format: StorageFormat) extends ImageSaver {
+class ImageSaverToFile extends ImageSaver {
 
-  def save(image: ImageStorage, saveInfo: SaveLocation): Boolean = {
+  def save(image: ImageStorage, format: StorageFormat, saveInfo: SaveLocation): Boolean = {
     val SaveLocation(file, offset) = saveInfo
 
     val oldImage: Option[BufferedImage] = readImageAt(file)
@@ -47,13 +47,6 @@ class ImageSaverToFile(format: StorageFormat) extends ImageSaver {
   }
 
   private def makeNewImage(width: Int, height: Int): BufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
-
-  private def colorToInt(col: Color): Int = {
-    (col.opacity * 255).toInt << 24 |
-    (col.red     * 255).toInt << 16 |
-    (col.green   * 255).toInt <<  8 |
-    (col.blue    * 255).toInt
-  }
 
   private def writeImage(dest: BufferedImage, source: ImageStorage, offset: (Int, Int), format: StorageFormat): Unit = {
     for (y <- 0 until source.imageSize) {

@@ -1,8 +1,9 @@
 package com.martomate.tripaint.model.coords
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class TriangleCoordsTest extends FlatSpec with Matchers {
+class TriangleCoordsTest extends AnyFlatSpec with Matchers {
   "constructor" should "require x >= 0" in {
     testApplyFail(-1, 0)
     testApplyFail(-1, -1)

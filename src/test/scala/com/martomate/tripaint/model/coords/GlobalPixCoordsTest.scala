@@ -1,9 +1,10 @@
 package com.martomate.tripaint.model.coords
 
 import org.scalactic.{Equality, TolerantNumerics}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class GlobalPixCoordsTest extends FlatSpec with Matchers {
+class GlobalPixCoordsTest extends AnyFlatSpec with Matchers {
   private def make(x: Int, y: Int): GlobalPixCoords = GlobalPixCoords(x, y)
 
   private val neighborDistSq = 1.0 / 3 // dist = sqrt(3) / 2 * (2.0 / 3)

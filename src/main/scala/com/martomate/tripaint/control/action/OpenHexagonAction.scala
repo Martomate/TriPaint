@@ -2,7 +2,7 @@ package com.martomate.tripaint.control.action
 
 import com.martomate.tripaint.model.{SaveLocation, TriPaintModel}
 import com.martomate.tripaint.model.coords.TriImageCoords
-import com.martomate.tripaint.view.TriPaintView
+import com.martomate.tripaint.view.{FileOpenSettings, TriPaintView}
 
 import scala.util.{Failure, Success}
 
@@ -11,10 +11,10 @@ object OpenHexagonAction extends Action {
     val imageSize = model.imageGrid.imageSize
     for {
       file <- view.askForFileToOpen()
-      offset <- view.askForOffset(file, imageSize * 6, imageSize)
+      FileOpenSettings(offset, format) <- view.askForFileOpenSettings(file, imageSize * 6, imageSize)
       coords <- view.askForWhereToPutImage()
     } for (idx <- 0 until 6) {
-      model.imagePool.fromFile(SaveLocation(file, (offset._1 + idx * imageSize, offset._2)), imageSize) match {
+      model.imagePool.fromFile(SaveLocation(file, (offset._1 + idx * imageSize, offset._2)), format, imageSize) match {
         case Success(storage) =>
           val off = coordOffset(idx)
           val imageCoords = TriImageCoords(coords._1 + off._1, coords._2 + off._2)

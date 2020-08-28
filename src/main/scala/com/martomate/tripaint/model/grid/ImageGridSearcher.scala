@@ -22,6 +22,6 @@ class ImageGridSearcher(colorLookup: ColorLookup) {
         }
       }
     }
-    result
+    result.toSeq
   }
 }

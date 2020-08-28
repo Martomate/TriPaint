@@ -1,9 +1,10 @@
 package com.martomate.tripaint.model.coords
 
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class PixelCoordsTest extends FlatSpec with Matchers with MockFactory {
+class PixelCoordsTest extends AnyFlatSpec with Matchers with MockFactory {
   private def tc(x: Int, y: Int): TriangleCoords = TriangleCoords(x, y)
   private def ic(x: Int, y: Int): TriImageCoords = TriImageCoords(x, y)
 

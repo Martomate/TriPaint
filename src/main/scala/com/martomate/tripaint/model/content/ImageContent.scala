@@ -1,6 +1,7 @@
 package com.martomate.tripaint.model.content
 
 import com.martomate.tripaint.model.coords.TriImageCoords
+import com.martomate.tripaint.model.format.StorageFormat
 import com.martomate.tripaint.model.storage.ImageStorage
 import com.martomate.tripaint.model.undo.UndoManager
 import scalafx.beans.property.BooleanProperty

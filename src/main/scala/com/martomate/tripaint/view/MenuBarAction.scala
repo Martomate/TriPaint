@@ -31,7 +31,7 @@ class MenuBarAction(text: String,
 object MenuBarAction {
   def apply(text: String,
             imagePath: String = null,
-            accelerator: KeyCombination = null)
-           (onAction: => Unit): MenuBarAction =
+            accelerator: KeyCombination = null,
+            onAction: => Unit = ()): MenuBarAction =
     new MenuBarAction(text, imagePath, onAction, accelerator)
 }

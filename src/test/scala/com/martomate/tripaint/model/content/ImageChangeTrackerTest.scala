@@ -1,15 +1,17 @@
 package com.martomate.tripaint.model.content
 
-import com.martomate.tripaint.model.SaveLocation
+import com.martomate.tripaint.model.{SaveInfo, SaveLocation}
 import com.martomate.tripaint.model.coords.TriangleCoords
+import com.martomate.tripaint.model.format.StorageFormat
 import com.martomate.tripaint.model.pool.{ImagePool, ImagePoolImpl}
 import com.martomate.tripaint.model.save.ImageSaver
 import com.martomate.tripaint.model.storage.ImageStorage
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{FlatSpec, Matchers}
 import scalafx.scene.paint.Color
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class ImageChangeTrackerTest extends FlatSpec with Matchers with MockFactory {
+class ImageChangeTrackerTest extends AnyFlatSpec with Matchers with MockFactory {
   def make(init_image: ImageStorage = stub[ImageStorage], pool: ImagePool = stub[ImagePool], saver: ImageSaver = stub[ImageSaver]): ImageChangeTracker =
     new ImageChangeTrackerImpl(init_image, pool, saver)
 
@@ -18,7 +20,7 @@ class ImageChangeTrackerTest extends FlatSpec with Matchers with MockFactory {
     val listener = mock[ImageChangeListener]
     f.addListener(listener)
 
-    listener.onImageChangedALot _ expects ()
+    (listener.onImageChangedALot _).expects ()
     f.tellListenersAboutBigChange()
   }
 
@@ -39,12 +41,14 @@ class ImageChangeTrackerTest extends FlatSpec with Matchers with MockFactory {
   it should "return false if the image was just saved" in {
     val image = stub[ImageStorage]
     val location = SaveLocation(null)
+    val format = stub[StorageFormat]
+    val info = SaveInfo(format)
     val saver = stub[ImageSaver]
     val pool = new ImagePoolImpl(null)
-    pool.move(image, location)(null)
+    pool.move(image, location, info)(null)
     val f = make(image, pool, saver)
 
-    saver.save _ when(image, *) returns true
+    saver.save _ when(image, format, location) returns true
 
     image.update(TriangleCoords(0, 0), Color.Blue)
     pool.save(image, saver)

@@ -1,4 +1,4 @@
-scalaVersion := "2.12.11"
+scalaVersion := "2.13.2"
 
 name := "TriPaint"
 organization := "com.martomate"
@@ -6,14 +6,16 @@ version := "1.2"
 
 enablePlugins(LauncherJarPlugin)
 
+scalacOptions in Compile += "-deprecation"
+
 libraryDependencies ++= Seq(
-  "org.scalactic" %% "scalactic" % "3.0.5",
-  "org.scalatest" %% "scalatest" % "3.0.5" % "test",
-  "org.scalamock" %% "scalamock" % "4.1.0" % "test"
+  "org.scalactic" %% "scalactic" % "3.1.2",
+  "org.scalatest" %% "scalatest" % "3.1.2" % "test",
+  "org.scalamock" %% "scalamock" % "4.4.0" % "test"
 )
 
 // Add dependency on ScalaFX library
-libraryDependencies += "org.scalafx" %% "scalafx" % "11-R16"
+libraryDependencies += "org.scalafx" %% "scalafx" % "14-R19"
 
 // Determine OS version of JavaFX binaries
 lazy val osName = System.getProperty("os.name") match {

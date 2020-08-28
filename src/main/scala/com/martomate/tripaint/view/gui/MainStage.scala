@@ -3,10 +3,11 @@ package com.martomate.tripaint.view.gui
 import java.io.File
 
 import com.martomate.tripaint.model.content.ImageContent
+import com.martomate.tripaint.model.format.{RecursiveStorageFormat, SimpleStorageFormat, StorageFormat}
 import com.martomate.tripaint.model.storage.ImageStorage
 import com.martomate.tripaint.model.{SaveLocation, TriPaintModel}
 import com.martomate.tripaint.view.image.ImagePane
-import com.martomate.tripaint.view.{EditMode, MenuBarAction, TriPaintView, TriPaintViewListener}
+import com.martomate.tripaint.view.{EditMode, FileOpenSettings, FileSaveSettings, MenuBarAction, TriPaintView, TriPaintViewListener}
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.scene.Scene
 import scalafx.scene.control.Alert.AlertType
@@ -83,9 +84,22 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends Pr
 
   override def askForSaveFile(image: ImageContent): Option[File] = {
     val chooser = new FileChooser
+    currentFolder.foreach(chooser.initialDirectory = _)
     chooser.title = "Save file"
     chooser.extensionFilters.add(new ExtensionFilter("PNG", "*.png"))
-    Option(chooser.showSaveDialog(this))
+    val result = Option(chooser.showSaveDialog(this))
+    result.foreach(r => currentFolder = Some(r.getParentFile))
+    result
+  }
+
+  override def askForFileSaveSettings(file: File, image: ImageContent): Option[FileSaveSettings] = {
+    DialogUtils.askForFileSaveSettings(
+      image.storage,
+      file,
+      Seq(
+        new SimpleStorageFormat -> "Simple format (old)",
+        new RecursiveStorageFormat -> "Recursive format (new)"),
+      1)
   }
 
   override def askForFileToOpen(): Option[File] = {
@@ -98,13 +112,16 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends Pr
   }
 
   override def askForWhereToPutImage(): Option[(Int, Int)] = {
-    DialogUtils.askForWhereToPutImage()
+    DialogUtils.askForXY(
+      title = "New image",
+      headerText = "Please enter where it should be placed."
+      )
   }
 
   override def askForBlurRadius(): Option[Int] = {
     DialogUtils.getValueFromDialog[Int](
       model.imagePool,
-      model.imageGrid.selectedImages,
+      model.imageGrid.selectedImages.toSeq,
       "Blur images",
       "How much should the images be blurred?",
       "Radius:",
@@ -116,7 +133,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends Pr
   override def askForMotionBlurRadius(): Option[Int] = {
     DialogUtils.getValueFromDialog[Int](
       model.imagePool,
-      model.imageGrid.selectedImages,
+      model.imageGrid.selectedImages.toSeq,
       "Motion blur images",
       "How much should the images be motion blurred?",
       "Radius:",
@@ -133,7 +150,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends Pr
     getValueFromCustomDialog[(Color, Color)](
       title = "Fill images randomly",
       headerText = "Which color-range should be used?",
-      graphic = DialogUtils.makeImagePreviewList(images, model.imagePool),
+      graphic = DialogUtils.makeImagePreviewList(images.toSeq, model.imagePool),
 
       content = Seq(makeGridPane(Seq(
         Seq(new Label("Minimum color:"), loColorPicker),
@@ -171,8 +188,14 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends Pr
     alert
   }
 
-  override def askForOffset(file: File, width: Int, height: Int): Option[(Int, Int)] = {
-    DialogUtils.askForOffset(file, width, height)
+  override def askForFileOpenSettings(file: File, width: Int, height: Int): Option[FileOpenSettings] = {
+    DialogUtils.askForFileOpenSettings(
+      imagePreview = (file, width, height),
+      Seq(
+        new SimpleStorageFormat -> "Simple format (old)",
+        new RecursiveStorageFormat -> "Recursive format (new)"
+      ),
+      1)
   }
 
   override def shouldReplaceImage(currentImage: ImageStorage, newImage: ImageStorage, location: SaveLocation): Option[Boolean] = {

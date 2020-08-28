@@ -3,8 +3,8 @@ package com.martomate.tripaint.control.action
 import com.martomate.tripaint.model.content.{ImageChangeTrackerImpl, ImageContent}
 import com.martomate.tripaint.model.coords.TriImageCoords
 import com.martomate.tripaint.model.storage.ImageStorage
-import com.martomate.tripaint.model.{SaveLocation, TriPaintModel}
-import com.martomate.tripaint.view.TriPaintView
+import com.martomate.tripaint.model.{SaveInfo, SaveLocation, TriPaintModel}
+import com.martomate.tripaint.view.{FileSaveSettings, TriPaintView}
 
 abstract class Action {
   def perform(model: TriPaintModel, view: TriPaintView): Unit
@@ -20,11 +20,11 @@ abstract class Action {
   }
 
   protected def allImages(model: TriPaintModel): Seq[ImageContent] = {
-    model.imageGrid.images
+    model.imageGrid.images.toSeq
   }
 
   protected def allSelectedImages(model: TriPaintModel): Seq[ImageContent] = {
-    model.imageGrid.selectedImages
+    model.imageGrid.selectedImages.toSeq
   }
 
   protected def save(model: TriPaintModel, view: TriPaintView, images: ImageContent*): Boolean = {
@@ -33,16 +33,16 @@ abstract class Action {
   }
 
   protected def saveAs(model: TriPaintModel, view: TriPaintView, image: ImageContent): Boolean = {
-    view.askForSaveFile(image) match {
-      case Some(file) =>
-        if (model.imagePool.move(image.storage, SaveLocation(file))(view)) {
-          val saved = model.imagePool.save(image.storage, model.imageSaver)
-          if (!saved) println("Image could not be saved!!")
-          saved
-        } else false
-      case None =>
-        false
-    }
+    view.askForSaveFile(image) flatMap { file =>
+      view.askForFileSaveSettings(file, image) map {
+        case FileSaveSettings(offset, format) =>
+          if (model.imagePool.move(image.storage, SaveLocation(file, offset), SaveInfo(format))(view)) {
+            val saved = model.imagePool.save(image.storage, model.imageSaver)
+            if (!saved) println("Image could not be saved!!")
+            saved
+          } else false
+      }
+    } getOrElse false
   }
 
   protected def saveBeforeClosing(view: TriPaintView, images: ImageContent*): Option[Boolean] = {

@@ -1,8 +1,9 @@
 package com.martomate.tripaint.model.coords
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class StorageCoordsTest extends FlatSpec with Matchers {
+class StorageCoordsTest extends AnyFlatSpec with Matchers {
   "constructor" should "require x >= 0" in {
     assertThrows[IllegalArgumentException](StorageCoords(-1, 0))
     assertThrows[IllegalArgumentException](StorageCoords(-10, 0))

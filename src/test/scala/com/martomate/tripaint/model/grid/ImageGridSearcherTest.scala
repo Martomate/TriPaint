@@ -1,10 +1,11 @@
 package com.martomate.tripaint.model.grid
 
 import com.martomate.tripaint.model.coords.GlobalPixCoords
-import org.scalatest.{FlatSpec, Matchers}
 import scalafx.scene.paint.Color
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class ImageGridSearcherTest extends FlatSpec with Matchers {
+class ImageGridSearcherTest extends AnyFlatSpec with Matchers {
   private def makeWhite = new ImageGridSearcher(_ => Some(Color.White))
 
   "search" should "return nothing for the 'false' predicate" in {
