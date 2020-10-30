@@ -26,19 +26,25 @@ trait ImageGrid extends Listenable[ImageGridListener] {
   def applyEffect(effect: Effect): Unit = {
     val im = selectedImages
 
-    val storages = im.map(a => a.storage)
+    val storages = im.map(_.storage)
     val allPixels = storages.map(_.allPixels)
-    val start = allPixels.zip(storages).map(a => a._1.map(a._2(_)))
+    val before = allPixels.zip(storages).map(a => a._1.map(a._2(_)))
 
     effect.action(im.map(_.coords).toSeq, this)
 
-    val end = allPixels.zip(storages).map(a => a._1.map(a._2(_)))
+    val after = allPixels.zip(storages).map(a => a._1.map(a._2(_)))
 
-    val changed = allPixels.indices.map(s => allPixels(s).indices.map(i => (allPixels(s)(i), start(s)(i), end(s)(i))).filter(p => p._2 != p._3))
-    for (i <- storages.indices) {
-      val change = new ImageChange(effect.name, im(i), changed(i))
-      im(i).undoManager.append(change)
-      im(i).changeTracker.tellListenersAboutBigChange()
+    for (here <- storages.indices) {
+      val changed = for {
+        neigh <- allPixels(here).indices
+        if before(here)(neigh) != after(here)(neigh)
+      } yield (allPixels(here)(neigh), before(here)(neigh), after(here)(neigh))
+
+      if (changed.nonEmpty) {
+        val change = new ImageChange(effect.name, im(here), changed)
+        im(here).undoManager.append(change)
+        im(here).changeTracker.tellListenersAboutBigChange()
+      }
     }
   }
 }

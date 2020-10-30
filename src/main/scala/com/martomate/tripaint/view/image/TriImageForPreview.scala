@@ -20,14 +20,13 @@ class TriImageForPreview (val content: ImageContent, previewWidth: Double) exten
 
   override protected def drawTriangle(coords: TriangleCoords): Unit = drawTriangleImpl(coords)
 
-  private def drawTriangleImpl(coords: TriangleCoords, strokeInstead: Boolean = false): Unit = {
-    canvas.drawTriangle(coords, storage(coords), strokeInstead)
+  private def drawTriangleImpl(coords: TriangleCoords): Unit = {
+    canvas.drawTriangle(coords, storage(coords))
   }
 
   override def redraw(): Unit = {
     canvas.clearCanvas()
 
-    storage.allPixels.foreach(c => drawTriangleImpl(c, strokeInstead = true))
     storage.allPixels.foreach(c => drawTriangleImpl(c))
   }
 

@@ -96,7 +96,7 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
     val (dx, dy) = (e.getDeltaX, e.getDeltaY)
 
     if (e.isControlDown) {
-      val factor = Math.exp(e.getDeltaY * 0.01)
+      val factor = Math.min(Math.max(Math.exp(e.getDeltaY * 0.01), 1.0 / 32 / _zoom), 32 / _zoom)
       _zoom *= factor
       setScroll(xScroll * factor, yScroll * factor)
     } else {

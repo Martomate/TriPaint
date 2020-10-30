@@ -3,9 +3,7 @@ package com.martomate.tripaint.view.image
 import com.martomate.tripaint.model.CumulativeImageChange
 import com.martomate.tripaint.model.content.ImageContent
 import com.martomate.tripaint.model.coords.TriangleCoords
-import com.martomate.tripaint.model.effects.Effect
 import com.martomate.tripaint.model.storage.ImageStorage
-import com.martomate.tripaint.model.undo.UndoManager
 import javafx.scene.input.{MouseEvent, ScrollEvent}
 import scalafx.beans.property.ReadOnlyBooleanProperty
 import scalafx.scene.layout.Pane
@@ -30,14 +28,13 @@ class TriImageImpl private(val content: ImageContent, val imagePane: ImageGridVi
   if (content.coords.x % 2 != 0) canvas.rotate() += 180
   updateCanvasSize()
 
-  private val indexMap = new IndexMap(canvas, zoom, storage.imageSize)
+  private val indexMap = new IndexMap(storage.imageSize)
 
-  redraw(true)
+  redraw()
 
   def onMouseReleased(e: MouseEvent): Unit = {
     if (!e.isConsumed) {
       finishCumulativeChange()
-      updateAfterDraw()
     }
   }
 
@@ -45,7 +42,7 @@ class TriImageImpl private(val content: ImageContent, val imagePane: ImageGridVi
     if (e.isControlDown) {
       updateCanvasSize()
 
-      redraw(true)
+      redraw()
     }
   }
 
@@ -66,42 +63,19 @@ class TriImageImpl private(val content: ImageContent, val imagePane: ImageGridVi
 
   def coordsAt(x: Double, y: Double): TriangleCoords = {
     val pt = canvas.sceneToLocal(x, y)
-    indexMap.coordsAt(pt.getX, pt.getY)
+    indexMap.coordsAt(pt.getX / canvas.width(), pt.getY / canvas.height())
   }
 
-  override protected def drawTriangle(coords: TriangleCoords): Unit = drawTriangleImpl(coords, doIndexMapping = false)
+  override protected def drawTriangle(coords: TriangleCoords): Unit = canvas.drawTriangle(coords, storage(coords))
 
-  private def drawTriangleImpl(coords: TriangleCoords, doIndexMapping: Boolean, strokeInstead: Boolean = false): Unit = {
-    canvas.drawTriangle(coords, storage(coords), strokeInstead)
-
-    if (doIndexMapping) indexMap.drawTriangle(coords)
-  }
-
-  override def redraw(): Unit = redraw(false)
-
-  private def redraw(doIndexMapping: Boolean): Unit = {
+  override def redraw(): Unit = {
     canvas.clearCanvas()
 
-    for (c <- storage.allPixels) {
-      drawTriangleImpl(c, doIndexMapping, strokeInstead = true)
-    }
-
-    for (c <- storage.allPixels) {
-      drawTriangleImpl(c, doIndexMapping)
-    }
+    canvas.redraw(storage)
   }
 
   private def updateCanvasSize(): Unit = {
     canvas.updateCanvasSize(storage.imageSize, zoom)
-    updateLocation()
-  }
-
-  // TODO: move the undo manager stuff somewhere else
-  private def updateAfterDraw(): Unit = {
-    content.changeTracker.tellListenersAboutBigChange()
-  }
-
-  private def updateLocation(): Unit = {
     canvas.updateLocation(panX, panY)
   }
 
