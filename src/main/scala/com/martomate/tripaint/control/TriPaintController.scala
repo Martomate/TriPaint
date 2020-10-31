@@ -3,7 +3,7 @@ package com.martomate.tripaint.control
 import com.martomate.tripaint.control.action._
 import com.martomate.tripaint.control.action.effect.{BlurAction, MotionBlurAction, RandomNoiseAction, ScrambleAction}
 import com.martomate.tripaint.model.TriPaintModel
-import com.martomate.tripaint.model.content.ImageContent
+import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.view.{TriPaintView, TriPaintViewFactory, TriPaintViewListener}
 
 class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFactory) extends TriPaintViewListener {

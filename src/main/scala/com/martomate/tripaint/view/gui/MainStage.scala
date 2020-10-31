@@ -2,10 +2,11 @@ package com.martomate.tripaint.view.gui
 
 import java.io.File
 
-import com.martomate.tripaint.model.content.ImageContent
-import com.martomate.tripaint.model.format.{RecursiveStorageFormat, SimpleStorageFormat, StorageFormat}
-import com.martomate.tripaint.model.storage.ImageStorage
-import com.martomate.tripaint.model.{SaveLocation, TriPaintModel}
+import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.format.{RecursiveStorageFormat, SimpleStorageFormat, StorageFormat}
+import com.martomate.tripaint.model.image.storage.ImageStorage
+import com.martomate.tripaint.model.TriPaintModel
+import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.view.image.ImagePane
 import com.martomate.tripaint.view.{EditMode, FileOpenSettings, FileSaveSettings, MenuBarAction, TriPaintView, TriPaintViewListener}
 import scalafx.application.JFXApp.PrimaryStage

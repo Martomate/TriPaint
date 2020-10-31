@@ -1,8 +1,8 @@
 package com.martomate.tripaint.view.image
 
 import com.martomate.tripaint.model.coords.TriangleCoords
-import com.martomate.tripaint.model.storage.ImageStorage
-import javafx.scene.image.{PixelFormat, PixelReader, WritableImage}
+import com.martomate.tripaint.model.image.storage.ImageStorage
+import javafx.scene.image.PixelFormat
 import scalafx.scene.canvas.Canvas
 import scalafx.scene.paint.Color
 
@@ -11,16 +11,21 @@ class TriImageCanvas(init_width: Double, imageSize: Int) extends Canvas(init_wid
 
   def clearCanvas(): Unit = graphicsContext2D.clearRect(-1, -1, width()+1, height()+1)
 
-  def drawTriangle(coords: TriangleCoords, color: Color): Unit = {
+  def drawTriangle(coords: TriangleCoords, color: Color, pixels: ImageStorage): Unit = {
     val gc = graphicsContext2D
     val indexMap = new IndexMap(imageSize)
 
     val (xLo, yLo, xHi, yHi) = triangleBoundingRect(coords)
 
-    for (y <- yLo.toInt to yHi.toInt) {
-      for (x <- xLo.toInt to xHi.toInt) {
-        if (indexMap.coordsAt(x / width(), y / height()) == coords)
-          gc.pixelWriter.setColor(x, y, color)
+    for (y <- yLo.toInt - 1 to yHi.toInt + 1) {
+      for (x <- xLo.toInt - 1 to xHi.toInt + 1) {
+        val c = indexMap.coordsAt(x / width(), y / height())
+        if (c != null) {
+          if (c == coords)
+            gc.pixelWriter.setColor(x, y, color)
+          else
+            gc.pixelWriter.setColor(x, y, pixels(c))
+        }
       }
     }
   }

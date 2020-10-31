@@ -1,6 +1,6 @@
 package com.martomate.tripaint.view.image
 
-import com.martomate.tripaint.model.content.ImageContent
+import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.coords.{PixelCoords, TriImageCoords}
 import com.martomate.tripaint.model.grid.{ImageGrid, ImageGridColorLookup, ImageGridListener, ImageGridSearcher}
 import com.martomate.tripaint.view.EditMode

@@ -1,9 +1,8 @@
 package com.martomate.tripaint.view.image
 
-import com.martomate.tripaint.model.CumulativeImageChange
-import com.martomate.tripaint.model.content.ImageContent
+import com.martomate.tripaint.model.image.content.{CumulativeImageChange, ImageContent}
 import com.martomate.tripaint.model.coords.TriangleCoords
-import com.martomate.tripaint.model.storage.ImageStorage
+import com.martomate.tripaint.model.image.storage.ImageStorage
 import javafx.scene.input.{MouseEvent, ScrollEvent}
 import scalafx.beans.property.ReadOnlyBooleanProperty
 import scalafx.scene.layout.Pane
@@ -66,7 +65,7 @@ class TriImageImpl private(val content: ImageContent, val imagePane: ImageGridVi
     indexMap.coordsAt(pt.getX / canvas.width(), pt.getY / canvas.height())
   }
 
-  override protected def drawTriangle(coords: TriangleCoords): Unit = canvas.drawTriangle(coords, storage(coords))
+  override protected def drawTriangle(coords: TriangleCoords): Unit = canvas.drawTriangle(coords, storage(coords), storage)
 
   override def redraw(): Unit = {
     canvas.clearCanvas()

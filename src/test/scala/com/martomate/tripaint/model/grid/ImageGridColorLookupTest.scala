@@ -1,8 +1,8 @@
 package com.martomate.tripaint.model.grid
 
-import com.martomate.tripaint.model.content.ImageContent
+import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.coords.{GlobalPixCoords, TriImageCoords, TriangleCoords}
-import com.martomate.tripaint.model.storage.{ImageStorage, ImageStorageImpl}
+import com.martomate.tripaint.model.image.storage.{ImageStorage, ImageStorageImpl}
 import org.scalamock.scalatest.MockFactory
 import scalafx.scene.paint.Color
 import org.scalatest.flatspec.AnyFlatSpec

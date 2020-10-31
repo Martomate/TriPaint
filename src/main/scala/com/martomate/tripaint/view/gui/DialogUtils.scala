@@ -2,12 +2,12 @@ package com.martomate.tripaint.view.gui
 
 import java.io.{File, FileInputStream, FileNotFoundException, IOException}
 
-import com.martomate.tripaint.model.SaveLocation
-import com.martomate.tripaint.model.content.ImageContent
-import com.martomate.tripaint.model.format.StorageFormat
-import com.martomate.tripaint.model.pool.ImagePool
-import com.martomate.tripaint.model.save.ImageSaverToArray
-import com.martomate.tripaint.model.storage.ImageStorage
+import com.martomate.tripaint.model.image.SaveLocation
+import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.format.StorageFormat
+import com.martomate.tripaint.model.image.pool.ImagePool
+import com.martomate.tripaint.model.image.save.ImageSaverToArray
+import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.view.{FileOpenSettings, FileSaveSettings}
 import com.martomate.tripaint.view.image.TriImage
 import scalafx.application.Platform

@@ -1,7 +1,8 @@
 package com.martomate.tripaint.control.action
 
-import com.martomate.tripaint.model.{SaveLocation, TriPaintModel}
+import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.coords.TriImageCoords
+import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.view.{FileOpenSettings, TriPaintView}
 
 import scala.util.{Failure, Success}

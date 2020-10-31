@@ -1,6 +1,6 @@
 package com.martomate.tripaint.view.image
 
-import com.martomate.tripaint.model.content.ImageChangeListener
+import com.martomate.tripaint.model.image.content.ImageChangeListener
 import com.martomate.tripaint.model.coords.TriangleCoords
 import scalafx.scene.paint.Color
 

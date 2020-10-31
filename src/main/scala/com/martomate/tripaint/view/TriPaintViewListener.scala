@@ -1,6 +1,6 @@
 package com.martomate.tripaint.view
 
-import com.martomate.tripaint.model.content.ImageContent
+import com.martomate.tripaint.model.image.content.ImageContent
 
 trait TriPaintViewListener {
   def action_new(): Unit

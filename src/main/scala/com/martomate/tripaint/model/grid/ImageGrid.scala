@@ -1,6 +1,6 @@
 package com.martomate.tripaint.model.grid
 
-import com.martomate.tripaint.model.content.ImageContent
+import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.coords.TriImageCoords
 import com.martomate.tripaint.util.Listenable
 

@@ -1,10 +1,10 @@
 package com.martomate.tripaint.model.effects
 
 import com.martomate.tripaint.model.ExtendedColor
-import com.martomate.tripaint.model.content.ImageContent
+import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.coords.{GlobalPixCoords, PixelCoords, TriImageCoords, TriangleCoords}
 import com.martomate.tripaint.model.grid.{ImageGrid, ImageGridColorLookup}
-import com.martomate.tripaint.model.storage.ImageStorageImpl
+import com.martomate.tripaint.model.image.storage.ImageStorageImpl
 import org.scalamock.scalatest.MockFactory
 import scalafx.scene.paint.Color
 import org.scalatest.flatspec.AnyFlatSpec
