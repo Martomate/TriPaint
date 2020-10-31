@@ -1,7 +1,6 @@
 package com.martomate.tripaint.model.storage
 
 import com.martomate.tripaint.model.coords.TriangleCoords
-import com.martomate.tripaint.model.format.StorageFormat
 import com.martomate.tripaint.util.Listenable
 import scalafx.scene.paint.Color
 
@@ -11,7 +10,7 @@ trait ImageStorage extends Listenable[ImageStorageListener] {
   protected def get(coords: TriangleCoords): Color
   protected def set(coords: TriangleCoords, col: Color): Unit
 
-  final def contains(coords: TriangleCoords): Boolean = coords.x >= 0 && coords.y >= 0 && coords.x < coords.y * 2 + 1 && coords.y < imageSize
+  final def contains(coords: TriangleCoords): Boolean = coords.y < imageSize
 
   final def apply(coords: TriangleCoords): Color = get(coords)
   final def update(coords: TriangleCoords, col: Color): Unit = {

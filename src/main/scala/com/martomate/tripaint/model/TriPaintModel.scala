@@ -1,8 +1,7 @@
 package com.martomate.tripaint.model
 
-import com.martomate.tripaint.model.format.SimpleStorageFormat
 import com.martomate.tripaint.model.grid.{ImageGrid, ImageGridImplOld}
-import com.martomate.tripaint.model.pool.{ImagePool, ImagePoolImpl, ImageSaveCollisionHandler}
+import com.martomate.tripaint.model.pool.{ImagePool, ImagePoolImpl}
 import com.martomate.tripaint.model.save.{ImageSaver, ImageSaverToFile}
 import com.martomate.tripaint.model.storage.ImageStorageImpl
 
