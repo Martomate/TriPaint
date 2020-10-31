@@ -1,9 +1,11 @@
 package com.martomate.tripaint.control.action
 
-import com.martomate.tripaint.model.content.{ImageChangeTrackerImpl, ImageContent}
+import com.martomate.tripaint.model.image.content.{ImageChangeTrackerImpl, ImageContent}
 import com.martomate.tripaint.model.coords.TriImageCoords
-import com.martomate.tripaint.model.storage.ImageStorage
-import com.martomate.tripaint.model.{SaveInfo, SaveLocation, TriPaintModel}
+import com.martomate.tripaint.model.image.storage.ImageStorage
+import com.martomate.tripaint.model.TriPaintModel
+import com.martomate.tripaint.model.image.SaveLocation
+import com.martomate.tripaint.model.image.pool.SaveInfo
 import com.martomate.tripaint.view.{FileSaveSettings, TriPaintView}
 
 abstract class Action {

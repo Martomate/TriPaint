@@ -1,7 +1,7 @@
 package com.martomate.tripaint.view.gui
 
-import com.martomate.tripaint.model.content.ImageContent
-import com.martomate.tripaint.model.pool.ImagePool
+import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.pool.ImagePool
 import com.martomate.tripaint.view.image.{TriImage, TriImageForPreview}
 import scalafx.scene.SnapshotParameters
 import scalafx.scene.control.{ScrollPane, Tooltip}

@@ -2,9 +2,9 @@ package com.martomate.tripaint.view
 
 import java.io.File
 
-import com.martomate.tripaint.model.content.ImageContent
-import com.martomate.tripaint.model.format.StorageFormat
-import com.martomate.tripaint.model.pool.ImageSaveCollisionHandler
+import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.format.StorageFormat
+import com.martomate.tripaint.model.image.pool.ImageSaveCollisionHandler
 import scalafx.scene.paint.Color
 
 trait TriPaintView extends ImageSaveCollisionHandler {

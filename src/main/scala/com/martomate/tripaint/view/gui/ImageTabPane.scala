@@ -2,7 +2,7 @@ package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.control.TriPaintController
 import com.martomate.tripaint.model.TriPaintModel
-import com.martomate.tripaint.model.content.ImageContent
+import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.view.TriPaintViewListener
 import com.martomate.tripaint.view.image.{TriImage, TriImageForPreview}
 import scalafx.geometry.Pos

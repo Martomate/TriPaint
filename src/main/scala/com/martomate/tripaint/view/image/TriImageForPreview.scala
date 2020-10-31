@@ -1,8 +1,8 @@
 package com.martomate.tripaint.view.image
 
-import com.martomate.tripaint.model.content.ImageContent
+import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.coords.TriangleCoords
-import com.martomate.tripaint.model.storage.ImageStorage
+import com.martomate.tripaint.model.image.storage.ImageStorage
 import scalafx.scene.SnapshotParameters
 import scalafx.scene.image.Image
 import scalafx.scene.layout.Pane
@@ -21,7 +21,7 @@ class TriImageForPreview (val content: ImageContent, previewWidth: Double) exten
   override protected def drawTriangle(coords: TriangleCoords): Unit = drawTriangleImpl(coords)
 
   private def drawTriangleImpl(coords: TriangleCoords): Unit = {
-    canvas.drawTriangle(coords, storage(coords))
+    canvas.drawTriangle(coords, storage(coords), storage)
   }
 
   override def redraw(): Unit = {
