@@ -17,15 +17,11 @@ libraryDependencies ++= Seq(
 // Add dependency on ScalaFX library
 libraryDependencies += "org.scalafx" %% "scalafx" % "14-R19"
 
-// Determine OS version of JavaFX binaries
-lazy val osName = System.getProperty("os.name") match {
-  case n if n.startsWith("Linux")   => "linux"
-  case n if n.startsWith("Mac")     => "mac"
-  case n if n.startsWith("Windows") => "win"
-  case _ => throw new Exception("Unknown platform!")
-}
-
-lazy val javaFXModules = Seq("base", "controls", "fxml", "graphics", "media", "swing", "web")
-libraryDependencies ++= javaFXModules.map { m =>
-  "org.openjfx" % s"javafx-$m" % "11" classifier osName
+lazy val javaFXModules = Seq("base", "controls", "graphics", "media")
+libraryDependencies ++= javaFXModules.flatMap { m =>
+  Seq(
+    "org.openjfx" % s"javafx-$m" % "11" classifier "linux",
+    "org.openjfx" % s"javafx-$m" % "11" classifier "mac",
+    "org.openjfx" % s"javafx-$m" % "11" classifier "win"
+    )
 }
