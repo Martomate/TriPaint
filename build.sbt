@@ -1,4 +1,4 @@
-scalaVersion := "2.13.2"
+scalaVersion := "2.13.6"
 
 name := "TriPaint"
 organization := "com.martomate"
@@ -6,16 +6,16 @@ version := "1.3.1"
 
 enablePlugins(LauncherJarPlugin)
 
-scalacOptions in Compile += "-deprecation"
+Compile / scalacOptions += "-deprecation"
 
 libraryDependencies ++= Seq(
-  "org.scalactic" %% "scalactic" % "3.2.2",
-  "org.scalatest" %% "scalatest" % "3.2.2" % "test",
-  "org.scalamock" %% "scalamock" % "5.0.0" % "test"
+  "org.scalactic" %% "scalactic" % "3.2.9",
+  "org.scalatest" %% "scalatest" % "3.2.9" % "test",
+  "org.scalamock" %% "scalamock" % "5.1.0" % "test"
 )
 
 // Add dependency on ScalaFX library
-libraryDependencies += "org.scalafx" %% "scalafx" % "14-R19"
+libraryDependencies += "org.scalafx" %% "scalafx" % "16.0.0-R24"
 
 lazy val javaFXModules = Seq("base", "controls", "graphics", "media")
 libraryDependencies ++= javaFXModules.flatMap { m =>

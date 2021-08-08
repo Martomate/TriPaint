@@ -129,7 +129,7 @@ object DialogUtils {
 
     val formatMap: Map[StorageFormat, String] = Map.from(formats)
 
-    val formatChooser = new ChoiceBox(ObservableBuffer(formats.map(_._1)))
+    val formatChooser = new ChoiceBox(ObservableBuffer(formats.map(_._1): _*))
     formatChooser.selectionModel.value.select(initiallySelectedFormat)
     formatChooser.converter = StringConverter.toStringConverter(formatMap(_))
 
@@ -209,7 +209,7 @@ object DialogUtils {
 
     val formatMap: Map[StorageFormat, String] = Map.from(formats)
 
-    val formatChooser = new ChoiceBox(ObservableBuffer(formats.map(_._1)))
+    val formatChooser = new ChoiceBox(ObservableBuffer(formats.map(_._1): _*))
     formatChooser.selectionModel.value.select(initiallySelectedFormat)
     formatChooser.converter = StringConverter.toStringConverter(formatMap(_))
 
