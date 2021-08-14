@@ -10,8 +10,6 @@ import scalafx.scene.paint.Color
 
 object TriImage {
   val previewSize = 64
-
-  def apply(content: ImageContent, imagePane: ImageGridView) = TriImageImpl(content, imagePane)
 }
 
 trait TriImage extends ITriImage {

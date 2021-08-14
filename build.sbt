@@ -5,11 +5,26 @@ organization := "com.martomate"
 version := "1.3.1"
 
 enablePlugins(LauncherJarPlugin)
+enablePlugins(JlinkPlugin)
+
+jlinkIgnoreMissingDependency := JlinkIgnore.only(
+  "scalafx" -> "javafx.embed.swing",
+  "scalafx.embed.swing" -> "javafx.embed.swing",
+  "scalafx" -> "javafx.scene.web",
+  "scalafx.scene.web" -> "javafx.scene.web"
+)
+
+jlinkModules += "jdk.unsupported"
+
+jlinkOptions ++= Seq(
+  "--no-header-files",
+  "--no-man-pages",
+  "--strip-debug"
+)
 
 Compile / scalacOptions += "-deprecation"
 
 libraryDependencies ++= Seq(
-  "org.scalactic" %% "scalactic" % "3.2.9",
   "org.scalatest" %% "scalatest" % "3.2.9" % "test",
   "org.scalamock" %% "scalamock" % "5.1.0" % "test"
 )
@@ -18,10 +33,6 @@ libraryDependencies ++= Seq(
 libraryDependencies += "org.scalafx" %% "scalafx" % "16.0.0-R24"
 
 lazy val javaFXModules = Seq("base", "controls", "graphics", "media")
-libraryDependencies ++= javaFXModules.flatMap { m =>
-  Seq(
-    "org.openjfx" % s"javafx-$m" % "11" classifier "linux",
-    "org.openjfx" % s"javafx-$m" % "11" classifier "mac",
-    "org.openjfx" % s"javafx-$m" % "11" classifier "win"
-    )
+libraryDependencies ++= javaFXModules.map { m =>
+  "org.openjfx" % s"javafx-$m" % "16"
 }
