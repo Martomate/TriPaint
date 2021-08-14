@@ -83,9 +83,9 @@ object DialogUtils {
   }
 
   def askForXY(title: String, headerText: String): Option[(Int, Int)] = {
-    val xCoordTF = DialogUtils.uintTF
+    val xCoordTF = DialogUtils.intTF
     xCoordTF.promptText = "0"
-    val yCoordTF = DialogUtils.uintTF
+    val yCoordTF = DialogUtils.intTF
     yCoordTF.promptText = "0"
 
     val coordsFromTF = () => {
