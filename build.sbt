@@ -20,8 +20,6 @@ libraryDependencies += "org.scalafx" %% "scalafx" % "16.0.0-R24"
 lazy val javaFXModules = Seq("base", "controls", "graphics", "media")
 libraryDependencies ++= javaFXModules.flatMap { m =>
   Seq(
-    "org.openjfx" % s"javafx-$m" % "11" classifier "linux",
-    "org.openjfx" % s"javafx-$m" % "11" classifier "mac",
-    "org.openjfx" % s"javafx-$m" % "11" classifier "win"
+    "org.openjfx" % s"javafx-$m" % "17-ea+8"
     )
 }
