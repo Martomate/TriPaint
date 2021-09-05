@@ -1,25 +1,23 @@
 package com.martomate.tripaint.view.gui
 
-import java.io.File
-
-import com.martomate.tripaint.model.image.content.ImageContent
-import com.martomate.tripaint.model.image.format.{RecursiveStorageFormat, SimpleStorageFormat, StorageFormat}
-import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.image.SaveLocation
+import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.format.{RecursiveStorageFormat, SimpleStorageFormat}
+import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.view.image.ImagePane
-import com.martomate.tripaint.view.{EditMode, FileOpenSettings, FileSaveSettings, MenuBarAction, TriPaintView, TriPaintViewListener}
-import scalafx.application.JFXApp.PrimaryStage
+import com.martomate.tripaint.view._
+import scalafx.application.JFXApp3.PrimaryStage
 import scalafx.scene.Scene
 import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.control.ButtonBar.ButtonData
 import scalafx.scene.control._
-import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.{AnchorPane, BorderPane, VBox}
 import scalafx.scene.paint.Color
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
 
+import java.io.File
 import scala.util.Try
 
 class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends PrimaryStage with TriPaintView {

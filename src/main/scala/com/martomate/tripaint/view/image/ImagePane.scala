@@ -112,18 +112,17 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
   }
 
   private def mousePressedAt(coords: PixelCoords, e: MouseEvent, dragged: Boolean): Unit = {
-    imageGrid(coords.image) foreach { image =>
-      primaryOrSecondaryColor foreach { color =>
-        EditMode.currentMode match {
-          case EditMode.Draw =>
-              imageMap(image.coords).drawAt(coords.pix, new Color(color()))
-          case EditMode.Fill =>
-              fill(coords, new Color(color()))
-          case EditMode.PickColor =>
-              color() = image.storage(coords.pix)
-          case _ =>
-        }
-      }
+    for {
+      image <- imageGrid(coords.image)
+      color <- primaryOrSecondaryColor
+    } EditMode.currentMode match {
+      case EditMode.Draw =>
+          imageMap(image.coords).drawAt(coords.pix, new Color(color()))
+      case EditMode.Fill =>
+          fill(coords, new Color(color()))
+      case EditMode.PickColor =>
+          color() = image.storage(coords.pix)
+      case _ =>
     }
 
     def primaryOrSecondaryColor: Option[ObjectProperty[paint.Color]] = e.getButton match {
@@ -134,10 +133,14 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
   }
 
   def fill(coords: PixelCoords, color: Color): Unit = {
-    imageGrid(coords.image) foreach { image =>
+    for (image <- imageGrid(coords.image)) {
       val referenceColor = imageMap(image.coords).content.storage(coords.pix)
       val places = gridSearcher.search(coords.toGlobal(imageSize), (_, col) => col == referenceColor).map(p => PixelCoords(p, imageSize))
-      places.foreach(p => imageGrid(p.image).foreach(im => imageMap(im.coords).drawAt(p.pix, color)))
+
+      for {
+        p <- places
+        im <- imageGrid(p.image)
+      } imageMap(im.coords).drawAt(p.pix, color)
     }
   }
 
@@ -175,14 +178,14 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with Image
   }
 
   override def onAddImage(image: ImageContent): Unit = {
-    val triImage = TriImage(image, this)
+    val triImage = TriImageImpl(image, this)
     children add triImage.pane
     imageMap(image.coords) = triImage
     relocateImage(image)
   }
 
   override def onRemoveImage(image: ImageContent): Unit = {
-    val index = children indexOf imageMap(image.coords)
+    val index = children indexOf imageMap(image.coords).pane.delegate
 
     if (index != -1) {
       children.remove(index)

@@ -9,8 +9,6 @@ import com.martomate.tripaint.view.{TriPaintView, TriPaintViewFactory, TriPaintV
 class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFactory) extends TriPaintViewListener {
   val view: TriPaintView = viewFactory.createView(this, model)
 
-  model.imageGrid.setImageSizeIfEmpty(view.askForImageSize().getOrElse(32))
-
   private def perform(action: Action): Unit = action.perform(model, view)
 
   override def action_new(): Unit = perform(NewAction)
