@@ -1,6 +1,11 @@
 name: Release
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version'
+        required: true
 
 jobs:
   create_release:
@@ -15,8 +20,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: TriPaint ${{ github.ref }}
+          tag_name: ${{ github.event.inputs.version }}
+          release_name: TriPaint ${{ github.event.inputs.version }}
           draft: true
           prerelease: false
 
@@ -38,21 +43,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Setup
-        uses: olafurpg/setup-scala@v11
+        uses: olafurpg/setup-scala@v13
         with:
           java-version: "openjdk@1.16"
       - name: Coursier cache
         uses: coursier/cache-action@v5
       - name: Package files
         run: sbt universal:packageBin
+        shell: bash
       - name: Upload release assets
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_name: tripaint-${{ github.ref }}-${{ matrix.name }}.zip
-          asset_path: ./target/universal/tripaint-${{ github.ref }}.zip
+          asset_name: tripaint-${{ github.event.inputs.version }}-${{ matrix.name }}.zip
+          asset_path: target/universal/tripaint-${{ github.event.inputs.version }}.zip
           asset_content_type: application/octet-stream
       - name: Clean up cache
         run: |
