@@ -2,7 +2,10 @@ scalaVersion := "2.13.6"
 
 name := "TriPaint"
 organization := "com.martomate"
-version := "1.3.1"
+version := "1.3.2"
+
+Compile / mainClass := Some("com.martomate.tripaint.TriPaint")
+Compile / discoveredMainClasses := Seq()
 
 enablePlugins(LauncherJarPlugin)
 enablePlugins(JlinkPlugin)
