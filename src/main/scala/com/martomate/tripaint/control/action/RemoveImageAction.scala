@@ -8,7 +8,7 @@ import com.martomate.tripaint.view.TriPaintView
 class RemoveImageAction(image: ImageContent) extends Action {
   override def perform(model: TriPaintModel, view: TriPaintView): Unit = {
     var abortRemoval = false
-    if (image.changeTracker.changed) {
+    if (image.changed) {
       saveBeforeClosing(view, image) match {
         case Some(shouldSave) =>
           if (shouldSave && !save(model, view, image)) abortRemoval = true

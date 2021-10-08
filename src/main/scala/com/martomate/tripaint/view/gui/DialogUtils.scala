@@ -1,15 +1,13 @@
 package com.martomate.tripaint.view.gui
 
-import java.io.{File, FileInputStream, FileNotFoundException, IOException}
-
 import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.model.image.pool.ImagePool
 import com.martomate.tripaint.model.image.save.ImageSaverToArray
 import com.martomate.tripaint.model.image.storage.ImageStorage
+import com.martomate.tripaint.view.image.TriImageForPreview
 import com.martomate.tripaint.view.{FileOpenSettings, FileSaveSettings}
-import com.martomate.tripaint.view.image.TriImage
 import scalafx.application.Platform
 import scalafx.beans.property.StringProperty
 import scalafx.collections.ObservableBuffer
@@ -20,6 +18,7 @@ import scalafx.scene.image.{Image, ImageView, PixelFormat, WritableImage}
 import scalafx.scene.layout._
 import scalafx.util.StringConverter
 
+import java.io.{File, FileInputStream, FileNotFoundException, IOException}
 import scala.util.Try
 
 
@@ -261,9 +260,9 @@ object DialogUtils {
           previewPane.setLayoutX(x)
           previewPane.setLayoutY(y)
 
-          val array = new Array[Int](imageSize * imageSize)
-          new ImageSaverToArray(array).save(storage, format, SaveLocation(file, (x, y)))
-          previewImage.pixelWriter.setPixels(0, 0, imageSize, imageSize, pixelFormat, array, 0, imageSize)
+          val saver = ImageSaverToArray.fromSize(imageSize)
+          saver.save(storage, format, SaveLocation(file, (x, y)))
+          previewImage.pixelWriter.setPixels(0, 0, imageSize, imageSize, pixelFormat, saver.array, 0, imageSize)
       }
     }
 
@@ -315,5 +314,5 @@ object DialogUtils {
   }
 
   def makeImagePreviewList(images: Seq[ImageContent], imagePool: ImagePool): ScrollPane =
-    new ImagePreviewList(images, TriImage.previewSize, imagePool)
+    new ImagePreviewList(images, TriImageForPreview.previewSize, imagePool)
 }

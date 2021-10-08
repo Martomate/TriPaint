@@ -34,7 +34,7 @@ abstract class EffectAction extends Action {
       if (changed.nonEmpty) {
         val change = new ImageChange(effect.name, im(here), changed)
         im(here).undoManager.append(change)
-        im(here).changeTracker.tellListenersAboutBigChange()
+        im(here).tellListenersAboutBigChange()
       }
     }
   }

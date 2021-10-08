@@ -1,22 +1,20 @@
 package com.martomate.tripaint.model.image.content
 
-import com.martomate.tripaint.model.coords.TriangleCoords
+import com.martomate.tripaint.model.coords.{TriImageCoords, TriangleCoords}
 import com.martomate.tripaint.model.image.SaveLocation
-import com.martomate.tripaint.model.image.format.StorageFormat
-import com.martomate.tripaint.model.image.pool.{ImagePool, ImagePoolImpl, SaveInfo}
-import com.martomate.tripaint.model.image.save.ImageSaver
-import com.martomate.tripaint.model.image.storage.ImageStorage
+import com.martomate.tripaint.model.image.format.SimpleStorageFormat
+import com.martomate.tripaint.model.image.pool.{ImagePoolImpl, SaveInfo}
+import com.martomate.tripaint.model.image.storage.ImageStorageImpl
 import org.scalamock.scalatest.MockFactory
-import scalafx.scene.paint.Color
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import scalafx.scene.paint.Color
 
-class ImageChangeTrackerTest extends AnyFlatSpec with Matchers with MockFactory {
-  def make(init_image: ImageStorage = stub[ImageStorage], pool: ImagePool = stub[ImagePool], saver: ImageSaver = stub[ImageSaver]): ImageChangeTracker =
-    new ImageChangeTrackerImpl(init_image, pool, saver)
+class ImageContentTest extends AnyFlatSpec with Matchers with MockFactory {
 
   "tellListenersAboutBigChange" should "tell the listeners that a lot has changed" in {
-    val f = make()
+    val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
+    val f = new ImageContent(TriImageCoords(0, 0), image)
     val listener = mock[ImageChangeListener]
     f.addListener(listener)
 
@@ -25,13 +23,14 @@ class ImageChangeTrackerTest extends AnyFlatSpec with Matchers with MockFactory 
   }
 
   "changed" should "return false if nothing has happened" in {
-    val f = make()
+    val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
+    val f = new ImageContent(TriImageCoords(0, 0), image)
     f.changed shouldBe false
   }
 
   it should "return true if the image has been modified since the last save" in {
-    val image = stub[ImageStorage]
-    val f = make(image)
+    val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
+    val f = new ImageContent(TriImageCoords(0, 0), image)
 
     image.update(TriangleCoords(0, 0), Color.Blue)
 
@@ -39,19 +38,17 @@ class ImageChangeTrackerTest extends AnyFlatSpec with Matchers with MockFactory 
   }
 
   it should "return false if the image was just saved" in {
-    val image = stub[ImageStorage]
+    val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
     val location = SaveLocation(null)
-    val format = stub[StorageFormat]
+    val format = new SimpleStorageFormat
     val info = SaveInfo(format)
-    val saver = stub[ImageSaver]
     val pool = new ImagePoolImpl(null)
     pool.move(image, location, info)(null)
-    val f = make(image, pool, saver)
-
-    saver.save _ when(image, format, location) returns true
+    val f = new ImageContent(TriImageCoords(0, 0), image)
+    pool.addListener(f)
 
     image.update(TriangleCoords(0, 0), Color.Blue)
-    pool.save(image, saver)
+    pool.save(image, (_, _, _) => true)
 
     f.changed shouldBe false
   }

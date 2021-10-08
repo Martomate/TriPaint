@@ -5,6 +5,6 @@ import com.martomate.tripaint.view.TriPaintView
 
 object SaveAction extends Action {
   override def perform(model: TriPaintModel, view: TriPaintView): Unit = {
-    save(model, view, allSelectedImages(model).filter(_.changeTracker.changed): _*)
+    save(model, view, allSelectedImages(model).filter(_.changed): _*)
   }
 }

@@ -12,17 +12,18 @@ class ImageStorageImpl private (val imageSize: Int, initialPixels: TriangleCoord
   private val coordsFormatter = new SimpleStorageFormat
   private val pixels = Array.tabulate(imageSize, imageSize)((x, y) => initialPixels(coordsFormatter.transformFromStorage(StorageCoords(x, y))))
 
-  private def toStorage(coords: TriangleCoords): StorageCoords = coordsFormatter.transformToStorage(coords)
-  private def fromStorage(coords: StorageCoords): TriangleCoords = coordsFormatter.transformFromStorage(coords)
-
   override protected def get(coords: TriangleCoords): Color = {
-    val sc = toStorage(coords)
+    val sc = coordsFormatter.transformToStorage(coords)
     pixels(sc.x)(sc.y)
   }
 
   override protected def set(coords: TriangleCoords, col: Color): Unit = {
-    val sc = toStorage(coords)
+    val sc = coordsFormatter.transformToStorage(coords)
     pixels(sc.x)(sc.y) = col
+  }
+
+  def mkString(mapper: Color => Any = c => c): String = {
+    pixels.map(_.map(c => mapper(c)).mkString(", ")).mkString("\n")
   }
 }
 

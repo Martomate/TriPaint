@@ -8,7 +8,7 @@ import scalafx.beans.property.ReadOnlyBooleanProperty
 import scalafx.scene.layout.Pane
 import scalafx.scene.paint.Color
 
-class TriImageImpl private(val content: ImageContent, val imagePane: ImageGridView) extends Pane with TriImage {
+class TriImageImpl private(val content: ImageContent, val imagePane: ImagePaneView) extends Pane with TriImage {
   def pane: Pane = this
 
   private def panX = content.coords.xOff * imagePane.sideLength
@@ -17,12 +17,12 @@ class TriImageImpl private(val content: ImageContent, val imagePane: ImageGridVi
 
   private def storage: ImageStorage = content.storage
 
-  def changed: Boolean = content.changeTracker.changed
-  def changedProperty: ReadOnlyBooleanProperty = content.changeTracker.changedProperty
+  def changed: Boolean = content.changed
+  def changedProperty: ReadOnlyBooleanProperty = content.changedProperty
 
   private val canvas: TriImageActualCanvas = new TriImageActualCanvas(imagePane.imageSize, imagePane.imageSize)
 
-  content.changeTracker.addListener(this)
+  content.addListener(this)
   children add canvas
   if (content.coords.x % 2 != 0) canvas.rotate() += 180
   updateCanvasSize()
@@ -84,5 +84,5 @@ class TriImageImpl private(val content: ImageContent, val imagePane: ImageGridVi
 }
 
 object TriImageImpl {
-  def apply(content: ImageContent, imagePane: ImageGridView) = new TriImageImpl(content, imagePane)
+  def apply(content: ImageContent, imagePane: ImagePaneView) = new TriImageImpl(content, imagePane)
 }

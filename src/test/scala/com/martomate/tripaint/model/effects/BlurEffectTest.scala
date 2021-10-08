@@ -1,16 +1,15 @@
 package com.martomate.tripaint.model.effects
 
 import com.martomate.tripaint.model.ExtendedColor
-import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.coords.{GlobalPixCoords, PixelCoords, TriImageCoords, TriangleCoords}
-import com.martomate.tripaint.model.grid.{ImageGrid, ImageGridColorLookup}
+import com.martomate.tripaint.model.grid.{ImageGridColorLookup, ImageGridImplOld}
+import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.storage.ImageStorageImpl
-import org.scalamock.scalatest.MockFactory
-import scalafx.scene.paint.Color
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import scalafx.scene.paint.Color
 
-class BlurEffectTest extends AnyFlatSpec with Matchers with MockFactory {
+class BlurEffectTest extends AnyFlatSpec with Matchers {
   "name" should "be 'Blur'" in {
     new BlurEffect(3).name shouldBe "Blur"
   }
@@ -27,25 +26,20 @@ class BlurEffectTest extends AnyFlatSpec with Matchers with MockFactory {
   private def checkSymmetrySimple(radius: Int, imageSize: Int, dotLocation: TriangleCoords): Unit = {
     val effect = new BlurEffect(radius)
     val thisImage = TriImageCoords(0, 0)
-    val grid = stub[ImageGrid]
-    val image = stub[ImageContent]
+
     val storage = ImageStorageImpl.fromBGColor(Color.Black, imageSize)
-
-    (() => grid.imageSize).when() returns imageSize
-    (grid.apply _).when(thisImage) returns Some(image)
-    (grid.apply _).when(*) returns None
-
-    (() => image.storage).when() returns storage
-
     storage(dotLocation) = Color.White
+
+    val grid = new ImageGridImplOld(imageSize)
+    grid.set(new ImageContent(thisImage, storage))
 
     effect.action(Seq(thisImage), grid)
 
     for (dx <- 0 to radius) {
       val look1 = TriangleCoords(dotLocation.x - dx, dotLocation.y)
       val look2 = TriangleCoords(dotLocation.x + dx, dotLocation.y)
-      val col1 = ExtendedColor.colorToExtendedColor(storage(look1))
-      val col2 = ExtendedColor.colorToExtendedColor(storage(look2))
+      val col1 = ExtendedColor.fromColor(storage(look1))
+      val col2 = ExtendedColor.fromColor(storage(look2))
       try {
         col1 shouldBe col2
       } catch {
@@ -58,7 +52,7 @@ class BlurEffectTest extends AnyFlatSpec with Matchers with MockFactory {
 
   it should "be symmetric on the border between images" in {
     val radius = 2
-    val imageSize = 8
+    val imageSize = 16 // has to be high enough to not limit the search
     checkSymmetryBorder(radius, imageSize, TriangleCoords(0, imageSize / 2), TriImageCoords(-1, 0))
     checkSymmetryBorder(radius, imageSize, TriangleCoords(imageSize, imageSize / 2), TriImageCoords(1, 0))
     checkSymmetryBorder(radius, imageSize, TriangleCoords(imageSize, imageSize - 1), TriImageCoords(1, -1))
@@ -67,20 +61,14 @@ class BlurEffectTest extends AnyFlatSpec with Matchers with MockFactory {
   private def checkSymmetryBorder(radius: Int, imageSize: Int, dotLocation: TriangleCoords, borderingImage: TriImageCoords): Unit = {
     val effect = new BlurEffect(radius)
     val thisImage = TriImageCoords(0, 0)
-    val grid = stub[ImageGrid]
-    val image = stub[ImageContent]
-    val image2 = stub[ImageContent]
+
     val storage = ImageStorageImpl.fromBGColor(Color.Black, imageSize)
     val storage2 = ImageStorageImpl.fromBGColor(Color.Black, imageSize)
-
-    (() => grid.imageSize).when() returns imageSize
-    (grid.apply _).when(thisImage) returns Some(image)
-    (grid.apply _).when(*) returns Some(image2)
-
-    (() => image.storage).when().returns(storage)
-    (() => image2.storage).when().returns(storage2)
-
     storage(dotLocation) = Color.White
+
+    val grid = new ImageGridImplOld(imageSize)
+    grid.set(new ImageContent(thisImage, storage))
+    grid.set(new ImageContent(borderingImage, storage2))
 
     effect.action(Seq(thisImage, borderingImage), grid)
 
@@ -90,8 +78,8 @@ class BlurEffectTest extends AnyFlatSpec with Matchers with MockFactory {
     for (dx <- 0 to radius) {
       val look1 = GlobalPixCoords(dotGlobal.x - dx, dotGlobal.y)
       val look2 = GlobalPixCoords(dotGlobal.x + dx, dotGlobal.y)
-      val col1 = ExtendedColor.colorToExtendedColor(colorLookup.lookup(look1).get)
-      val col2 = ExtendedColor.colorToExtendedColor(colorLookup.lookup(look2).get)
+      val col1 = ExtendedColor.fromColor(colorLookup.lookup(look1).get)
+      val col2 = ExtendedColor.fromColor(colorLookup.lookup(look2).get)
       try {
         col1 shouldBe col2
       } catch {

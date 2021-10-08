@@ -13,7 +13,7 @@ trait ImageGrid extends Listenable[ImageGridListener] {
   def images: mutable.Seq[ImageContent]
 
   def apply(coords: TriImageCoords): Option[ImageContent]
-  def update(coords: TriImageCoords, image: ImageContent): Unit
+  def set(image: ImageContent): Unit
   def -=(coords: TriImageCoords): ImageContent
 
   protected final def onAddImage(image: ImageContent): Unit = notifyListeners(_.onAddImage(image))

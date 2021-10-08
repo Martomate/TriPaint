@@ -9,7 +9,7 @@ object ExitAction extends Action {
   }
 
   def do_exit(model: TriPaintModel, view: TriPaintView): Boolean = {
-    allImages(model).filter(_.changeTracker.changed) match {
+    allImages(model).filter(_.changed) match {
       case Seq() => true
       case images =>
         saveBeforeClosing(view, images: _*) match {

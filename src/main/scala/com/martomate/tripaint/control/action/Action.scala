@@ -1,11 +1,11 @@
 package com.martomate.tripaint.control.action
 
-import com.martomate.tripaint.model.image.content.{ImageChangeTrackerImpl, ImageContent}
-import com.martomate.tripaint.model.coords.TriImageCoords
-import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.model.TriPaintModel
+import com.martomate.tripaint.model.coords.TriImageCoords
 import com.martomate.tripaint.model.image.SaveLocation
+import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.pool.SaveInfo
+import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.view.{FileSaveSettings, TriPaintView}
 
 abstract class Action {
@@ -13,12 +13,14 @@ abstract class Action {
 
   protected def addImage(model: TriPaintModel, newImage: ImageContent): Unit = {
     if (newImage != null) {
-      model.imageGrid(newImage.coords) = newImage
+      model.imageGrid.set(newImage)
     }
   }
 
   protected def makeImageContent(model: TriPaintModel, coords: TriImageCoords, storage: ImageStorage): ImageContent = {
-    new ImageContent(coords, new ImageChangeTrackerImpl(storage, model.imagePool, model.imageSaver))
+    val image = new ImageContent(coords, storage)
+    model.imagePool.addListener(image)
+    image
   }
 
   protected def allImages(model: TriPaintModel): Seq[ImageContent] = {

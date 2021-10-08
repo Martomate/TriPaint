@@ -8,13 +8,9 @@ import scalafx.beans.property._
 import scalafx.scene.layout.Pane
 import scalafx.scene.paint.Color
 
-object TriImage {
-  val previewSize = 64
-}
-
 trait TriImage extends ITriImage {
   def content: ImageContent
-  def imagePane: ImageGridView
+  def imagePane: ImagePaneView
 
   def changed: Boolean
   def changedProperty: ReadOnlyBooleanProperty

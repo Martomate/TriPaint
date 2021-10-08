@@ -13,7 +13,7 @@ class TriImageForPreview (val content: ImageContent, previewWidth: Double) exten
 
   private val canvas: TriImageCanvas = new TriImageCanvas(previewWidth, storage.imageSize)
 
-  content.changeTracker.addListener(this)
+  content.addListener(this)
   children add canvas
 
   redraw()
@@ -31,4 +31,8 @@ class TriImageForPreview (val content: ImageContent, previewWidth: Double) exten
   }
 
   def toImage(params: SnapshotParameters): Image = canvas.snapshot(params, null)
+}
+
+object TriImageForPreview {
+  val previewSize = 64
 }

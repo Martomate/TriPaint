@@ -3,14 +3,14 @@ package com.martomate.tripaint.view.gui
 import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.view.TriPaintViewListener
-import com.martomate.tripaint.view.image.{TriImage, TriImageForPreview}
+import com.martomate.tripaint.view.image.TriImageForPreview
 import scalafx.geometry.Pos
 import scalafx.scene.control.{Button, ToggleButton}
 import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout.StackPane
 
 class ImageTabPane(val image: ImageContent, control: TriPaintViewListener, model: TriPaintModel) extends StackPane {
-  private val preview = new TriImageForPreview(image, TriImage.previewSize)
+  private val preview = new TriImageForPreview(image, TriImageForPreview.previewSize)
 
   private val closeButton = new Button {
     text = "X"
@@ -42,7 +42,7 @@ class ImageTabPane(val image: ImageContent, control: TriPaintViewListener, model
     star.image = new Image("/icons/star.png")
     star.alignmentInParent = Pos.TopLeft
     star.mouseTransparent = true
-    star.visible <== image.changeTracker.changedProperty
+    star.visible <== image.changedProperty
     star
   }
 }

@@ -2,15 +2,18 @@ package com.martomate.tripaint.model.grid
 
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.coords.TriImageCoords
+import com.martomate.tripaint.model.image.storage.ImageStorageImpl
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import scalafx.scene.paint.Color
 
 abstract class ImageGridTest extends AnyFlatSpec with Matchers with MockFactory {
   def make: ImageGrid
 
   def makeImage(x: Int, y: Int): ImageContent = {
-    new ImageContent(tc(x, y), null)
+    val storage = ImageStorageImpl.fromBGColor(Color.Black, 4)
+    new ImageContent(tc(x, y), storage)
   }
 
   private def tc(x: Int, y: Int): TriImageCoords = TriImageCoords(x, y)
@@ -26,7 +29,7 @@ abstract class ImageGridTest extends AnyFlatSpec with Matchers with MockFactory 
     val f = make
     val initSize = f.imageSize
 
-    f(tc(0, 0)) = makeImage(0, 0)
+    f.set(makeImage(0, 0))
 
     f.setImageSizeIfEmpty(initSize + 16) shouldBe false
     f.imageSize shouldBe initSize
@@ -36,7 +39,7 @@ abstract class ImageGridTest extends AnyFlatSpec with Matchers with MockFactory 
     val f = make
     val initSize = f.imageSize
 
-    f(tc(0, 0)) = makeImage(0, 0)
+    f.set(makeImage(0, 0))
     f -= tc(0, 0)
 
     f.setImageSizeIfEmpty(initSize + 16) shouldBe true
@@ -48,7 +51,7 @@ abstract class ImageGridTest extends AnyFlatSpec with Matchers with MockFactory 
     val image = makeImage(1, 0)
 
     f(tc(0, 0)) shouldBe None
-    f(tc(1, 0)) = image
+    f.set(image)
     f(tc(0, 0)) shouldBe None
   }
 
@@ -57,7 +60,7 @@ abstract class ImageGridTest extends AnyFlatSpec with Matchers with MockFactory 
     val image = makeImage(1, 0)
 
     f(tc(1, 0)) shouldBe None
-    f(tc(1, 0)) = image
+    f.set(image)
     f(tc(1, 0)) shouldBe Some(image)
     f(tc(0, 1)) shouldBe None
     f(tc(1, 0)) shouldBe Some(image)
@@ -67,7 +70,7 @@ abstract class ImageGridTest extends AnyFlatSpec with Matchers with MockFactory 
     val f = make
     val image = makeImage(1, 0)
 
-    f(tc(1, 0)) = image
+    f.set(image)
     f(tc(1, 0)) shouldBe Some(image)
   }
 
@@ -76,8 +79,8 @@ abstract class ImageGridTest extends AnyFlatSpec with Matchers with MockFactory 
     val image = makeImage(1, 0)
     val image2 = makeImage(1, 0)
 
-    f(tc(1, 0)) = image
-    f(tc(1, 0)) = image2
+    f.set(image)
+    f.set(image2)
     f(tc(1, 0)) shouldBe Some(image2)
   }
 
@@ -90,11 +93,11 @@ abstract class ImageGridTest extends AnyFlatSpec with Matchers with MockFactory 
     f.addListener(listener)
 
     listener.onAddImage _ expects image
-    f(tc(1, 0)) = image
+    f.set(image)
 
     listener.onAddImage _ expects image2
     listener.onRemoveImage _ expects image
-    f(tc(1, 0)) = image2
+    f.set(image2)
   }
 
   "-=" should "return null if there is no image there" in {
@@ -106,7 +109,7 @@ abstract class ImageGridTest extends AnyFlatSpec with Matchers with MockFactory 
     val f = make
     val image = makeImage(1, 0)
 
-    f(tc(1, 0)) = image
+    f.set(image)
     (f -= tc(1, 0)) shouldBe image
     f(tc(1, 0)) shouldBe None
   }
@@ -115,7 +118,7 @@ abstract class ImageGridTest extends AnyFlatSpec with Matchers with MockFactory 
     val f = make
     val image = makeImage(1, 0)
 
-    f(tc(1, 0)) = image
+    f.set(image)
 
     val listener = mock[ImageGridListener]
     f.addListener(listener)
@@ -131,8 +134,8 @@ abstract class ImageGridTest extends AnyFlatSpec with Matchers with MockFactory 
     val image = makeImage(1, 0)
     val image2 = makeImage(2, 0)
 
-    f(tc(1, 0)) = image
-    f(tc(2, 0)) = image2
+    f.set(image)
+    f.set(image2)
 
     f.selectedImages.sortBy(_.##) shouldBe Seq(image, image2).sortBy(_.##)
     image.editableProperty() = false

@@ -12,8 +12,8 @@ class ImageGridImplOld(init_imageSize: Int) extends ImageGrid {
   val images: ArrayBuffer[ImageContent] = ArrayBuffer.empty
 
   override def apply(coords: TriImageCoords): Option[ImageContent] = images.find(_.coords == coords)
-  override def update(coords: TriImageCoords, image: ImageContent): Unit = {
-    val idx = images.indexWhere(_.coords == coords)
+  override def set(image: ImageContent): Unit = {
+    val idx = images.indexWhere(_.coords == image.coords)
     if (idx != -1) {
       val prev = images(idx)
       if (prev != image) onRemoveImage(prev)

@@ -39,7 +39,7 @@ class GlobalPixCoordsTest extends AnyFlatSpec with Matchers {
     for (i <- 1 to 10) {
       for (j <- 1 to 10) {
         val c1 = make(i * 13 % 29 - 17, j * 17 % 29 - 13)
-        val c2 = make(i * 13 % 29 - 17, j * 17 % 29 - 13)
+        val c2 = make(j * 17 % 29 - 13, i * 13 % 29 - 17)
         (c1 distanceSq c2) shouldBe (c2 distanceSq c1)
       }
     }

@@ -1,14 +1,13 @@
 package com.martomate.tripaint.model.grid
 
-import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.coords.{GlobalPixCoords, TriImageCoords, TriangleCoords}
+import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.storage.{ImageStorage, ImageStorageImpl}
-import org.scalamock.scalatest.MockFactory
-import scalafx.scene.paint.Color
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import scalafx.scene.paint.Color
 
-class ImageGridColorLookupTest extends AnyFlatSpec with Matchers with MockFactory {
+class ImageGridColorLookupTest extends AnyFlatSpec with Matchers {
   "lookup" should "return None if there is no image" in {
     val grid = new ImageGridImplOld(16)
     val lookup = new ImageGridColorLookup(grid)
@@ -25,14 +24,11 @@ class ImageGridColorLookupTest extends AnyFlatSpec with Matchers with MockFactor
     val grid = new ImageGridImplOld(16)
     val lookup = new ImageGridColorLookup(grid)
     val storage = ImageStorageImpl.fromBGColor(Color.Black, 16)
-    val stLink = storage
-    val content = new ImageContent(TriImageCoords(0, 0), null) {
-      override def storage: ImageStorage = stLink
-    }
+    val content = new ImageContent(TriImageCoords(0, 0), storage)
 
     storage(TriangleCoords(1, 13)) = Color.White
 
-    grid(TriImageCoords(0, 0)) = content
+    grid.set(content)
 
     lookup.lookup(GlobalPixCoords(1, 2)) shouldBe Some(Color.White)
     lookup.lookup(GlobalPixCoords(1, 3)) shouldBe Some(Color.Black)
@@ -43,14 +39,11 @@ class ImageGridColorLookupTest extends AnyFlatSpec with Matchers with MockFactor
     val grid = new ImageGridImplOld(16)
     val lookup = new ImageGridColorLookup(grid)
     val storage = ImageStorageImpl.fromBGColor(Color.Black, 16)
-    val stLink = storage
-    val content = new ImageContent(TriImageCoords(-1, 0), null) {
-      override def storage: ImageStorage = stLink
-    }
+    val content = new ImageContent(TriImageCoords(-1, 0), storage)
 
     storage(TriangleCoords(0, 2)) = Color.White
 
-    grid(TriImageCoords(-1, 0)) = content
+    grid.set(content)
 
     lookup.lookup(GlobalPixCoords(-1, 2)) shouldBe Some(Color.White)
     lookup.lookup(GlobalPixCoords(-1, 3)) shouldBe Some(Color.Black)

@@ -18,3 +18,8 @@ class ImageSaverToArray(val array: Array[Int]) extends ImageSaver {
   }
 
 }
+
+object ImageSaverToArray {
+  def fromSize(imageSize: Int): ImageSaverToArray =
+    new ImageSaverToArray(new Array[Int](imageSize * imageSize))
+}

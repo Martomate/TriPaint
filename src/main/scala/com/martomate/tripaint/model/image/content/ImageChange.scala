@@ -6,14 +6,14 @@ class ImageChange(val description: String, val image: ImageContent, pixelsChange
   def redo(): Boolean = {
     val draw = image.storage
     for (ch <- pixelsChanged) draw(ch.coords) = ch.after
-    image.changeTracker.tellListenersAboutBigChange()
+    image.tellListenersAboutBigChange()
     true
   }
 
   def undo(): Boolean = {
     val draw = image.storage
     for (ch <- pixelsChanged) draw(ch.coords) = ch.before
-    image.changeTracker.tellListenersAboutBigChange()
+    image.tellListenersAboutBigChange()
     true
   }
 }

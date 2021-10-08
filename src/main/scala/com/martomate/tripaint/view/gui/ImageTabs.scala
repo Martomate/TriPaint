@@ -1,16 +1,16 @@
 package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.TriPaintModel
-import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.grid.ImageGridListener
+import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.view.TriPaintViewListener
-import com.martomate.tripaint.view.image.TriImage
+import com.martomate.tripaint.view.image.TriImageForPreview
 import scalafx.scene.layout.TilePane
 
 import scala.collection.mutable
 
 class ImageTabs(controls: TriPaintViewListener, model: TriPaintModel) extends TilePane with ImageGridListener {
-  maxWidth = TriImage.previewSize
+  maxWidth = TriImageForPreview.previewSize
   model.imageGrid.addListener(this)
 
   private val imageTabMap: mutable.Map[ImageContent, ImageTabPane] = mutable.Map.empty

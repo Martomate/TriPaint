@@ -35,9 +35,9 @@ class UndoManager {
   def goTo(index: Int): Boolean = {
     val newRedoIndex = index + 1
     if (newRedoIndex > redoIndex) {
-      while (newRedoIndex > redoIndex && redo) {}
+      while (newRedoIndex > redoIndex && redo()) {}
     } else {
-      while (newRedoIndex < redoIndex && undo) {}
+      while (newRedoIndex < redoIndex && undo()) {}
     }
     newRedoIndex == redoIndex
   }

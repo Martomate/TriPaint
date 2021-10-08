@@ -30,5 +30,5 @@ class ExtendedColor(val r: Double, val g: Double, val b: Double, val a: Double) 
 object ExtendedColor {
   import scala.language.implicitConversions
 
-  implicit def colorToExtendedColor(c: Color): ExtendedColor = new ExtendedColor(c.red, c.green, c.blue, c.opacity)
+  implicit def fromColor(c: Color): ExtendedColor = new ExtendedColor(c.red, c.green, c.blue, c.opacity)
 }

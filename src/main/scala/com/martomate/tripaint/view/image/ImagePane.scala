@@ -13,7 +13,7 @@ import scalafx.scene.paint.Color
 
 import scala.collection.mutable
 
-class ImagePane(imageGrid: ImageGrid) extends Pane with ImageGridView with ImageGridListener {
+class ImagePane(imageGrid: ImageGrid) extends Pane with ImagePaneView with ImageGridListener {
   private var _zoom = 1d
   def zoom: Double = _zoom
 
