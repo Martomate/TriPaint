@@ -1,33 +1,27 @@
 package com.martomate.tripaint.model.image.save
 
-import java.awt.image.BufferedImage
-import java.io.File
-
 import com.martomate.tripaint.model.coords.TriangleCoords
 import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.model.image.storage.ImageStorage
-import javax.imageio.ImageIO
 import scalafx.scene.paint.Color
 
-import scala.util.Try
+import java.awt.image.BufferedImage
 
-class ImageSaverToFile extends ImageSaver {
+class ImageSaverToFile {
 
-  def save(image: ImageStorage, format: StorageFormat, saveInfo: SaveLocation): Boolean = {
-    val SaveLocation(file, offset) = saveInfo
+  def save(image: ImageStorage, format: StorageFormat, saveInfo: SaveLocation, oldImage: Option[BufferedImage]): BufferedImage = {
+    val bufImage: BufferedImage = createDestinationImage(image, saveInfo.offset, oldImage)
 
-    val oldImage: Option[BufferedImage] = readImageAt(file)
-
-    val bufImage: BufferedImage = oldImage
-      .map(im => resizeImageIfNeeded(im, offset, image.imageSize))
-      .getOrElse(makeNewImage(image.imageSize + offset._1, image.imageSize + offset._2))
-
-    writeImage(bufImage, image, offset, format)
-    writeImageToFile(bufImage, file)
+    writeImage(bufImage, image, saveInfo.offset, format)
+    bufImage
   }
 
-  private def readImageAt(file: File): Option[BufferedImage] = Try(ImageIO.read(file)).toOption
+  private def createDestinationImage(image: ImageStorage, offset: (Int, Int), oldImage: Option[BufferedImage]) = {
+    oldImage
+      .map(im => resizeImageIfNeeded(im, offset, image.imageSize))
+      .getOrElse(makeNewImage(image.imageSize + offset._1, image.imageSize + offset._2))
+  }
 
   private def copyImage(from: BufferedImage, to: BufferedImage): Unit = {
     val fromPixels = from.getRGB(0, 0, from.getWidth, from.getHeight, null, 0, from.getWidth)
@@ -59,7 +53,11 @@ class ImageSaverToFile extends ImageSaver {
     }
   }
 
-  private def getExtension(file: File): String = file.getName.substring(file.getName.lastIndexOf('.') + 1)
+  protected def colorToInt(col: Color): Int = {
+    (col.opacity * 255).toInt << 24 |
+      (col.red     * 255).toInt << 16 |
+      (col.green   * 255).toInt <<  8 |
+      (col.blue    * 255).toInt
+  }
 
-  private def writeImageToFile(image: BufferedImage, file: File): Boolean = ImageIO.write(image, getExtension(file).toUpperCase, file)
 }

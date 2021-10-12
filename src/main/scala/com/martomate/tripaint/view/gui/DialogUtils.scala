@@ -261,7 +261,7 @@ object DialogUtils {
           previewPane.setLayoutY(y)
 
           val saver = ImageSaverToArray.fromSize(imageSize)
-          saver.save(storage, format, SaveLocation(file, (x, y)))
+          saver.save(storage, format, SaveLocation(file, (x, y)), null)
           previewImage.pixelWriter.setPixels(0, 0, imageSize, imageSize, pixelFormat, saver.array, 0, imageSize)
       }
     }

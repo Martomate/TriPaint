@@ -1,7 +1,8 @@
 package com.martomate.tripaint.model.image.pool
 
+import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
-import com.martomate.tripaint.model.image.save.ImageSaver
+import com.martomate.tripaint.model.image.save.ImageSaverToFile
 import com.martomate.tripaint.model.image.storage.{ImageStorageFactory, ImageStorageImpl}
 import com.martomate.tripaint.model.image.{SaveLocation, pool}
 import org.scalamock.scalatest.MockFactory
@@ -9,6 +10,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import scalafx.scene.paint.Color
 
+import java.io.File
 import scala.util.{Failure, Success}
 
 abstract class ImagePoolTest extends AnyFlatSpec with Matchers with MockFactory {
@@ -19,13 +21,13 @@ abstract class ImagePoolTest extends AnyFlatSpec with Matchers with MockFactory 
 
   "save" should "return false if the image doesn't exist" in {
     val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
-    make().save(image, null) shouldBe false
+    make().save(image, null, null) shouldBe false
   }
 
   it should "return false if the saver reports failure" in {
     val listener = mock[ImagePoolListener]
     val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
-    val location = SaveLocation(null)
+    val location = SaveLocation(new File("a.png"))
     val format = new SimpleStorageFormat
     val info = pool.SaveInfo(format)
 
@@ -33,13 +35,13 @@ abstract class ImagePoolTest extends AnyFlatSpec with Matchers with MockFactory 
     f.addListener(listener)
     f.move(image, location, info)
 
-    f.save(image, (_, _, _) => false) shouldBe false
+    f.save(image, new ImageSaverToFile, FileSystem.createNull(supportedImageFormats = Set())) shouldBe false
   }
 
   it should "notify listeners and return true if the saver reports success" in {
     val listener = mock[ImagePoolListener]
     val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
-    val location = SaveLocation(null)
+    val location = SaveLocation(new File("a.png"))
     val format = new SimpleStorageFormat
     val info = pool.SaveInfo(format)
 
@@ -47,10 +49,10 @@ abstract class ImagePoolTest extends AnyFlatSpec with Matchers with MockFactory 
     f.addListener(listener)
     f.move(image, location, info)
 
-    val saver: ImageSaver = (_, _, _) => true
+    val saver = new ImageSaverToFile
     listener.onImageSaved _ expects(image, saver)
 
-    f.save(image, saver) shouldBe true
+    f.save(image, saver, FileSystem.createNull()) shouldBe true
   }
 
   "locationOf" should "return None if the image doesn't exist" in {

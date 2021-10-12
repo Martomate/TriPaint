@@ -1,14 +1,18 @@
 package com.martomate.tripaint.model.image.content
 
+import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.coords.{TriImageCoords, TriangleCoords}
 import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
 import com.martomate.tripaint.model.image.pool.{ImagePoolImpl, SaveInfo}
+import com.martomate.tripaint.model.image.save.ImageSaverToFile
 import com.martomate.tripaint.model.image.storage.ImageStorageImpl
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import scalafx.scene.paint.Color
+
+import java.io.File
 
 class ImageContentTest extends AnyFlatSpec with Matchers with MockFactory {
 
@@ -39,7 +43,7 @@ class ImageContentTest extends AnyFlatSpec with Matchers with MockFactory {
 
   it should "return false if the image was just saved" in {
     val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
-    val location = SaveLocation(null)
+    val location = SaveLocation(new File("a.png"))
     val format = new SimpleStorageFormat
     val info = SaveInfo(format)
     val pool = new ImagePoolImpl(null)
@@ -48,7 +52,7 @@ class ImageContentTest extends AnyFlatSpec with Matchers with MockFactory {
     pool.addListener(f)
 
     image.update(TriangleCoords(0, 0), Color.Blue)
-    pool.save(image, (_, _, _) => true)
+    pool.save(image, new ImageSaverToFile, FileSystem.createNull())
 
     f.changed shouldBe false
   }

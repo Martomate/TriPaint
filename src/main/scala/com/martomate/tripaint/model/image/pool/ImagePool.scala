@@ -1,8 +1,9 @@
 package com.martomate.tripaint.model.image.pool
 
+import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.image.{SaveLocation, pool}
 import com.martomate.tripaint.model.image.format.StorageFormat
-import com.martomate.tripaint.model.image.save.ImageSaver
+import com.martomate.tripaint.model.image.save.ImageSaverToFile
 import com.martomate.tripaint.model.image.storage.{ImageStorage, ImageStorageFactory}
 import com.martomate.tripaint.util.{InjectiveMap, Listenable}
 import scalafx.scene.paint.Color
@@ -30,12 +31,15 @@ abstract class ImagePool(factory: ImageStorageFactory) extends ImageStorageFacto
 
   def move(image: ImageStorage, to: SaveLocation, info: SaveInfo)(implicit collisionHandler: ImageSaveCollisionHandler): Boolean
 
-  def save(image: ImageStorage, saver: ImageSaver): Boolean = {
-    val success =
-      locationOf(image)
-        .flatMap(loc => saveInfoFor(image)
-          .map(info => saver.save(image, info.format, loc)))
-        .getOrElse(false)
+  def save(image: ImageStorage, saver: ImageSaverToFile, fileSystem: FileSystem): Boolean = {
+    val success = (locationOf(image), saveInfoFor(image)) match {
+      case (Some(loc), Some(info)) =>
+        val oldImage = fileSystem.readImage(loc.file)
+        val newImage = saver.save(image, info.format, loc, oldImage)
+        fileSystem.writeImage(newImage, loc.file)
+      case _ =>
+        false
+    }
 
     if (success) notifyListeners(_.onImageSaved(image, saver))
     success

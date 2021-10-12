@@ -3,7 +3,7 @@ package com.martomate.tripaint.model.image.content
 import com.martomate.tripaint.model.coords.{TriImageCoords, TriangleCoords}
 import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.pool.ImagePoolListener
-import com.martomate.tripaint.model.image.save.ImageSaver
+import com.martomate.tripaint.model.image.save.ImageSaverToFile
 import com.martomate.tripaint.model.image.storage.{ImageStorage, ImageStorageListener}
 import com.martomate.tripaint.model.undo.UndoManager
 import com.martomate.tripaint.util.Listenable
@@ -30,7 +30,7 @@ class ImageContent(val coords: TriImageCoords, init_image: ImageStorage) extends
 
   def tellListenersAboutBigChange(): Unit = notifyListeners(_.onImageChangedALot())
 
-  def onImageSaved(image: ImageStorage, saver: ImageSaver): Unit = {
+  def onImageSaved(image: ImageStorage, saver: ImageSaverToFile): Unit = {
     if (image == _image) {
       _changed.value = false
     }

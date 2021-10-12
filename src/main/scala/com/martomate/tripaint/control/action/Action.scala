@@ -32,8 +32,8 @@ abstract class Action {
   }
 
   protected def save(model: TriPaintModel, view: TriPaintView, images: ImageContent*): Boolean = {
-    images.filter(im => !model.imagePool.save(im.storage, model.imageSaver))
-      .forall(im => model.imagePool.save(im.storage, model.imageSaver) || saveAs(model, view, im))
+    images.filter(im => !model.imagePool.save(im.storage, model.imageSaver, model.fileSystem))
+      .forall(im => model.imagePool.save(im.storage, model.imageSaver, model.fileSystem) || saveAs(model, view, im))
   }
 
   protected def saveAs(model: TriPaintModel, view: TriPaintView, image: ImageContent): Boolean = {
@@ -41,7 +41,7 @@ abstract class Action {
       view.askForFileSaveSettings(file, image) map {
         case FileSaveSettings(offset, format) =>
           if (model.imagePool.move(image.storage, SaveLocation(file, offset), SaveInfo(format))(view)) {
-            val saved = model.imagePool.save(image.storage, model.imageSaver)
+            val saved = model.imagePool.save(image.storage, model.imageSaver, model.fileSystem)
             if (!saved) println("Image could not be saved!!")
             saved
           } else false
