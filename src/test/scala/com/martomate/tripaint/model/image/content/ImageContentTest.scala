@@ -4,7 +4,7 @@ import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.coords.{TriImageCoords, TriangleCoords}
 import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
-import com.martomate.tripaint.model.image.pool.{ImagePoolImpl, SaveInfo}
+import com.martomate.tripaint.model.image.pool.{ImagePool, SaveInfo}
 import com.martomate.tripaint.model.image.save.ImageSaverToFile
 import com.martomate.tripaint.model.image.storage.ImageStorageImpl
 import org.scalamock.scalatest.MockFactory
@@ -46,7 +46,7 @@ class ImageContentTest extends AnyFlatSpec with Matchers with MockFactory {
     val location = SaveLocation(new File("a.png"))
     val format = new SimpleStorageFormat
     val info = SaveInfo(format)
-    val pool = new ImagePoolImpl(null)
+    val pool = new ImagePool(null)
     pool.move(image, location, info)(null)
     val f = new ImageContent(TriImageCoords(0, 0), image)
     pool.addListener(f)

@@ -1,26 +1,31 @@
 package com.martomate.tripaint.model.image.save
 
+import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.coords.TriangleCoords
 import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.model.image.storage.ImageStorage
-import scalafx.scene.paint.Color
 
 import java.awt.image.BufferedImage
 
 class ImageSaverToFile {
 
-  def save(image: ImageStorage, format: StorageFormat, saveInfo: SaveLocation, oldImage: Option[BufferedImage]): BufferedImage = {
-    val bufImage: BufferedImage = createDestinationImage(image, saveInfo.offset, oldImage)
-
-    writeImage(bufImage, image, saveInfo.offset, format)
-    bufImage
+  def save(image: ImageStorage, format: StorageFormat, loc: SaveLocation, fileSystem: FileSystem): Boolean = {
+    val oldImage = fileSystem.readImage(loc.file)
+    val newImage = save(image, format, loc, oldImage)
+    fileSystem.writeImage(newImage, loc.file)
   }
 
-  private def createDestinationImage(image: ImageStorage, offset: (Int, Int), oldImage: Option[BufferedImage]) = {
-    oldImage
-      .map(im => resizeImageIfNeeded(im, offset, image.imageSize))
-      .getOrElse(makeNewImage(image.imageSize + offset._1, image.imageSize + offset._2))
+  def save(image: ImageStorage, format: StorageFormat, saveInfo: SaveLocation, oldImage: Option[BufferedImage]): BufferedImage = {
+    val bufImage: BufferedImage = oldImage match {
+      case Some(im) =>
+        resizeImageIfNeeded(im, saveInfo.offset, image.imageSize)
+      case None =>
+        makeNewImage(image.imageSize + saveInfo.offset._1, image.imageSize + saveInfo.offset._2)
+    }
+
+    writeIntoImage(bufImage, image, saveInfo.offset, format)
+    bufImage
   }
 
   private def copyImage(from: BufferedImage, to: BufferedImage): Unit = {
@@ -29,11 +34,11 @@ class ImageSaverToFile {
   }
 
   private def resizeImageIfNeeded(image: BufferedImage, offset: (Int, Int), imageSize: Int): BufferedImage = {
-    val sizeNeeded = (offset._1 + imageSize, offset._2 + imageSize)
-    val imSize = (image.getWidth, image.getHeight)
+    val neededWith = offset._1 + imageSize
+    val neededHeight = offset._2 + imageSize
 
-    if (imSize._1 < sizeNeeded._1 || imSize._2 < sizeNeeded._2) {
-      val newImage = makeNewImage(sizeNeeded._1, sizeNeeded._2)
+    if (image.getWidth < neededWith || image.getHeight < neededHeight) {
+      val newImage = makeNewImage(neededWith, neededHeight)
 
       copyImage(image, newImage)
       newImage
@@ -42,22 +47,15 @@ class ImageSaverToFile {
 
   private def makeNewImage(width: Int, height: Int): BufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
 
-  private def writeImage(dest: BufferedImage, source: ImageStorage, offset: (Int, Int), format: StorageFormat): Unit = {
+  private def writeIntoImage(dest: BufferedImage, source: ImageStorage, offset: (Int, Int), format: StorageFormat): Unit = {
     for (y <- 0 until source.imageSize) {
       for (x <- 0 until 2 * y + 1) {
         val tCoords = TriangleCoords(x, y)
         val sCoords = format.transformToStorage(tCoords)
 
-        dest.setRGB(sCoords.x + offset._1, sCoords.y + offset._2, colorToInt(source(tCoords)))
+        dest.setRGB(sCoords.x + offset._1, sCoords.y + offset._2, source(tCoords).toInt)
       }
     }
-  }
-
-  protected def colorToInt(col: Color): Int = {
-    (col.opacity * 255).toInt << 24 |
-      (col.red     * 255).toInt << 16 |
-      (col.green   * 255).toInt <<  8 |
-      (col.blue    * 255).toInt
   }
 
 }

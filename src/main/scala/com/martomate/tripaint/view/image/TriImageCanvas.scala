@@ -1,10 +1,10 @@
 package com.martomate.tripaint.view.image
 
+import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.TriangleCoords
 import com.martomate.tripaint.model.image.storage.ImageStorage
 import javafx.scene.image.PixelFormat
 import scalafx.scene.canvas.Canvas
-import scalafx.scene.paint.Color
 
 class TriImageCanvas(init_width: Double, imageSize: Int) extends Canvas(init_width, init_width * Math.sqrt(3) / 2) {
   private val coordsToRealConverter = new TriangleCoordsToReal[Double](imageSize, new Array(_), (xx, yy) => (xx * width(), yy * height()))
@@ -22,9 +22,9 @@ class TriImageCanvas(init_width: Double, imageSize: Int) extends Canvas(init_wid
         val c = indexMap.coordsAt(x / width(), y / height())
         if (c != null) {
           if (c == coords)
-            gc.pixelWriter.setColor(x, y, color)
+            gc.pixelWriter.setColor(x, y, color.toFXColor)
           else
-            gc.pixelWriter.setColor(x, y, pixels(c))
+            gc.pixelWriter.setColor(x, y, pixels(c).toFXColor)
         }
       }
     }
@@ -54,7 +54,7 @@ class TriImageCanvas(init_width: Double, imageSize: Int) extends Canvas(init_wid
             val coords = indexMap.coordsAt(x.toDouble / widthInt, y.toDouble / heightInt)
             if (coords != null) {
               val c = pixels(coords)
-              image(dx + dy * 16) = 0xff << 24 | (c.getRed * 255).toInt << 16 | (c.getGreen * 255).toInt << 8 | (c.getBlue * 255).toInt
+              image(dx + dy * 16) = c.withAlpha(1).toInt
             } else {
               image(dx + dy * 16) = 0
             }
@@ -72,7 +72,7 @@ class TriImageCanvas(init_width: Double, imageSize: Int) extends Canvas(init_wid
     val (px, py) = coordsToRealConverter.triangleCornerPoints(coords)
 
     var xLo, yLo = 1.0e9
-    var xHi, yHi = 0.0;
+    var xHi, yHi = 0.0
 
     for (i <- 0 until 3) {
       val x = px(i)

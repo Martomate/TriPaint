@@ -1,6 +1,5 @@
 package com.martomate.tripaint.view.gui
 
-import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.model.image.pool.ImagePool
@@ -159,7 +158,7 @@ object DialogUtils {
     val previewStack = new Pane
     previewStack.delegate.getChildren.addAll(wholeImage, previewPane)
 
-    def updatePreviewAction: Unit = {
+    def updatePreviewAction(): Unit = {
       resultFromInputs() foreach {
         case FileOpenSettings((x, y), format) =>
           previewPane.setLayoutX(x)
@@ -169,10 +168,10 @@ object DialogUtils {
       }
     }
 
-    updatePreviewAction
+    updatePreviewAction()
 
-    xCoordTF.text.onChange(updatePreviewAction)
-    yCoordTF.text.onChange(updatePreviewAction)
+    xCoordTF.text.onChange(updatePreviewAction())
+    yCoordTF.text.onChange(updatePreviewAction())
 
     getValueFromCustomDialog[FileOpenSettings](
       title = "Open image",
@@ -254,23 +253,23 @@ object DialogUtils {
 
     previewStack.delegate.getChildren.add(previewPane)
 
-    def updatePreviewAction: Unit = {
+    def updatePreviewAction(): Unit = {
       resultFromInputs() foreach {
         case FileSaveSettings((x, y), format) =>
           previewPane.setLayoutX(x)
           previewPane.setLayoutY(y)
 
           val saver = ImageSaverToArray.fromSize(imageSize)
-          saver.save(storage, format, SaveLocation(file, (x, y)), null)
+          saver.save(storage, format)
           previewImage.pixelWriter.setPixels(0, 0, imageSize, imageSize, pixelFormat, saver.array, 0, imageSize)
       }
     }
 
-    updatePreviewAction
+    updatePreviewAction()
 
-    xCoordTF.text.onChange(updatePreviewAction)
-    yCoordTF.text.onChange(updatePreviewAction)
-    formatChooser.selectionModel().selectedItemProperty().addListener(_ => updatePreviewAction)
+    xCoordTF.text.onChange(updatePreviewAction())
+    yCoordTF.text.onChange(updatePreviewAction())
+    formatChooser.selectionModel().selectedItemProperty().addListener(_ => updatePreviewAction())
 
     getValueFromCustomDialog[FileSaveSettings](
       title = "Save file",
@@ -304,7 +303,7 @@ object DialogUtils {
     dialog.contentText = contentText
     dialog.graphic = makeImagePreviewList(images, imagePool)
     DialogUtils.restrictTextField(dialog.editor, restriction)
-    dialog.showAndWait match {
+    dialog.showAndWait() match {
       case Some(str) =>
         val num = stringToValue(str)
         Some(num)

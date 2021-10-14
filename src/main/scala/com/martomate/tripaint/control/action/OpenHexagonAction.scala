@@ -15,7 +15,7 @@ object OpenHexagonAction extends Action {
       FileOpenSettings(offset, format) <- view.askForFileOpenSettings(file, imageSize * 6, imageSize)
       coords <- view.askForWhereToPutImage()
     } for (idx <- 0 until 6) {
-      model.imagePool.fromFile(SaveLocation(file, (offset._1 + idx * imageSize, offset._2)), format, imageSize) match {
+      model.imagePool.fromFile(SaveLocation(file, (offset._1 + idx * imageSize, offset._2)), format, imageSize, model.fileSystem) match {
         case Success(storage) =>
           val off = coordOffset(idx)
           val imageCoords = TriImageCoords(coords._1 + off._1, coords._2 + off._2)

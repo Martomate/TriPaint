@@ -28,7 +28,7 @@ object FileSystem {
   }
 }
 
-trait ImageIOWrapper {
+sealed trait ImageIOWrapper {
   def read(file: File): BufferedImage
   def write(image: BufferedImage, formatName: String, file: File): Boolean
 }

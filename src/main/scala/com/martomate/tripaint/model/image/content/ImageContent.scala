@@ -1,5 +1,6 @@
 package com.martomate.tripaint.model.image.content
 
+import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.{TriImageCoords, TriangleCoords}
 import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.pool.ImagePoolListener
@@ -8,7 +9,6 @@ import com.martomate.tripaint.model.image.storage.{ImageStorage, ImageStorageLis
 import com.martomate.tripaint.model.undo.UndoManager
 import com.martomate.tripaint.util.Listenable
 import scalafx.beans.property.{BooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanWrapper}
-import scalafx.scene.paint.Color
 
 class ImageContent(val coords: TriImageCoords, init_image: ImageStorage) extends Listenable[ImageChangeListener] with ImagePoolListener with ImageStorageListener {
   private var _image: ImageStorage = init_image

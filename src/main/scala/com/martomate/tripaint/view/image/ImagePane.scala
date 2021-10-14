@@ -121,7 +121,7 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImagePaneView with Image
       case EditMode.Fill =>
           fill(coords, new Color(color()))
       case EditMode.PickColor =>
-          color() = image.storage(coords.pix)
+          color() = image.storage(coords.pix).toFXColor
       case _ =>
     }
 
@@ -161,8 +161,8 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImagePaneView with Image
     true
   }
 
-  this.width  onChange updateSize
-  this.height onChange updateSize
+  this.width.onChange(updateSize())
+  this.height.onChange(updateSize())
 
   private def updateSize(): Unit = {
     this.clip() = new Rectangle(0, 0, width(), height())

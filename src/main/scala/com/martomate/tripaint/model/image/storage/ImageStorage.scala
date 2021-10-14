@@ -1,8 +1,8 @@
 package com.martomate.tripaint.model.image.storage
 
+import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.TriangleCoords
 import com.martomate.tripaint.util.Listenable
-import scalafx.scene.paint.Color
 
 trait ImageStorage extends Listenable[ImageStorageListener] {
   val imageSize: Int

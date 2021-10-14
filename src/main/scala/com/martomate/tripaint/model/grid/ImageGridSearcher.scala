@@ -1,7 +1,7 @@
 package com.martomate.tripaint.model.grid
 
+import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.GlobalPixCoords
-import scalafx.scene.paint.Color
 
 class ImageGridSearcher(colorLookup: ColorLookup) {
   def search(startPos: GlobalPixCoords, predicate: (GlobalPixCoords, Color) => Boolean): Seq[GlobalPixCoords] = {
@@ -11,7 +11,7 @@ class ImageGridSearcher(colorLookup: ColorLookup) {
     visited += startPos
 
     while (q.nonEmpty) {
-      val p = q.dequeue
+      val p = q.dequeue()
       colorLookup.lookup(p) foreach { color =>
         if (predicate(p, color)) {
           result += p

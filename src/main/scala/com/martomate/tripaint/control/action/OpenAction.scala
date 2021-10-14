@@ -14,7 +14,7 @@ object OpenAction extends Action {
       file <- view.askForFileToOpen()
       FileOpenSettings(offset, format) <- view.askForFileOpenSettings(file, imageSize, imageSize)
       coords <- view.askForWhereToPutImage()
-    } model.imagePool.fromFile(SaveLocation(file, offset), format, imageSize) match {
+    } model.imagePool.fromFile(SaveLocation(file, offset), format, imageSize, model.fileSystem) match {
       case Success(storage) =>
         val imageCoords = TriImageCoords(coords._1, coords._2)
         val image = makeImageContent(model, imageCoords, storage)

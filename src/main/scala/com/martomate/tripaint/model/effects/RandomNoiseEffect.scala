@@ -12,9 +12,9 @@ class RandomNoiseEffect(min: Color, max: Color) extends Effect {
       val image = grid(imageCoords).get.storage
       for (coords <- image.allPixels) {
         image(coords) = Color.hsb(
-          math.random * (max.hue - min.hue) + min.hue,
-          math.random * (max.saturation - min.saturation) + min.saturation,
-          math.random * (max.brightness - min.brightness) + min.brightness,
+          math.random() * (max.hue - min.hue) + min.hue,
+          math.random() * (max.saturation - min.saturation) + min.saturation,
+          math.random() * (max.brightness - min.brightness) + min.brightness,
           1
         )
       }

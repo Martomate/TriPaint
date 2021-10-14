@@ -1,10 +1,10 @@
 package com.martomate.tripaint.model.image.storage
 
+import com.martomate.tripaint.infrastructure.FileSystem
+import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.{StorageCoords, TriangleCoords}
 import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
-import javax.imageio.ImageIO
-import scalafx.scene.paint.Color
 
 import scala.util.Try
 
@@ -32,23 +32,18 @@ object ImageStorageImpl extends ImageStorageFactory {
     new ImageStorageImpl(imageSize, _ => bgColor)
   }
 
-  def fromFile(saveInfo: SaveLocation, format: StorageFormat, imageSize: Int): Try[ImageStorageImpl] = Try {
-    val image = ImageIO.read(saveInfo.file)
+  def fromFile(saveInfo: SaveLocation, format: StorageFormat, imageSize: Int, fileSystem: FileSystem): Try[ImageStorageImpl] = Try {
+    val image = fileSystem.readImage(saveInfo.file).get
+
     val (xOff, yOff) = saveInfo.offset
     val pixels = image.getRGB(xOff, yOff, imageSize, imageSize, null, 0, imageSize)
 
-    def colorAt(coords: TriangleCoords) = {
+    def colorAt(coords: TriangleCoords): Color = {
       val stCoords = format.transformToStorage(coords)
-      intToColor(pixels(stCoords.x + stCoords.y * imageSize))
+      Color.fromInt(pixels(stCoords.x + stCoords.y * imageSize))
     }
 
     new ImageStorageImpl(imageSize, coords => colorAt(coords))
   }
 
-  private def intToColor(value: Int): Color = Color.rgb(
-    value >> 16 & 0xff,
-    value >>  8 & 0xff,
-    value >>  0 & 0xff,
-   (value >> 24 & 0xff) / 255.0
-  )
 }
