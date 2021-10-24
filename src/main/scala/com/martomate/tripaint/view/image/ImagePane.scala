@@ -178,8 +178,8 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImagePaneView with Image
   }
 
   override def onAddImage(image: ImageContent): Unit = {
-    val triImage = TriImageImpl(image, this)
-    children add triImage.pane
+    val triImage = new TriImageImpl(image, this)
+    children.add(triImage.pane.delegate)
     imageMap(image.coords) = triImage
     relocateImage(image)
   }

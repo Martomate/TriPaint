@@ -7,7 +7,6 @@ import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.storage.ImageStorageImpl
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import scalafx.scene.paint.{Color => FXColor}
 
 class BlurEffectTest extends AnyFlatSpec with Matchers {
   "name" should "be 'Blur'" in {
@@ -27,8 +26,8 @@ class BlurEffectTest extends AnyFlatSpec with Matchers {
     val effect = new BlurEffect(radius)
     val thisImage = TriImageCoords(0, 0)
 
-    val storage = ImageStorageImpl.fromBGColor(FXColor.Black, imageSize)
-    storage(dotLocation) = FXColor.White
+    val storage = ImageStorageImpl.fromBGColor(Color.Black, imageSize)
+    storage(dotLocation) = Color.White
 
     val grid = new ImageGridImplOld(imageSize)
     grid.set(new ImageContent(thisImage, storage))
@@ -62,9 +61,9 @@ class BlurEffectTest extends AnyFlatSpec with Matchers {
     val effect = new BlurEffect(radius)
     val thisImage = TriImageCoords(0, 0)
 
-    val storage = ImageStorageImpl.fromBGColor(FXColor.Black, imageSize)
-    val storage2 = ImageStorageImpl.fromBGColor(FXColor.Black, imageSize)
-    storage(dotLocation) = FXColor.White
+    val storage = ImageStorageImpl.fromBGColor(Color.Black, imageSize)
+    val storage2 = ImageStorageImpl.fromBGColor(Color.Black, imageSize)
+    storage(dotLocation) = Color.White
 
     val grid = new ImageGridImplOld(imageSize)
     grid.set(new ImageContent(thisImage, storage))

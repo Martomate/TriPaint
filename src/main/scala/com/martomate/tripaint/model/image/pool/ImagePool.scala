@@ -2,14 +2,14 @@ package com.martomate.tripaint.model.image.pool
 
 import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.Color
-import com.martomate.tripaint.model.image.{SaveLocation, pool}
+import com.martomate.tripaint.model.image.{RegularImage, SaveLocation, pool}
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.model.image.save.ImageSaverToFile
 import com.martomate.tripaint.model.image.storage.{ImageStorage, ImageStorageFactory}
 import com.martomate.tripaint.util.{InjectiveHashMap, InjectiveMap, Listenable}
 
 import scala.collection.mutable
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 /**
   * This class should keep track of Map[SaveLocation, ImageStorage]
@@ -58,7 +58,9 @@ class ImagePool(factory: ImageStorageFactory) extends Listenable[ImagePoolListen
   def save(image: ImageStorage, saver: ImageSaverToFile, fileSystem: FileSystem): Boolean = {
     val success = (locationOf(image), saveInfoFor(image)) match {
       case (Some(loc), Some(info)) =>
-        saver.save(image, info.format, loc, fileSystem)
+        val oldImage = fileSystem.readImage(loc.file).map(RegularImage.fromBufferedImage)
+        val newImage = saver.overwritePartOfImage(image, info.format, loc.offset, oldImage)
+        fileSystem.writeImage(newImage.toBufferedImage, loc.file)
       case _ =>
         false
     }
@@ -73,12 +75,18 @@ class ImagePool(factory: ImageStorageFactory) extends Listenable[ImagePoolListen
   def fromFile(location: SaveLocation, format: StorageFormat, imageSize: Int, fileSystem: FileSystem): Try[ImageStorage] = {
     if (contains(location)) Success(get(location))
     else {
-      val image = factory.fromFile(location, format, imageSize, fileSystem)
-      image.foreach(im => {
-        set(location, im)
-        saveInfo(im) = pool.SaveInfo(format)
-      })
-      image
+      fileSystem.readImage(location.file) match {
+        case Some(storedImage) =>
+          val regularImage = RegularImage.fromBufferedImage(storedImage)
+          val image = factory.fromRegularImage(regularImage, location.offset, format, imageSize)
+          image.foreach(im => {
+              set(location, im)
+              saveInfo(im) = pool.SaveInfo(format)
+          })
+          image
+        case None =>
+          Failure(new RuntimeException("no such image"))
+      }
     }
   }
 }

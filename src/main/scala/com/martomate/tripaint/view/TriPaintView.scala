@@ -1,7 +1,8 @@
 package com.martomate.tripaint.view
 
-import java.io.File
+import com.martomate.tripaint.model.coords.StorageCoords
 
+import java.io.File
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.model.image.pool.ImageSaveCollisionHandler
@@ -27,5 +28,5 @@ trait TriPaintView extends ImageSaveCollisionHandler {
   def close(): Unit
 }
 
-case class FileSaveSettings(offset: (Int, Int), format: StorageFormat)
-case class FileOpenSettings(offset: (Int, Int), format: StorageFormat)
+case class FileSaveSettings(offset: StorageCoords, format: StorageFormat)
+case class FileOpenSettings(offset: StorageCoords, format: StorageFormat)

@@ -1,5 +1,6 @@
 package com.martomate.tripaint.view.gui
 
+import com.martomate.tripaint.model.coords.StorageCoords
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.model.image.pool.ImagePool
@@ -139,7 +140,7 @@ object DialogUtils {
       for {
         xOffset <- Try(if (xt != "") xt.toInt else 0)
         yOffset <- Try(if (yt != "") yt.toInt else 0)
-      } yield FileOpenSettings((xOffset, yOffset), format)
+      } yield FileOpenSettings(StorageCoords(xOffset, yOffset), format)
     }
 
     val previewPane = new Pane
@@ -160,7 +161,7 @@ object DialogUtils {
 
     def updatePreviewAction(): Unit = {
       resultFromInputs() foreach {
-        case FileOpenSettings((x, y), format) =>
+        case FileOpenSettings(StorageCoords(x, y), format) =>
           previewPane.setLayoutX(x)
           previewPane.setLayoutY(y)
 
@@ -219,7 +220,7 @@ object DialogUtils {
       for {
         xOffset <- Try(if (xt != "") xt.toInt else 0)
         yOffset <- Try(if (yt != "") yt.toInt else 0)
-      } yield FileSaveSettings((xOffset, yOffset), format)
+      } yield FileSaveSettings(StorageCoords(xOffset, yOffset), format)
     }
 
     val previewPane = new StackPane
@@ -255,7 +256,7 @@ object DialogUtils {
 
     def updatePreviewAction(): Unit = {
       resultFromInputs() foreach {
-        case FileSaveSettings((x, y), format) =>
+        case FileSaveSettings(StorageCoords(x, y), format) =>
           previewPane.setLayoutX(x)
           previewPane.setLayoutY(y)
 

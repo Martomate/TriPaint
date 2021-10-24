@@ -28,12 +28,12 @@ object FileSystem {
   }
 }
 
-sealed trait ImageIOWrapper {
+private sealed trait ImageIOWrapper {
   def read(file: File): BufferedImage
   def write(image: BufferedImage, formatName: String, file: File): Boolean
 }
 
-class RealImageIO extends ImageIOWrapper {
+private class RealImageIO extends ImageIOWrapper {
   import javax.imageio.ImageIO
 
   override def read(file: File): BufferedImage = ImageIO.read(file)
@@ -42,7 +42,7 @@ class RealImageIO extends ImageIOWrapper {
     ImageIO.write(image, formatName, file)
 }
 
-class NullImageIO(initialImages: Map[File, BufferedImage],
+private class NullImageIO(initialImages: Map[File, BufferedImage],
                   supportedFileFormats: Set[String]) extends ImageIOWrapper {
   private var images: Map[File, BufferedImage] = initialImages.view.mapValues(deepCopy).toMap
 
@@ -61,8 +61,7 @@ class NullImageIO(initialImages: Map[File, BufferedImage],
 
   private def deepCopy(bi: BufferedImage): BufferedImage = {
     val cm = bi.getColorModel
-    val isAlphaPremultiplied = cm.isAlphaPremultiplied
     val raster = bi.copyData(null)
-    new BufferedImage(cm, raster, isAlphaPremultiplied, null)
+    new BufferedImage(cm, raster, cm.isAlphaPremultiplied, null)
   }
 }

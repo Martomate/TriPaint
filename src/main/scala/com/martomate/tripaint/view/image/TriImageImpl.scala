@@ -8,8 +8,8 @@ import javafx.scene.input.{MouseEvent, ScrollEvent}
 import scalafx.beans.property.ReadOnlyBooleanProperty
 import scalafx.scene.layout.Pane
 
-class TriImageImpl private(val content: ImageContent, val imagePane: ImagePaneView) extends Pane with TriImage {
-  override def pane: Pane = this
+class TriImageImpl(val content: ImageContent, val imagePane: ImagePaneView) extends TriImage {
+  override val pane: Pane = new Pane()
 
   private def panX = content.coords.xOff * imagePane.sideLength
   private def panY = content.coords.yOff * imagePane.sideLength
@@ -23,7 +23,7 @@ class TriImageImpl private(val content: ImageContent, val imagePane: ImagePaneVi
   private val canvas: TriImageActualCanvas = new TriImageActualCanvas(imagePane.imageSize, imagePane.imageSize)
 
   content.addListener(this)
-  children add canvas
+  pane.children.add(canvas)
   if (content.coords.x % 2 != 0) canvas.rotate() += 180
   updateCanvasSize()
 
@@ -79,10 +79,6 @@ class TriImageImpl private(val content: ImageContent, val imagePane: ImagePaneVi
   }
 
   override def relocate(x: Double, y: Double): Unit = {
-    super.relocate(x, y)
+    pane.relocate(x, y)
   }
-}
-
-object TriImageImpl {
-  def apply(content: ImageContent, imagePane: ImagePaneView) = new TriImageImpl(content, imagePane)
 }

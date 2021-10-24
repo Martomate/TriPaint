@@ -9,7 +9,7 @@ trait ITriImage extends ImageChangeListener {
 
   def redraw(): Unit
 
-  override def onPixelChanged(coords: TriangleCoords, from: Color, to: Color): Unit = drawTriangle(coords)
+  override final def onPixelChanged(coords: TriangleCoords, from: Color, to: Color): Unit = drawTriangle(coords)
 
-  override def onImageChangedALot(): Unit = redraw()
+  override final def onImageChangedALot(): Unit = redraw()
 }
