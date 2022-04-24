@@ -1,4 +1,4 @@
-scalaVersion := "2.13.6"
+scalaVersion := "3.1.2"
 
 name := "TriPaint"
 organization := "com.martomate"
