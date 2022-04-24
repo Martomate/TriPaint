@@ -3,12 +3,14 @@ package com.martomate.tripaint.model.grid
 import com.martomate.tripaint.model.coords.TriImageCoords
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.storage.ImageStorage
-import org.scalamock.scalatest.MockFactory
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{never, verify}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import scalafx.scene.paint.Color
 
-class ImageGridTest extends AnyFlatSpec with Matchers with MockFactory {
+class ImageGridTest extends AnyFlatSpec with Matchers with MockitoSugar {
   def make(): ImageGrid = new ImageGrid(16)
 
   def makeImage(x: Int, y: Int): ImageContent = {
@@ -92,12 +94,12 @@ class ImageGridTest extends AnyFlatSpec with Matchers with MockFactory {
     val listener = mock[ImageGridListener]
     f.addListener(listener)
 
-    listener.onAddImage _ expects image
     f.set(image)
+    verify(listener).onAddImage(image)
 
-    listener.onAddImage _ expects image2
-    listener.onRemoveImage _ expects image
     f.set(image2)
+    verify(listener).onAddImage(image2)
+    verify(listener).onRemoveImage(image)
   }
 
   "-=" should "return null if there is no image there" in {
@@ -124,9 +126,10 @@ class ImageGridTest extends AnyFlatSpec with Matchers with MockFactory {
     f.addListener(listener)
 
     f -= tc(0, 0)
+    verify(listener, never()).onRemoveImage(any())
 
-    listener.onRemoveImage _ expects image
     f -= tc(1, 0)
+    verify(listener).onRemoveImage(image)
   }
 
   "selectedImages" should "return all images that are currently selected" in {

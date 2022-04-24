@@ -1,15 +1,16 @@
 package com.martomate.tripaint.control.action
 
-import com.martomate.tripaint.model.{Color, TriPaintModel}
 import com.martomate.tripaint.model.coords.TriImageCoords
-import com.martomate.tripaint.model.image.{RegularImage, SaveLocation}
+import com.martomate.tripaint.model.image.RegularImage
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
+import com.martomate.tripaint.model.{Color, TriPaintModel}
 import com.martomate.tripaint.view.TriPaintView
-import org.scalamock.scalatest.MockFactory
+import org.mockito.Mockito.when
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 
-class NewActionTest extends AnyFlatSpec with Matchers with MockFactory {
+class NewActionTest extends AnyFlatSpec with Matchers with MockitoSugar {
   "NewAction" should "add a new image to the grid" in {
     val model = TriPaintModel.createNull()
     val view = mock[TriPaintView]
@@ -18,8 +19,8 @@ class NewActionTest extends AnyFlatSpec with Matchers with MockFactory {
     val imageSize = model.imageGrid.imageSize
     val backgroundColor = Color.Cyan
 
-    (view.askForWhereToPutImage _).expects() returns Some((3, 4))
-    (view.backgroundColor _).expects() returns backgroundColor.toFXColor
+    when(view.askForWhereToPutImage()).thenReturn(Some((3, 4)))
+    when(view.backgroundColor).thenReturn(backgroundColor.toFXColor)
 
     NewAction.perform(model, view)
 
@@ -38,7 +39,7 @@ class NewActionTest extends AnyFlatSpec with Matchers with MockFactory {
     val view = mock[TriPaintView]
     model.imageGrid.setImageSizeIfEmpty(8)
 
-    (view.askForWhereToPutImage _).expects() returns None
+    when(view.askForWhereToPutImage()).thenReturn(None)
 
     NewAction.perform(model, view)
 
@@ -59,14 +60,10 @@ class NewActionTest extends AnyFlatSpec with Matchers with MockFactory {
     val imageSize = model.imageGrid.imageSize
     val backgroundColor = Color.Cyan
 
-    (view.askForWhereToPutImage _).expects() returns Some((3, 4))
-    (view.backgroundColor _).expects() returns backgroundColor.toFXColor
+    when(view.askForWhereToPutImage()).thenReturn(Some((3, 4)))
+    when(view.backgroundColor).thenReturn(backgroundColor.toFXColor)
 
     NewAction.perform(model, view)
-
-    (view.askForWhereToPutImage _).expects() returns Some((3, 4))
-    (view.backgroundColor _).expects() returns backgroundColor.toFXColor
-
     NewAction.perform(model, view)
 
     val expectedImage = RegularImage.fill(imageSize, imageSize, backgroundColor)

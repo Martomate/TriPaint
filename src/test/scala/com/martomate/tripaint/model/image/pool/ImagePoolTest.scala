@@ -7,16 +7,16 @@ import com.martomate.tripaint.model.image.format.{SimpleStorageFormat, StorageFo
 import com.martomate.tripaint.model.image.save.ImageSaverToFile
 import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.model.image.{RegularImage, SaveLocation, pool}
-import org.scalamock.scalatest.MockFactory
+import org.mockito.Mockito.{verify, when}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import scalafx.scene.paint.{Color => FXColor}
 
-import java.awt.image.BufferedImage
 import java.io.File
 import scala.util.{Failure, Success}
 
-class ImagePoolTest extends AnyFlatSpec with Matchers with MockFactory {
+class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
   implicit val collisionHandler: ImageSaveCollisionHandler = mock[ImageSaveCollisionHandler]
   val storageFormat: StorageFormat = new SimpleStorageFormat
 
@@ -50,9 +50,9 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockFactory {
     f.move(image, location, info)
 
     val saver = new ImageSaverToFile
-    listener.onImageSaved _ expects(image, saver)
 
     f.save(image, saver, FileSystem.createNull()) shouldBe true
+    verify(listener).onImageSaved(image, saver)
   }
 
   it should "write image if it does not exist" in {
@@ -239,7 +239,7 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockFactory {
 
   "move" should "set the image and return true if the location is empty" in {
     val p = new ImagePool()
-    val image = stub[ImageStorage]
+    val image = ImageStorage.fromBGColor(Color.Blue, 8)
     val location = SaveLocation(null)
     val info = pool.SaveInfo(null)
     p.move(image, location, info) shouldBe true
@@ -248,7 +248,7 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockFactory {
 
   it should "simply return true if the image is already there" in {
     val p = new ImagePool()
-    val image = stub[ImageStorage]
+    val image = ImageStorage.fromBGColor(Color.Blue, 8)
     val location = SaveLocation(null)
     val info = pool.SaveInfo(null)
     p.move(image, location, info)
@@ -259,12 +259,12 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockFactory {
   it should "return false if the handler doesn't accept the collision" in {
     val handler = collisionHandler
     val p = new ImagePool()
-    val currentImage = stub[ImageStorage]
-    val newImage = stub[ImageStorage]
+    val currentImage = ImageStorage.fromBGColor(Color.Blue, 8)
+    val newImage = ImageStorage.fromBGColor(Color.Yellow, 8)
     val location = SaveLocation(null)
     val info = pool.SaveInfo(null)
 
-    (handler.shouldReplaceImage _).expects(currentImage, newImage, location).returns(None)
+    when(handler.shouldReplaceImage(currentImage, newImage, location)).thenReturn(None)
 
     p.move(currentImage, location, info)
     p.move(newImage, location, info) shouldBe false
@@ -276,18 +276,19 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockFactory {
 
     val p = new ImagePool()
     p.addListener(listener)
-    val currentImage = stub[ImageStorage]
-    val newImage = stub[ImageStorage]
+    val currentImage = ImageStorage.fromBGColor(Color.Blue, 8)
+    val newImage = ImageStorage.fromBGColor(Color.Yellow, 8)
     val location = SaveLocation(null)
     val info = pool.SaveInfo(null)
 
-    (handler.shouldReplaceImage _).expects(currentImage, newImage, location).returns(Some(true))
-    (listener.onImageReplaced _).expects(currentImage, newImage, location)
+    when(handler.shouldReplaceImage(currentImage, newImage, location)).thenReturn(Some(true))
 
     p.move(currentImage, location, info)
     p.move(newImage, location, info) shouldBe true
     p.locationOf(currentImage) shouldBe None
     p.locationOf(newImage) shouldBe Some(location)
+
+    verify(listener).onImageReplaced(currentImage, newImage, location)
   }
 
   it should "keep the current image, notify listeners, and return true if the handler wants to keep it" in {
@@ -296,17 +297,18 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockFactory {
 
     val p = new ImagePool()
     p.addListener(listener)
-    val currentImage = stub[ImageStorage]
-    val newImage = stub[ImageStorage]
+    val currentImage = ImageStorage.fromBGColor(Color.Blue, 8)
+    val newImage = ImageStorage.fromBGColor(Color.Yellow, 8)
     val location = SaveLocation(null)
     val info = pool.SaveInfo(null)
 
-    (handler.shouldReplaceImage _).expects(currentImage, newImage, location).returns(Some(false))
-    (listener.onImageReplaced _).expects(newImage, currentImage, location)
+    when(handler.shouldReplaceImage(currentImage, newImage, location)).thenReturn(Some(false))
 
     p.move(currentImage, location, info)
     p.move(newImage, location, info) shouldBe true
     p.locationOf(currentImage) shouldBe Some(location)
     p.locationOf(newImage) shouldBe None
+
+    verify(listener).onImageReplaced(newImage, currentImage, location)
   }
 }

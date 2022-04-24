@@ -28,8 +28,8 @@ jlinkOptions ++= Seq(
 Compile / scalacOptions += "-deprecation"
 
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.2.9" % "test",
-  "org.scalamock" %% "scalamock" % "5.1.0" % "test"
+  "org.scalatest" %% "scalatest" % "3.2.11" % "test",
+  "org.scalatestplus" %% "mockito-4-2" % "3.2.11.0" % "test"
 )
 
 // Add dependency on ScalaFX library

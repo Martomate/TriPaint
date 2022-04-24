@@ -24,11 +24,11 @@ abstract class Action {
   }
 
   protected def allImages(model: TriPaintModel): Seq[ImageContent] = {
-    model.imageGrid.images.toSeq
+    model.imageGrid.images
   }
 
   protected def allSelectedImages(model: TriPaintModel): Seq[ImageContent] = {
-    model.imageGrid.selectedImages.toSeq
+    model.imageGrid.selectedImages
   }
 
   protected def save(model: TriPaintModel, view: TriPaintView, images: ImageContent*): Boolean = {

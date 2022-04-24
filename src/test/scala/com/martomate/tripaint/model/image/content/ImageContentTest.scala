@@ -7,14 +7,15 @@ import com.martomate.tripaint.model.image.format.SimpleStorageFormat
 import com.martomate.tripaint.model.image.pool.{ImagePool, SaveInfo}
 import com.martomate.tripaint.model.image.save.ImageSaverToFile
 import com.martomate.tripaint.model.image.storage.ImageStorage
-import org.scalamock.scalatest.MockFactory
+import org.mockito.Mockito.verify
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar.mock
 import scalafx.scene.paint.Color
 
 import java.io.File
 
-class ImageContentTest extends AnyFlatSpec with Matchers with MockFactory {
+class ImageContentTest extends AnyFlatSpec with Matchers {
 
   "tellListenersAboutBigChange" should "tell the listeners that a lot has changed" in {
     val image = ImageStorage.fromBGColor(Color.Black, 2)
@@ -22,8 +23,9 @@ class ImageContentTest extends AnyFlatSpec with Matchers with MockFactory {
     val listener = mock[ImageChangeListener]
     f.addListener(listener)
 
-    (listener.onImageChangedALot _).expects ()
     f.tellListenersAboutBigChange()
+
+    verify(listener).onImageChangedALot()
   }
 
   "changed" should "return false if nothing has happened" in {
