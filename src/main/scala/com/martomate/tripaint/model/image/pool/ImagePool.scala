@@ -5,7 +5,7 @@ import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.image.{RegularImage, SaveLocation, pool}
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.model.image.save.ImageSaverToFile
-import com.martomate.tripaint.model.image.storage.{ImageStorage, ImageStorageFactory}
+import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.util.{InjectiveHashMap, InjectiveMap, Listenable}
 
 import scala.collection.mutable
@@ -17,7 +17,7 @@ import scala.util.{Failure, Success, Try}
   * like e.g. when you save A into the same place as B the user should be asked which image to keep,
   * and after that they will share the same ImageStorage.
   */
-class ImagePool(factory: ImageStorageFactory) extends Listenable[ImagePoolListener] {
+class ImagePool extends Listenable[ImagePoolListener] {
   private val mapping: InjectiveMap[SaveLocation, ImageStorage] = new InjectiveHashMap
   private val saveInfo: mutable.Map[ImageStorage, SaveInfo] = mutable.Map.empty
 
@@ -69,7 +69,7 @@ class ImagePool(factory: ImageStorageFactory) extends Listenable[ImagePoolListen
     success
   }
 
-  def fromBGColor(bgColor: Color, imageSize: Int): ImageStorage = factory.fromBGColor(bgColor, imageSize)
+  def fromBGColor(bgColor: Color, imageSize: Int): ImageStorage = ImageStorage.fromBGColor(bgColor, imageSize)
 
   // TODO: This pool system will not work since you can change SaveInfo for an image without telling the pool! Some planning has to be done.
   def fromFile(location: SaveLocation, format: StorageFormat, imageSize: Int, fileSystem: FileSystem): Try[ImageStorage] = {
@@ -78,7 +78,7 @@ class ImagePool(factory: ImageStorageFactory) extends Listenable[ImagePoolListen
       fileSystem.readImage(location.file) match {
         case Some(storedImage) =>
           val regularImage = RegularImage.fromBufferedImage(storedImage)
-          val image = factory.fromRegularImage(regularImage, location.offset, format, imageSize)
+          val image = ImageStorage.fromRegularImage(regularImage, location.offset, format, imageSize)
           image.foreach(im => {
               set(location, im)
               saveInfo(im) = pool.SaveInfo(format)

@@ -3,7 +3,7 @@ package com.martomate.tripaint.model.image.save
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.StorageCoords
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
-import com.martomate.tripaint.model.image.storage.ImageStorageImpl
+import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.model.image.{RegularImage, SaveLocation}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -17,7 +17,7 @@ class ImageSaverToFileTest extends AnyFlatSpec with Matchers {
     val location = SaveLocation(file)
     val format = new SimpleStorageFormat
 
-    val storage = ImageStorageImpl.fromBGColor(Color.Blue, 16)
+    val storage = ImageStorage.fromBGColor(Color.Blue, 16)
     storage(format.transformFromStorage(StorageCoords(2, 3))) = Color.Cyan
     storage(format.transformFromStorage(StorageCoords(15, 0))) = Color.Magenta
     storage(format.transformFromStorage(StorageCoords(15, 15))) = Color.Yellow
@@ -35,12 +35,12 @@ class ImageSaverToFileTest extends AnyFlatSpec with Matchers {
     val offset = StorageCoords(2, 3)
     val format = new SimpleStorageFormat
 
-    val existingStorage = ImageStorageImpl.fromBGColor(Color.Yellow, 8)
+    val existingStorage = ImageStorage.fromBGColor(Color.Yellow, 8)
 
     val existingImage = RegularImage.ofSize(8, 8) // ???
     existingImage.pasteImage(StorageCoords(0, 0), existingStorage.toRegularImage(format))
 
-    val image = ImageStorageImpl.fromBGColor(Color.Cyan, 4)
+    val image = ImageStorage.fromBGColor(Color.Cyan, 4)
 
     val saver = new ImageSaverToFile
 

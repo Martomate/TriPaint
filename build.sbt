@@ -33,9 +33,9 @@ libraryDependencies ++= Seq(
 )
 
 // Add dependency on ScalaFX library
-libraryDependencies += "org.scalafx" %% "scalafx" % "16.0.0-R24"
+libraryDependencies += "org.scalafx" %% "scalafx" % "17.0.1-R26"
 
 lazy val javaFXModules = Seq("base", "controls", "graphics", "media")
 libraryDependencies ++= javaFXModules.map { m =>
-  "org.openjfx" % s"javafx-$m" % "16"
+  "org.openjfx" % s"javafx-$m" % "17.0.2"
 }

@@ -6,7 +6,7 @@ import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
 import com.martomate.tripaint.model.image.pool.{ImagePool, SaveInfo}
 import com.martomate.tripaint.model.image.save.ImageSaverToFile
-import com.martomate.tripaint.model.image.storage.ImageStorageImpl
+import com.martomate.tripaint.model.image.storage.ImageStorage
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -17,7 +17,7 @@ import java.io.File
 class ImageContentTest extends AnyFlatSpec with Matchers with MockFactory {
 
   "tellListenersAboutBigChange" should "tell the listeners that a lot has changed" in {
-    val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
+    val image = ImageStorage.fromBGColor(Color.Black, 2)
     val f = new ImageContent(TriImageCoords(0, 0), image)
     val listener = mock[ImageChangeListener]
     f.addListener(listener)
@@ -27,13 +27,13 @@ class ImageContentTest extends AnyFlatSpec with Matchers with MockFactory {
   }
 
   "changed" should "return false if nothing has happened" in {
-    val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
+    val image = ImageStorage.fromBGColor(Color.Black, 2)
     val f = new ImageContent(TriImageCoords(0, 0), image)
     f.changed shouldBe false
   }
 
   it should "return true if the image has been modified since the last save" in {
-    val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
+    val image = ImageStorage.fromBGColor(Color.Black, 2)
     val f = new ImageContent(TriImageCoords(0, 0), image)
 
     image.update(TriangleCoords(0, 0), Color.Blue)
@@ -42,11 +42,11 @@ class ImageContentTest extends AnyFlatSpec with Matchers with MockFactory {
   }
 
   it should "return false if the image was just saved" in {
-    val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
+    val image = ImageStorage.fromBGColor(Color.Black, 2)
     val location = SaveLocation(new File("a.png"))
     val format = new SimpleStorageFormat
     val info = SaveInfo(format)
-    val pool = new ImagePool(null)
+    val pool = new ImagePool()
     pool.move(image, location, info)(null)
     val f = new ImageContent(TriImageCoords(0, 0), image)
     pool.addListener(f)
