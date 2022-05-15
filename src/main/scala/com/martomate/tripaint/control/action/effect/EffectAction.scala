@@ -6,11 +6,11 @@ import com.martomate.tripaint.model.effects.Effect
 import com.martomate.tripaint.model.image.content.{ImageChange, PixelChange}
 import com.martomate.tripaint.view.TriPaintView
 
-abstract class EffectAction extends Action {
-  protected def makeEffect(view: TriPaintView): Option[Effect]
+abstract class EffectAction(model: TriPaintModel) extends Action {
+  protected def makeEffect(): Option[Effect]
 
-  override def perform(model: TriPaintModel, view: TriPaintView): Unit = {
-    makeEffect(view).foreach(applyEffect(model, _))
+  override def perform(): Unit = {
+    makeEffect().foreach(applyEffect(model, _))
   }
 
   private def applyEffect(model: TriPaintModel, effect: Effect): Unit = {

@@ -13,16 +13,12 @@ import org.scalatestplus.mockito.MockitoSugar
 class NewActionTest extends AnyFlatSpec with Matchers with MockitoSugar {
   "NewAction" should "add a new image to the grid" in {
     val model = TriPaintModel.createNull()
-    val view = mock[TriPaintView]
     model.imageGrid.setImageSizeIfEmpty(8)
 
     val imageSize = model.imageGrid.imageSize
     val backgroundColor = Color.Cyan
 
-    when(view.askForWhereToPutImage()).thenReturn(Some((3, 4)))
-    when(view.backgroundColor).thenReturn(backgroundColor.toFXColor)
-
-    NewAction.perform(model, view)
+    new NewAction(model, backgroundColor, () => Some((3, 4))).perform()
 
     val expectedImage = RegularImage.fill(imageSize, imageSize, backgroundColor)
 
@@ -36,12 +32,9 @@ class NewActionTest extends AnyFlatSpec with Matchers with MockitoSugar {
 
   it should "do nothing if no image location is provided" in {
     val model = TriPaintModel.createNull()
-    val view = mock[TriPaintView]
     model.imageGrid.setImageSizeIfEmpty(8)
 
-    when(view.askForWhereToPutImage()).thenReturn(None)
-
-    NewAction.perform(model, view)
+    new NewAction(model, null, () => None).perform()
 
     val actualImage = model.imageGrid(TriImageCoords(3, 4))
       .map(_.storage)
@@ -54,17 +47,13 @@ class NewActionTest extends AnyFlatSpec with Matchers with MockitoSugar {
   // TODO: Is this really how it should work?
   it should "replace any existing image at the location" in {
     val model = TriPaintModel.createNull()
-    val view = mock[TriPaintView]
     model.imageGrid.setImageSizeIfEmpty(8)
 
     val imageSize = model.imageGrid.imageSize
     val backgroundColor = Color.Cyan
 
-    when(view.askForWhereToPutImage()).thenReturn(Some((3, 4)))
-    when(view.backgroundColor).thenReturn(backgroundColor.toFXColor)
-
-    NewAction.perform(model, view)
-    NewAction.perform(model, view)
+    new NewAction(model, backgroundColor, () => Some((3, 4))).perform()
+    new NewAction(model, backgroundColor, () => Some((3, 4))).perform()
 
     val expectedImage = RegularImage.fill(imageSize, imageSize, backgroundColor)
 

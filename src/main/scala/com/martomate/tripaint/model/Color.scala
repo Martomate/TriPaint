@@ -1,6 +1,6 @@
 package com.martomate.tripaint.model
 
-import scalafx.scene.paint.{Color => FXColor}
+import scalafx.scene.paint.Color as FXColor
 
 case class Color(r: Double, g: Double, b: Double, a: Double) {
   def withAlpha(a: Double): Color = Color(r, g, b, a)
