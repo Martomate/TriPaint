@@ -19,11 +19,13 @@ class FileSystem private (imageIO: ImageIOWrapper) {
 }
 
 object FileSystem {
+  class NullArgs(val initialImages: Map[File, BufferedImage] = Map.empty,
+                 val supportedImageFormats: Set[String] = Set("png", "jpg"))
+
   def create(): FileSystem = new FileSystem(new RealImageIO)
-  def createNull(initialImages: Map[File, BufferedImage] = Map.empty,
-                 supportedImageFormats: Set[String] = Set("png", "jpg")): FileSystem = {
-    val allSupportedFormats = supportedImageFormats | supportedImageFormats.map(_.toUpperCase)
-    val imageIO = new NullImageIO(initialImages, allSupportedFormats)
+  def createNull(args: NullArgs = new NullArgs()): FileSystem = {
+    val allSupportedFormats = args.supportedImageFormats | args.supportedImageFormats.map(_.toUpperCase)
+    val imageIO = new NullImageIO(args.initialImages, allSupportedFormats)
     new FileSystem(imageIO)
   }
 }

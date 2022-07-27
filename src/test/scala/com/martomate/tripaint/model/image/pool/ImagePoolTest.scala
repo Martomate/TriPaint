@@ -34,7 +34,7 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     val f = new ImagePool()
     f.move(image, location, info)
 
-    val fs = FileSystem.createNull(supportedImageFormats = Set())
+    val fs = FileSystem.createNull(new FileSystem.NullArgs(supportedImageFormats = Set()))
     f.save(image, new ImageSaverToFile, fs) shouldBe false
   }
 
@@ -90,7 +90,7 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     val saver = new ImageSaverToFile
 
     val existingImage = RegularImage.fill(2, 2, Color.Red).toBufferedImage
-    val fs = FileSystem.createNull(initialImages = Map(new File(path) -> existingImage))
+    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage)))
 
     imagePool.save(image, saver, fs)
 
@@ -115,7 +115,7 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     val saver = new ImageSaverToFile
 
     val existingImage = RegularImage.fill(3, 5, Color.Red).toBufferedImage
-    val fs = FileSystem.createNull(initialImages = Map(new File(path) -> existingImage))
+    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage)))
 
     imagePool.save(image, saver, fs)
 
@@ -141,7 +141,7 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     val saver = new ImageSaverToFile
 
     val existingImage = RegularImage.fill(3, 2, Color.Red).toBufferedImage
-    val fs = FileSystem.createNull(initialImages = Map(new File(path) -> existingImage))
+    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage)))
 
     imagePool.save(image, saver, fs)
 
@@ -184,7 +184,7 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
   it should "return Failure if there is no image there and the loading failed" in {
     val location = SaveLocation(null)
     val imageSize = 16
-    val fs = FileSystem.createNull(initialImages = Map.empty)
+    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map.empty))
 
     val pool = new ImagePool()
 
@@ -198,9 +198,9 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
 
     val image = ImageStorage.fromBGColor(FXColor.Orange, imageSize)
     val regularImage = image.toRegularImage(storageFormat)
-    val fs = FileSystem.createNull(initialImages = Map(
+    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map(
       file -> regularImage.toBufferedImage
-    ))
+    )))
 
     val pool = new ImagePool()
 
@@ -223,9 +223,9 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
 
     val storedImage = RegularImage.ofSize(imageSize + offset.x, imageSize + offset.y)
     storedImage.pasteImage(offset, regularImage)
-    val fs = FileSystem.createNull(initialImages = Map(
+    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map(
       file -> storedImage.toBufferedImage
-    ))
+    )))
 
     val pool = new ImagePool()
 

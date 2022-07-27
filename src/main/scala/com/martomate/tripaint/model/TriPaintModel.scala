@@ -13,5 +13,7 @@ class TriPaintModel(val fileSystem: FileSystem) {
 
 object TriPaintModel {
   def create(): TriPaintModel = new TriPaintModel(FileSystem.create())
-  def createNull(): TriPaintModel = new TriPaintModel(FileSystem.createNull())
+
+  def createNull(fileSystemArgs: FileSystem.NullArgs = new FileSystem.NullArgs()): TriPaintModel =
+    new TriPaintModel(FileSystem.createNull(fileSystemArgs))
 }

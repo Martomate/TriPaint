@@ -8,9 +8,8 @@ import com.martomate.tripaint.view.TriPaintView
 import org.mockito.Mockito.when
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatestplus.mockito.MockitoSugar
 
-class NewActionTest extends AnyFlatSpec with Matchers with MockitoSugar {
+class NewActionTest extends AnyFlatSpec with Matchers {
   "NewAction" should "add a new image to the grid" in {
     val model = TriPaintModel.createNull()
     model.imageGrid.setImageSizeIfEmpty(8)
