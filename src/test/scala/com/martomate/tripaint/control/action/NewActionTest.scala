@@ -21,7 +21,8 @@ class NewActionTest extends AnyFlatSpec with Matchers {
 
     val expectedImage = RegularImage.fill(imageSize, imageSize, backgroundColor)
 
-    val actualImage = model.imageGrid(TriImageCoords(3, 4))
+    val actualImage = model
+      .imageGrid(TriImageCoords(3, 4))
       .map(_.storage)
       .map(_.toRegularImage(new SimpleStorageFormat))
       .orNull
@@ -35,7 +36,8 @@ class NewActionTest extends AnyFlatSpec with Matchers {
 
     new NewAction(model, null, () => None).perform()
 
-    val actualImage = model.imageGrid(TriImageCoords(3, 4))
+    val actualImage = model
+      .imageGrid(TriImageCoords(3, 4))
       .map(_.storage)
       .map(_.toRegularImage(new SimpleStorageFormat))
       .orNull
@@ -56,7 +58,8 @@ class NewActionTest extends AnyFlatSpec with Matchers {
 
     val expectedImage = RegularImage.fill(imageSize, imageSize, backgroundColor)
 
-    val actualImage = model.imageGrid(TriImageCoords(3, 4))
+    val actualImage = model
+      .imageGrid(TriImageCoords(3, 4))
       .map(_.storage)
       .map(_.toRegularImage(new SimpleStorageFormat))
       .orNull

@@ -1,4 +1,4 @@
-scalaVersion := "3.1.2"
+scalaVersion := "3.2.0"
 
 name := "TriPaint"
 organization := "com.martomate"
@@ -17,8 +17,6 @@ jlinkIgnoreMissingDependency := JlinkIgnore.only(
   "scalafx.scene.web" -> "javafx.scene.web"
 )
 
-jlinkModules += "jdk.unsupported"
-
 jlinkOptions ++= Seq(
   "--no-header-files",
   "--no-man-pages",
@@ -28,14 +26,9 @@ jlinkOptions ++= Seq(
 Compile / scalacOptions += "-deprecation"
 
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.2.11" % "test",
-  "org.scalatestplus" %% "mockito-4-2" % "3.2.11.0" % "test"
+  "org.scalatest" %% "scalatest" % "3.2.12" % "test",
+  "org.scalatestplus" %% "mockito-4-5" % "3.2.12.0" % "test"
 )
 
 // Add dependency on ScalaFX library
-libraryDependencies += "org.scalafx" %% "scalafx" % "17.0.1-R26"
-
-lazy val javaFXModules = Seq("base", "controls", "graphics", "media")
-libraryDependencies ++= javaFXModules.map { m =>
-  "org.openjfx" % s"javafx-$m" % "17.0.2"
-}
+libraryDependencies += "org.scalafx" %% "scalafx" % "18.0.2-R29"
