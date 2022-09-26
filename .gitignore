@@ -88,7 +88,7 @@ project/plugins/project/
 .bsp
 
 # metals
-project/metals.sbt
+project/**/metals.sbt
 .metals
 
 # vs code
