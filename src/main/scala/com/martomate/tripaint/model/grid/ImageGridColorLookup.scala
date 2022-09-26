@@ -1,7 +1,7 @@
 package com.martomate.tripaint.model.grid
 
+import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.{GlobalPixCoords, PixelCoords}
-import scalafx.scene.paint.Color
 
 class ImageGridColorLookup(grid: ImageGrid) extends ColorLookup {
   override def lookup(coords: GlobalPixCoords): Option[Color] = {

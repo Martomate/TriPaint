@@ -5,16 +5,21 @@ import com.martomate.tripaint.model.coords.TriImageCoords
 import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.view.{FileOpenSettings, TriPaintView}
 
+import java.io.File
 import scala.util.{Failure, Success}
 
-object OpenAction extends Action {
-  override def perform(model: TriPaintModel, view: TriPaintView): Unit = {
+class OpenAction(model: TriPaintModel,
+                 askForFileToOpen: () => Option[File],
+                 askForFileOpenSettings: (File, Int, Int) => Option[FileOpenSettings],
+                 askForWhereToPutImage: () => Option[(Int, Int)]
+                ) extends Action {
+  override def perform(): Unit = {
     val imageSize = model.imageGrid.imageSize
     for {
-      file <- view.askForFileToOpen()
-      FileOpenSettings(offset, format) <- view.askForFileOpenSettings(file, imageSize, imageSize)
-      coords <- view.askForWhereToPutImage()
-    } model.imagePool.fromFile(SaveLocation(file, offset), format, imageSize) match {
+      file <- askForFileToOpen()
+      FileOpenSettings(offset, format) <- askForFileOpenSettings(file, imageSize, imageSize)
+      coords <- askForWhereToPutImage()
+    } model.imagePool.fromFile(SaveLocation(file, offset), format, imageSize, model.fileSystem) match {
       case Success(storage) =>
         val imageCoords = TriImageCoords(coords._1, coords._2)
         val image = makeImageContent(model, imageCoords, storage)

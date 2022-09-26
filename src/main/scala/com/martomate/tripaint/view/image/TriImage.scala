@@ -1,12 +1,11 @@
 package com.martomate.tripaint.view.image
 
+import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.coords.TriangleCoords
-import com.martomate.tripaint.model.effects.Effect
 import javafx.scene.input.{MouseEvent, ScrollEvent}
 import scalafx.beans.property._
 import scalafx.scene.layout.Pane
-import scalafx.scene.paint.Color
 
 trait TriImage extends ITriImage {
   def content: ImageContent

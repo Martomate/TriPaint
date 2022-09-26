@@ -1,13 +1,12 @@
 package com.martomate.tripaint.model.effects
 
-import com.martomate.tripaint.model.ExtendedColor
+import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.{GlobalPixCoords, PixelCoords, TriImageCoords, TriangleCoords}
-import com.martomate.tripaint.model.grid.{ImageGridColorLookup, ImageGridImplOld}
+import com.martomate.tripaint.model.grid.{ImageGrid, ImageGridColorLookup}
 import com.martomate.tripaint.model.image.content.ImageContent
-import com.martomate.tripaint.model.image.storage.ImageStorageImpl
+import com.martomate.tripaint.model.image.storage.ImageStorage
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import scalafx.scene.paint.Color
 
 class BlurEffectTest extends AnyFlatSpec with Matchers {
   "name" should "be 'Blur'" in {
@@ -27,10 +26,10 @@ class BlurEffectTest extends AnyFlatSpec with Matchers {
     val effect = new BlurEffect(radius)
     val thisImage = TriImageCoords(0, 0)
 
-    val storage = ImageStorageImpl.fromBGColor(Color.Black, imageSize)
+    val storage = ImageStorage.fromBGColor(Color.Black, imageSize)
     storage(dotLocation) = Color.White
 
-    val grid = new ImageGridImplOld(imageSize)
+    val grid = new ImageGrid(imageSize)
     grid.set(new ImageContent(thisImage, storage))
 
     effect.action(Seq(thisImage), grid)
@@ -38,8 +37,8 @@ class BlurEffectTest extends AnyFlatSpec with Matchers {
     for (dx <- 0 to radius) {
       val look1 = TriangleCoords(dotLocation.x - dx, dotLocation.y)
       val look2 = TriangleCoords(dotLocation.x + dx, dotLocation.y)
-      val col1 = ExtendedColor.fromColor(storage(look1))
-      val col2 = ExtendedColor.fromColor(storage(look2))
+      val col1 = storage(look1)
+      val col2 = storage(look2)
       try {
         col1 shouldBe col2
       } catch {
@@ -62,11 +61,11 @@ class BlurEffectTest extends AnyFlatSpec with Matchers {
     val effect = new BlurEffect(radius)
     val thisImage = TriImageCoords(0, 0)
 
-    val storage = ImageStorageImpl.fromBGColor(Color.Black, imageSize)
-    val storage2 = ImageStorageImpl.fromBGColor(Color.Black, imageSize)
+    val storage = ImageStorage.fromBGColor(Color.Black, imageSize)
+    val storage2 = ImageStorage.fromBGColor(Color.Black, imageSize)
     storage(dotLocation) = Color.White
 
-    val grid = new ImageGridImplOld(imageSize)
+    val grid = new ImageGrid(imageSize)
     grid.set(new ImageContent(thisImage, storage))
     grid.set(new ImageContent(borderingImage, storage2))
 
@@ -78,8 +77,8 @@ class BlurEffectTest extends AnyFlatSpec with Matchers {
     for (dx <- 0 to radius) {
       val look1 = GlobalPixCoords(dotGlobal.x - dx, dotGlobal.y)
       val look2 = GlobalPixCoords(dotGlobal.x + dx, dotGlobal.y)
-      val col1 = ExtendedColor.fromColor(colorLookup.lookup(look1).get)
-      val col2 = ExtendedColor.fromColor(colorLookup.lookup(look2).get)
+      val col1 = colorLookup.lookup(look1).get
+      val col2 = colorLookup.lookup(look2).get
       try {
         col1 shouldBe col2
       } catch {

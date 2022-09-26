@@ -1,23 +1,51 @@
 package com.martomate.tripaint.model.grid
 
-import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.coords.TriImageCoords
+import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.util.Listenable
 
-import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
-trait ImageGrid extends Listenable[ImageGridListener] {
-  def imageSize: Int
-  def setImageSizeIfEmpty(size: Int): Boolean
+class ImageGrid(init_imageSize: Int) extends Listenable[ImageGridListener] {
+  private var _imageSize: Int = init_imageSize
+  def imageSize: Int = _imageSize
 
-  def images: mutable.Seq[ImageContent]
+  private val _images: ArrayBuffer[ImageContent] = ArrayBuffer.empty
+  def images: Seq[ImageContent] = _images.toSeq
 
-  def apply(coords: TriImageCoords): Option[ImageContent]
-  def set(image: ImageContent): Unit
-  def -=(coords: TriImageCoords): ImageContent
+  def apply(coords: TriImageCoords): Option[ImageContent] = _images.find(_.coords == coords)
 
-  protected final def onAddImage(image: ImageContent): Unit = notifyListeners(_.onAddImage(image))
-  protected final def onRemoveImage(image: ImageContent): Unit = notifyListeners(_.onRemoveImage(image))
+  def set(image: ImageContent): Unit = {
+    val idx = _images.indexWhere(_.coords == image.coords)
+    if (idx != -1) {
+      val prev = _images(idx)
+      if (prev != image) onRemoveImage(prev)
+      _images(idx) = image
+    }
+    else _images += image
+    onAddImage(image)
+  }
 
-  final def selectedImages: mutable.Seq[ImageContent] = images.filter(_.editable)
+  def -=(coords: TriImageCoords): ImageContent = {
+    val idx = _images.indexWhere(_.coords == coords)
+    if (idx != -1) {
+      val ret = _images.remove(idx)
+      onRemoveImage(ret)
+      ret
+    }
+    else null
+  }
+
+  def setImageSizeIfEmpty(size: Int): Boolean = {
+    if (_images.isEmpty) {
+      _imageSize = size
+      true
+    } else false
+  }
+
+  private def onAddImage(image: ImageContent): Unit = notifyListeners(_.onAddImage(image))
+
+  private def onRemoveImage(image: ImageContent): Unit = notifyListeners(_.onRemoveImage(image))
+
+  final def selectedImages: Seq[ImageContent] = images.filter(_.editable)
 }

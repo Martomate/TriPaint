@@ -1,8 +1,9 @@
 package com.martomate.tripaint.model.effects
 
+import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.{GlobalPixCoords, PixelCoords, TriImageCoords}
 import com.martomate.tripaint.model.grid.{ColorLookup, ImageGrid, ImageGridColorLookup, ImageGridSearcher}
-import scalafx.scene.paint.Color
+import scalafx.scene.paint.{Color => FXColor}
 
 abstract class LocalEffect extends Effect {
 
@@ -11,8 +12,6 @@ abstract class LocalEffect extends Effect {
   protected def weightedColor(image: ColorLookup, here: GlobalPixCoords)(coords: GlobalPixCoords): (Double, Color)
 
   override def action(images: Seq[TriImageCoords], grid: ImageGrid): Unit = {
-    import com.martomate.tripaint.model.ExtendedColor._
-
     val colorLookup = new ImageGridColorLookup(grid)
 
     val searcher = new ImageGridSearcher(colorLookup)
@@ -25,7 +24,7 @@ abstract class LocalEffect extends Effect {
         val cols = searcher.search(coordsGlobal, predicate(colorLookup, coordsGlobal)).map(weightedColor(colorLookup, coordsGlobal))
 
         val numCols = cols.foldLeft(0d)(_ + _._1)
-        here -> (cols.foldLeft(Color.Black * 1)((now, next) => now + next._2 * next._1) / numCols).toColor
+        here -> (cols.foldLeft(Color.Black)((now, next) => now + next._2 * next._1) / numCols)
       }
       imageCoords -> newVals
     }

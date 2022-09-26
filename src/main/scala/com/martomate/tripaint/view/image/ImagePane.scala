@@ -29,8 +29,8 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImagePaneView with Image
 
   imageGrid.addListener(this)
 
-  private def images: mutable.Seq[ImageContent] = imageGrid.images
-  private def triImages: mutable.Seq[TriImage] = images.map(im => imageMap(im.coords))
+  private def images: Seq[ImageContent] = imageGrid.images
+  private def triImages: Seq[TriImage] = images.map(im => imageMap(im.coords))
   def imageSize: Int = imageGrid.imageSize
 
   def sideLength: Double = (imageSize * 2 + 1) * zoom
@@ -121,7 +121,7 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImagePaneView with Image
       case EditMode.Fill =>
           fill(coords, new Color(color()))
       case EditMode.PickColor =>
-          color() = image.storage(coords.pix)
+          color() = image.storage(coords.pix).toFXColor
       case _ =>
     }
 
@@ -161,8 +161,8 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImagePaneView with Image
     true
   }
 
-  this.width  onChange updateSize
-  this.height onChange updateSize
+  this.width.onChange(updateSize())
+  this.height.onChange(updateSize())
 
   private def updateSize(): Unit = {
     this.clip() = new Rectangle(0, 0, width(), height())
@@ -178,8 +178,8 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImagePaneView with Image
   }
 
   override def onAddImage(image: ImageContent): Unit = {
-    val triImage = TriImageImpl(image, this)
-    children add triImage.pane
+    val triImage = new TriImageImpl(image, this)
+    children.add(triImage.pane.delegate)
     imageMap(image.coords) = triImage
     relocateImage(image)
   }

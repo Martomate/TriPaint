@@ -11,7 +11,7 @@ before_cache:
 
 language: scala
 scala:
-  - 2.13.6
+  - 3.2.0
 jdk: openjdk16
 script:
   - sbt coverage test coverageReport coveralls

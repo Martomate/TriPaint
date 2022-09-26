@@ -1,65 +1,32 @@
 package com.martomate.tripaint.model.image.save
 
-import java.awt.image.BufferedImage
-import java.io.File
-
-import com.martomate.tripaint.model.coords.TriangleCoords
-import com.martomate.tripaint.model.image.SaveLocation
+import com.martomate.tripaint.model.coords.StorageCoords
+import com.martomate.tripaint.model.image.RegularImage
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.model.image.storage.ImageStorage
-import javax.imageio.ImageIO
-import scalafx.scene.paint.Color
 
-import scala.util.Try
+class ImageSaverToFile {
 
-class ImageSaverToFile extends ImageSaver {
+  def overwritePartOfImage(image: ImageStorage, format: StorageFormat, offset: StorageCoords, oldImage: Option[RegularImage]): RegularImage = {
+    val neededWidth = offset.x + image.imageSize
+    val neededHeight = offset.y + image.imageSize
 
-  def save(image: ImageStorage, format: StorageFormat, saveInfo: SaveLocation): Boolean = {
-    val SaveLocation(file, offset) = saveInfo
+    val bufImage: RegularImage = oldImage match {
+      case Some(im) =>
+        enlargeImageIfNeeded(im, neededWidth, neededHeight)
+      case None =>
+        RegularImage.ofSize(neededWidth, neededHeight)
+    }
 
-    val oldImage: Option[BufferedImage] = readImageAt(file)
-
-    val bufImage: BufferedImage = oldImage
-      .map(im => resizeImageIfNeeded(im, offset, image.imageSize))
-      .getOrElse(makeNewImage(image.imageSize + offset._1, image.imageSize + offset._2))
-
-    writeImage(bufImage, image, offset, format)
-    writeImageToFile(bufImage, file)
+    bufImage.pasteImage(offset, image.toRegularImage(format))
+    bufImage
   }
 
-  private def readImageAt(file: File): Option[BufferedImage] = Try(ImageIO.read(file)).toOption
-
-  private def copyImage(from: BufferedImage, to: BufferedImage): Unit = {
-    val fromPixels = from.getRGB(0, 0, from.getWidth, from.getHeight, null, 0, from.getWidth)
-    to.setRGB(0, 0, from.getWidth, from.getHeight, fromPixels, 0, from.getWidth)
-  }
-
-  private def resizeImageIfNeeded(image: BufferedImage, offset: (Int, Int), imageSize: Int): BufferedImage = {
-    val sizeNeeded = (offset._1 + imageSize, offset._2 + imageSize)
-    val imSize = (image.getWidth, image.getHeight)
-
-    if (imSize._1 < sizeNeeded._1 || imSize._2 < sizeNeeded._2) {
-      val newImage = makeNewImage(sizeNeeded._1, sizeNeeded._2)
-
-      copyImage(image, newImage)
+  private def enlargeImageIfNeeded(image: RegularImage, neededWith: Int, neededHeight: Int): RegularImage = {
+    if (image.width < neededWith || image.height < neededHeight) {
+      val newImage = RegularImage.ofSize(neededWith, neededHeight)
+      newImage.pasteImage(StorageCoords(0, 0), image)
       newImage
     } else image
   }
-
-  private def makeNewImage(width: Int, height: Int): BufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
-
-  private def writeImage(dest: BufferedImage, source: ImageStorage, offset: (Int, Int), format: StorageFormat): Unit = {
-    for (y <- 0 until source.imageSize) {
-      for (x <- 0 until 2 * y + 1) {
-        val tCoords = TriangleCoords(x, y)
-        val sCoords = format.transformToStorage(tCoords)
-
-        dest.setRGB(sCoords.x + offset._1, sCoords.y + offset._2, colorToInt(source(tCoords)))
-      }
-    }
-  }
-
-  private def getExtension(file: File): String = file.getName.substring(file.getName.lastIndexOf('.') + 1)
-
-  private def writeImageToFile(image: BufferedImage, file: File): Boolean = ImageIO.write(image, getExtension(file).toUpperCase, file)
 }

@@ -7,7 +7,7 @@ import scalafx.scene.SnapshotParameters
 import scalafx.scene.image.Image
 import scalafx.scene.layout.Pane
 
-class TriImageForPreview (val content: ImageContent, previewWidth: Double) extends Pane with ITriImage {
+class TriImageForPreview (content: ImageContent, previewWidth: Double) extends Pane with ITriImage {
 
   private def storage: ImageStorage = content.storage
 

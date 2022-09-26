@@ -1,120 +1,314 @@
 package com.martomate.tripaint.model.image.pool
 
+import com.martomate.tripaint.infrastructure.FileSystem
+import com.martomate.tripaint.model.Color
+import com.martomate.tripaint.model.coords.StorageCoords
 import com.martomate.tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
-import com.martomate.tripaint.model.image.save.ImageSaver
-import com.martomate.tripaint.model.image.storage.{ImageStorageFactory, ImageStorageImpl}
-import com.martomate.tripaint.model.image.{SaveLocation, pool}
-import org.scalamock.scalatest.MockFactory
+import com.martomate.tripaint.model.image.save.ImageSaverToFile
+import com.martomate.tripaint.model.image.storage.ImageStorage
+import com.martomate.tripaint.model.image.{RegularImage, SaveLocation, pool}
+import org.mockito.Mockito.{verify, when}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import scalafx.scene.paint.Color
+import org.scalatestplus.mockito.MockitoSugar
+import scalafx.scene.paint.{Color => FXColor}
 
+import java.io.File
 import scala.util.{Failure, Success}
 
-abstract class ImagePoolTest extends AnyFlatSpec with Matchers with MockFactory {
+class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
   implicit val collisionHandler: ImageSaveCollisionHandler = mock[ImageSaveCollisionHandler]
   val storageFormat: StorageFormat = new SimpleStorageFormat
 
-  def make(factory: ImageStorageFactory = null): ImagePool
-
   "save" should "return false if the image doesn't exist" in {
-    val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
-    make().save(image, null) shouldBe false
+    val image = ImageStorage.fromBGColor(Color.Black, 2)
+    new ImagePool().save(image, null, null) shouldBe false
   }
 
   it should "return false if the saver reports failure" in {
-    val listener = mock[ImagePoolListener]
-    val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
-    val location = SaveLocation(null)
+    val image = ImageStorage.fromBGColor(Color.Black, 2)
+    val location = SaveLocation(new File("a.png"))
     val format = new SimpleStorageFormat
     val info = pool.SaveInfo(format)
 
-    val f = make()
-    f.addListener(listener)
+    val f = new ImagePool()
     f.move(image, location, info)
 
-    f.save(image, (_, _, _) => false) shouldBe false
+    val fs = FileSystem.createNull(new FileSystem.NullArgs(supportedImageFormats = Set()))
+    f.save(image, new ImageSaverToFile, fs) shouldBe false
   }
 
   it should "notify listeners and return true if the saver reports success" in {
     val listener = mock[ImagePoolListener]
-    val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
-    val location = SaveLocation(null)
+    val image = ImageStorage.fromBGColor(Color.Black, 2)
+    val location = SaveLocation(new File("a.png"))
     val format = new SimpleStorageFormat
     val info = pool.SaveInfo(format)
 
-    val f = make()
+    val f = new ImagePool()
     f.addListener(listener)
     f.move(image, location, info)
 
-    val saver: ImageSaver = (_, _, _) => true
-    listener.onImageSaved _ expects(image, saver)
+    val saver = new ImageSaverToFile
 
-    f.save(image, saver) shouldBe true
+    f.save(image, saver, FileSystem.createNull()) shouldBe true
+    verify(listener).onImageSaved(image, saver)
+  }
+
+  it should "write image if it does not exist" in {
+    val image = ImageStorage.fromBGColor(Color.Blue, 2)
+    val path = "a.png"
+    val location = SaveLocation(new File(path))
+    val format = new SimpleStorageFormat
+    val info = pool.SaveInfo(format)
+
+    val imagePool = new ImagePool()
+    imagePool.move(image, location, info)
+
+    val saver = new ImageSaverToFile
+    val fs = FileSystem.createNull()
+
+    imagePool.save(image, saver, fs)
+
+    val expectedImage = RegularImage.fill(2, 2, Color.Blue)
+
+    val result = fs.readImage(new File(path))
+    result.isDefined shouldBe true
+    RegularImage.fromBufferedImage(result.get) shouldBe expectedImage
+  }
+
+  it should "overwrite image if it exists and has the same size" in {
+    val image = ImageStorage.fromBGColor(Color.Blue, 2)
+    val path = "a.png"
+    val location = SaveLocation(new File(path))
+    val format = new SimpleStorageFormat
+    val info = pool.SaveInfo(format)
+
+    val imagePool = new ImagePool()
+    imagePool.move(image, location, info)
+
+    val saver = new ImageSaverToFile
+
+    val existingImage = RegularImage.fill(2, 2, Color.Red).toBufferedImage
+    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage)))
+
+    imagePool.save(image, saver, fs)
+
+    val expectedImage = RegularImage.fill(2, 2, Color.Blue)
+
+    val result = fs.readImage(new File(path))
+    result.isDefined shouldBe true
+    RegularImage.fromBufferedImage(result.get) shouldBe expectedImage
+  }
+
+  it should "overwrite part of image if there already exists a bigger image" in {
+    val image = ImageStorage.fromBGColor(Color.Blue, 2)
+    val path = "a.png"
+    val offset = StorageCoords(1, 2)
+    val location = SaveLocation(new File(path), offset)
+    val format = new SimpleStorageFormat
+    val info = pool.SaveInfo(format)
+
+    val imagePool = new ImagePool()
+    imagePool.move(image, location, info)
+
+    val saver = new ImageSaverToFile
+
+    val existingImage = RegularImage.fill(3, 5, Color.Red).toBufferedImage
+    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage)))
+
+    imagePool.save(image, saver, fs)
+
+    val expectedImage = RegularImage.fill(3, 5, Color.Red)
+    expectedImage.pasteImage(offset, RegularImage.fill(2, 2, Color.Blue))
+
+    val result = fs.readImage(new File(path))
+    result.isDefined shouldBe true
+    RegularImage.fromBufferedImage(result.get) shouldBe expectedImage
+  }
+
+  it should "overwrite part of image if there already exists an image even if it is too small" in {
+    val image = ImageStorage.fromBGColor(Color.Blue, 2)
+    val path = "a.png"
+    val offset = StorageCoords(1, 2)
+    val location = SaveLocation(new File(path), offset)
+    val format = new SimpleStorageFormat
+    val info = pool.SaveInfo(format)
+
+    val imagePool = new ImagePool()
+    imagePool.move(image, location, info)
+
+    val saver = new ImageSaverToFile
+
+    val existingImage = RegularImage.fill(3, 2, Color.Red).toBufferedImage
+    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage)))
+
+    imagePool.save(image, saver, fs)
+
+    val expectedImage = RegularImage.fill(3, 4, Color.Black)
+    expectedImage.pasteImage(StorageCoords(0, 0), RegularImage.fill(3, 2, Color.Red))
+    expectedImage.pasteImage(offset, RegularImage.fill(2, 2, Color.Blue))
+
+    val result = fs.readImage(new File(path))
+    result.isDefined shouldBe true
+    RegularImage.fromBufferedImage(result.get) shouldBe expectedImage
   }
 
   "locationOf" should "return None if the image doesn't exist" in {
-    val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
-    make().locationOf(image) shouldBe None
+    val image = ImageStorage.fromBGColor(Color.Black, 2)
+    new ImagePool().locationOf(image) shouldBe None
   }
 
   it should "return the location of the image if it exists" in {
-    val image = ImageStorageImpl.fromBGColor(Color.Black, 2)
+    val image = ImageStorage.fromBGColor(Color.Black, 2)
     val location = SaveLocation(null)
     val info = pool.SaveInfo(null)
 
-    val f = make()
+    val f = new ImagePool()
     f.move(image, location, info)
 
     f.locationOf(image) shouldBe Some(location)
-  }
-
-  "fromBGColor" should "return what the factory returns" in {
-    val factory = mock[ImageStorageFactory]
-    val bgColor = Color.Blue
-    val imageSize = 16
-    val returnImage = ImageStorageImpl.fromBGColor(Color.Orange, imageSize)
-
-    factory.fromBGColor _ expects(bgColor, imageSize) returns returnImage
-
-    make(factory).fromBGColor(bgColor, imageSize) shouldBe returnImage
   }
 
   "fromFile" should "return the image at that location if it exists" in {
-    val image = ImageStorageImpl.fromBGColor(Color.Blue, 16)
+    val image = ImageStorage.fromBGColor(FXColor.Blue, 16)
     val location = SaveLocation(null)
     val info = pool.SaveInfo(null)
 
-    val f = make()
+    val f = new ImagePool()
     f.move(image, location, info)
 
-    f.fromFile(location, storageFormat, 16) shouldBe Success(image)
+    f.fromFile(location, storageFormat, 16, FileSystem.createNull()) shouldBe Success(image)
   }
 
   it should "return Failure if there is no image there and the loading failed" in {
-    val factory = mock[ImageStorageFactory]
     val location = SaveLocation(null)
     val imageSize = 16
-    val failure = Failure(null)
+    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map.empty))
 
-    factory.fromFile _ expects(location, storageFormat, imageSize) returns failure
+    val pool = new ImagePool()
 
-    val f = make(factory)
-
-    f.fromFile(location, storageFormat, imageSize) shouldBe failure
+    pool.fromFile(location, storageFormat, imageSize, fs).isFailure shouldBe true
   }
 
   it should "save and return the newly loaded image if there was none already" in {
-    val factory = mock[ImageStorageFactory]
-    val location = SaveLocation(null)
+    val file = new File("path/to/image.png")
+    val location = SaveLocation(file)
     val imageSize = 16
-    val image = ImageStorageImpl.fromBGColor(Color.Orange, imageSize)
 
-    factory.fromFile _ expects(location, storageFormat, imageSize) returns Success(image)
+    val image = ImageStorage.fromBGColor(FXColor.Orange, imageSize)
+    val regularImage = image.toRegularImage(storageFormat)
+    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map(
+      file -> regularImage.toBufferedImage
+    )))
 
-    val f = make(factory)
+    val pool = new ImagePool()
 
-    f.fromFile(location, storageFormat, imageSize) shouldBe Success(image)
-    f.locationOf(image) shouldBe Some(location)
+    pool.fromFile(location, storageFormat, imageSize, fs) match {
+      case Success(actualImage) =>
+        actualImage.toRegularImage(storageFormat) shouldBe regularImage
+        pool.locationOf(actualImage) shouldBe Some(location)
+      case Failure(_) => fail()
+    }
+  }
+
+  it should "load image with offset" in {
+    val file = new File("path/to/image.png")
+    val offset = StorageCoords(2, 3)
+    val location = SaveLocation(file, offset)
+    val imageSize = 16
+
+    val image = ImageStorage.fromBGColor(FXColor.Orange, imageSize)
+    val regularImage = image.toRegularImage(storageFormat)
+
+    val storedImage = RegularImage.ofSize(imageSize + offset.x, imageSize + offset.y)
+    storedImage.pasteImage(offset, regularImage)
+    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map(
+      file -> storedImage.toBufferedImage
+    )))
+
+    val pool = new ImagePool()
+
+    pool.fromFile(location, storageFormat, imageSize, fs) match {
+      case Success(actualImage) =>
+        actualImage.toRegularImage(storageFormat) shouldBe regularImage
+        pool.locationOf(actualImage) shouldBe Some(location)
+      case Failure(_) => fail()
+    }
+  }
+
+  "move" should "set the image and return true if the location is empty" in {
+    val p = new ImagePool()
+    val image = ImageStorage.fromBGColor(Color.Blue, 8)
+    val location = SaveLocation(null)
+    val info = pool.SaveInfo(null)
+    p.move(image, location, info) shouldBe true
+    p.locationOf(image) shouldBe Some(location)
+  }
+
+  it should "simply return true if the image is already there" in {
+    val p = new ImagePool()
+    val image = ImageStorage.fromBGColor(Color.Blue, 8)
+    val location = SaveLocation(null)
+    val info = pool.SaveInfo(null)
+    p.move(image, location, info)
+    p.move(image, location, info) shouldBe true
+    p.locationOf(image) shouldBe Some(location)
+  }
+
+  it should "return false if the handler doesn't accept the collision" in {
+    val handler = collisionHandler
+    val p = new ImagePool()
+    val currentImage = ImageStorage.fromBGColor(Color.Blue, 8)
+    val newImage = ImageStorage.fromBGColor(Color.Yellow, 8)
+    val location = SaveLocation(null)
+    val info = pool.SaveInfo(null)
+
+    when(handler.shouldReplaceImage(currentImage, newImage, location)).thenReturn(None)
+
+    p.move(currentImage, location, info)
+    p.move(newImage, location, info) shouldBe false
+  }
+
+  it should "replace the current image, notify listeners, and return true if the handler wants to replace it" in {
+    val handler = collisionHandler
+    val listener = mock[ImagePoolListener]
+
+    val p = new ImagePool()
+    p.addListener(listener)
+    val currentImage = ImageStorage.fromBGColor(Color.Blue, 8)
+    val newImage = ImageStorage.fromBGColor(Color.Yellow, 8)
+    val location = SaveLocation(null)
+    val info = pool.SaveInfo(null)
+
+    when(handler.shouldReplaceImage(currentImage, newImage, location)).thenReturn(Some(true))
+
+    p.move(currentImage, location, info)
+    p.move(newImage, location, info) shouldBe true
+    p.locationOf(currentImage) shouldBe None
+    p.locationOf(newImage) shouldBe Some(location)
+
+    verify(listener).onImageReplaced(currentImage, newImage, location)
+  }
+
+  it should "keep the current image, notify listeners, and return true if the handler wants to keep it" in {
+    val handler = collisionHandler
+    val listener = mock[ImagePoolListener]
+
+    val p = new ImagePool()
+    p.addListener(listener)
+    val currentImage = ImageStorage.fromBGColor(Color.Blue, 8)
+    val newImage = ImageStorage.fromBGColor(Color.Yellow, 8)
+    val location = SaveLocation(null)
+    val info = pool.SaveInfo(null)
+
+    when(handler.shouldReplaceImage(currentImage, newImage, location)).thenReturn(Some(false))
+
+    p.move(currentImage, location, info)
+    p.move(newImage, location, info) shouldBe true
+    p.locationOf(currentImage) shouldBe Some(location)
+    p.locationOf(newImage) shouldBe None
+
+    verify(listener).onImageReplaced(newImage, currentImage, location)
   }
 }

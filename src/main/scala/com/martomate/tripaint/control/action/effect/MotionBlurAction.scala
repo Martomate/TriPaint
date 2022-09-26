@@ -1,10 +1,11 @@
 package com.martomate.tripaint.control.action.effect
 
+import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.effects.MotionBlurEffect
 import com.martomate.tripaint.view.TriPaintView
 
-object MotionBlurAction extends EffectAction {
-  override protected def makeEffect(view: TriPaintView): Option[MotionBlurEffect] = {
-    view.askForMotionBlurRadius().map(radius => new MotionBlurEffect(radius))
+class MotionBlurAction(model: TriPaintModel, askForMotionBlurRadius: () => Option[Int]) extends EffectAction(model) {
+  override protected def makeEffect(): Option[MotionBlurEffect] = {
+    askForMotionBlurRadius().map(radius => new MotionBlurEffect(radius))
   }
 }

@@ -1,7 +1,7 @@
 package com.martomate.tripaint.model.image.content
 
+import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.TriangleCoords
-import scalafx.scene.paint.Color
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -10,7 +10,7 @@ class CumulativeImageChange {
 
   def done(description: String, image: ImageContent): ImageChange = {
     val change = new ImageChange(description, image, pixelsChanged.reverse.toVector)
-    pixelsChanged.clear
+    pixelsChanged.clear()
     change
   }
 

@@ -61,7 +61,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends Pr
 
   EditMode.modes
     .filter(_.shortCut != null)
-    .foreach(m => scene().getAccelerators.put(m.shortCut, () => m.toolboxButton.fire))
+    .foreach(m => scene().getAccelerators.put(m.shortCut, () => m.toolboxButton.fire()))
 
   private def makeColorBox() = {
     //overlay and imageDisplay

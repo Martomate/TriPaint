@@ -1,15 +1,15 @@
 package com.martomate.tripaint.view.image
 
+import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.image.content.{CumulativeImageChange, ImageContent}
 import com.martomate.tripaint.model.coords.TriangleCoords
 import com.martomate.tripaint.model.image.storage.ImageStorage
 import javafx.scene.input.{MouseEvent, ScrollEvent}
 import scalafx.beans.property.ReadOnlyBooleanProperty
 import scalafx.scene.layout.Pane
-import scalafx.scene.paint.Color
 
-class TriImageImpl private(val content: ImageContent, val imagePane: ImagePaneView) extends Pane with TriImage {
-  def pane: Pane = this
+class TriImageImpl(val content: ImageContent, val imagePane: ImagePaneView) extends TriImage {
+  override val pane: Pane = new Pane()
 
   private def panX = content.coords.xOff * imagePane.sideLength
   private def panY = content.coords.yOff * imagePane.sideLength
@@ -17,13 +17,13 @@ class TriImageImpl private(val content: ImageContent, val imagePane: ImagePaneVi
 
   private def storage: ImageStorage = content.storage
 
-  def changed: Boolean = content.changed
-  def changedProperty: ReadOnlyBooleanProperty = content.changedProperty
+  override def changed: Boolean = content.changed
+  override def changedProperty: ReadOnlyBooleanProperty = content.changedProperty
 
   private val canvas: TriImageActualCanvas = new TriImageActualCanvas(imagePane.imageSize, imagePane.imageSize)
 
   content.addListener(this)
-  children add canvas
+  pane.children.add(canvas)
   if (content.coords.x % 2 != 0) canvas.rotate() += 180
   updateCanvasSize()
 
@@ -53,14 +53,14 @@ class TriImageImpl private(val content: ImageContent, val imagePane: ImagePaneVi
   def finishCumulativeChange(): Unit =
     undoManager.append(cumulativeImageChange.done("draw", content))
 
-  def drawAt(coords: TriangleCoords, color: Color): Unit = {
+  override def drawAt(coords: TriangleCoords, color: Color): Unit = {
     if (storage.contains(coords)) {
       cumulativeImageChange.addChange(coords, storage(coords), color)
       storage(coords) = color
     } else println("outside!!")
   }
 
-  def coordsAt(x: Double, y: Double): TriangleCoords = {
+  override def coordsAt(x: Double, y: Double): TriangleCoords = {
     val pt = canvas.sceneToLocal(x, y)
     indexMap.coordsAt(pt.getX / canvas.width(), pt.getY / canvas.height())
   }
@@ -79,10 +79,6 @@ class TriImageImpl private(val content: ImageContent, val imagePane: ImagePaneVi
   }
 
   override def relocate(x: Double, y: Double): Unit = {
-    super.relocate(x, y)
+    pane.relocate(x, y)
   }
-}
-
-object TriImageImpl {
-  def apply(content: ImageContent, imagePane: ImagePaneView) = new TriImageImpl(content, imagePane)
 }

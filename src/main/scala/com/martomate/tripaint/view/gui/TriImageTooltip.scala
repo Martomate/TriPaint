@@ -1,5 +1,6 @@
 package com.martomate.tripaint.view.gui
 
+import com.martomate.tripaint.model.coords.StorageCoords
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.pool.ImagePool
 import scalafx.scene.control.Tooltip
@@ -14,7 +15,7 @@ class TriImageTooltip(content: ImageContent, imagePool: ImagePool) extends Toolt
     val startText = imagePool.locationOf(storage) map { location =>
       val fileName = location.file.getName
       val offsetText =
-        if (location.offset == (0, 0)) ""
+        if (location.offset == StorageCoords(0, 0)) ""
         else s"\nOffset: ${location.offset}"
       s"File: $fileName" + offsetText
     } getOrElse "Not saved"

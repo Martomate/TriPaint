@@ -83,4 +83,16 @@ project/plugins/project/
 
 # End of https://www.gitignore.io/api/sbt,intellij
 
-.bsp/*
+# bloop and metals
+.bloop
+.bsp
+
+# metals
+project/**/metals.sbt
+.metals
+
+# vs code
+.vscode
+
+.DS_Store
+
