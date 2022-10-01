@@ -2,14 +2,24 @@ package com.martomate.tripaint.model.effects
 
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.{GlobalPixCoords, PixelCoords, TriImageCoords}
-import com.martomate.tripaint.model.grid.{ColorLookup, ImageGrid, ImageGridColorLookup, ImageGridSearcher}
+import com.martomate.tripaint.model.grid.{
+  ColorLookup,
+  ImageGrid,
+  ImageGridColorLookup,
+  ImageGridSearcher
+}
 import scalafx.scene.paint.{Color => FXColor}
 
 abstract class LocalEffect extends Effect {
 
-  protected def predicate(image: ColorLookup, here: GlobalPixCoords)(coords: GlobalPixCoords, color: Color): Boolean
+  protected def predicate(image: ColorLookup, here: GlobalPixCoords)(
+      coords: GlobalPixCoords,
+      color: Color
+  ): Boolean
 
-  protected def weightedColor(image: ColorLookup, here: GlobalPixCoords)(coords: GlobalPixCoords): (Double, Color)
+  protected def weightedColor(image: ColorLookup, here: GlobalPixCoords)(
+      coords: GlobalPixCoords
+  ): (Double, Color)
 
   override def action(images: Seq[TriImageCoords], grid: ImageGrid): Unit = {
     val colorLookup = new ImageGridColorLookup(grid)
@@ -21,7 +31,9 @@ abstract class LocalEffect extends Effect {
       val newVals = for (here <- image.allPixels) yield {
         val coords = PixelCoords(here, imageCoords)
         val coordsGlobal = coords.toGlobal(grid.imageSize)
-        val cols = searcher.search(coordsGlobal, predicate(colorLookup, coordsGlobal)).map(weightedColor(colorLookup, coordsGlobal))
+        val cols = searcher
+          .search(coordsGlobal, predicate(colorLookup, coordsGlobal))
+          .map(weightedColor(colorLookup, coordsGlobal))
 
         val numCols = cols.foldLeft(0d)(_ + _._1)
         here -> (cols.foldLeft(Color.Black)((now, next) => now + next._2 * next._1) / numCols)

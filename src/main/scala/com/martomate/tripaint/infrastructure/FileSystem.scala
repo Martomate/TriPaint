@@ -5,6 +5,7 @@ import java.io.{File, IOException}
 import scala.util.Try
 
 class FileSystem private (imageIO: ImageIOWrapper) {
+
   /** @return Some(image) if it exists, None otherwise */
   def readImage(file: File): Option[BufferedImage] = {
     Try(imageIO.read(file)).toOption
@@ -15,16 +16,20 @@ class FileSystem private (imageIO: ImageIOWrapper) {
     imageIO.write(image, getExtension(file).toUpperCase, file)
   }
 
-  private def getExtension(file: File): String = file.getName.substring(file.getName.lastIndexOf('.') + 1)
+  private def getExtension(file: File): String =
+    file.getName.substring(file.getName.lastIndexOf('.') + 1)
 }
 
 object FileSystem {
-  class NullArgs(val initialImages: Map[File, BufferedImage] = Map.empty,
-                 val supportedImageFormats: Set[String] = Set("png", "jpg"))
+  class NullArgs(
+      val initialImages: Map[File, BufferedImage] = Map.empty,
+      val supportedImageFormats: Set[String] = Set("png", "jpg")
+  )
 
   def create(): FileSystem = new FileSystem(new RealImageIO)
   def createNull(args: NullArgs = new NullArgs()): FileSystem = {
-    val allSupportedFormats = args.supportedImageFormats | args.supportedImageFormats.map(_.toUpperCase)
+    val allSupportedFormats =
+      args.supportedImageFormats | args.supportedImageFormats.map(_.toUpperCase)
     val imageIO = new NullImageIO(args.initialImages, allSupportedFormats)
     new FileSystem(imageIO)
   }
@@ -44,13 +49,15 @@ private class RealImageIO extends ImageIOWrapper {
     ImageIO.write(image, formatName, file)
 }
 
-private class NullImageIO(initialImages: Map[File, BufferedImage],
-                  supportedFileFormats: Set[String]) extends ImageIOWrapper {
+private class NullImageIO(
+    initialImages: Map[File, BufferedImage],
+    supportedFileFormats: Set[String]
+) extends ImageIOWrapper {
   private var images: Map[File, BufferedImage] = initialImages.view.mapValues(deepCopy).toMap
 
   override def read(file: File): BufferedImage = images.get(file) match {
     case Some(image) => deepCopy(image)
-    case None => throw new IOException("Can't read input file!")
+    case None        => throw new IOException("Can't read input file!")
   }
 
   override def write(image: BufferedImage, formatName: String, file: File): Boolean = {

@@ -20,7 +20,8 @@ class TriImageImpl(val content: ImageContent, val imagePane: ImagePaneView) exte
   override def changed: Boolean = content.changed
   override def changedProperty: ReadOnlyBooleanProperty = content.changedProperty
 
-  private val canvas: TriImageActualCanvas = new TriImageActualCanvas(imagePane.imageSize, imagePane.imageSize)
+  private val canvas: TriImageActualCanvas =
+    new TriImageActualCanvas(imagePane.imageSize, imagePane.imageSize)
 
   content.addListener(this)
   pane.children.add(canvas)
@@ -65,7 +66,8 @@ class TriImageImpl(val content: ImageContent, val imagePane: ImagePaneView) exte
     indexMap.coordsAt(pt.getX / canvas.width(), pt.getY / canvas.height())
   }
 
-  override protected def drawTriangle(coords: TriangleCoords): Unit = canvas.drawTriangle(coords, storage(coords), storage)
+  override protected def drawTriangle(coords: TriangleCoords): Unit =
+    canvas.drawTriangle(coords, storage(coords), storage)
 
   override def redraw(): Unit = {
     canvas.clearCanvas()

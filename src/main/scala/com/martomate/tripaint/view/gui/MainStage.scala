@@ -20,16 +20,18 @@ import scalafx.stage.FileChooser.ExtensionFilter
 import java.io.File
 import scala.util.Try
 
-class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends PrimaryStage with TriPaintView {
+class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
+    extends PrimaryStage
+    with TriPaintView {
   private val imageDisplay: ImagePane = new ImagePane(model.imageGrid)
 
   private val buttons = new MainStageButtons(controls)
 
-  private val menuBar: TheMenuBar  = new TheMenuBar(buttons)
-  private val toolBar: TheToolBar  = new TheToolBar(buttons)
-  private val toolBox: ToolBox     = new ToolBox
+  private val menuBar: TheMenuBar = new TheMenuBar(buttons)
+  private val toolBar: TheToolBar = new TheToolBar(buttons)
+  private val toolBox: ToolBox = new ToolBox
   private val imageTabs: ImageTabs = new ImageTabs(controls, model)
-  private val colorBox: VBox       = makeColorBox()
+  private val colorBox: VBox = makeColorBox()
 
   private var currentFolder: Option[File] = None
 
@@ -64,7 +66,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends Pr
     .foreach(m => scene().getAccelerators.put(m.shortCut, () => m.toolboxButton.fire()))
 
   private def makeColorBox() = {
-    //overlay and imageDisplay
+    // overlay and imageDisplay
     val colorPicker1 = new ColorPicker(new Color(imageDisplay.colors.primaryColor()))
     val colorPicker2 = new ColorPicker(new Color(imageDisplay.colors.secondaryColor()))
 
@@ -97,8 +99,10 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends Pr
       file,
       Seq(
         new SimpleStorageFormat -> "Simple format (old)",
-        new RecursiveStorageFormat -> "Recursive format (new)"),
-      1)
+        new RecursiveStorageFormat -> "Recursive format (new)"
+      ),
+      1
+    )
   }
 
   override def askForFileToOpen(): Option[File] = {
@@ -114,7 +118,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends Pr
     DialogUtils.askForXY(
       title = "New image",
       headerText = "Please enter where it should be placed."
-      )
+    )
   }
 
   override def askForBlurRadius(): Option[Int] = {
@@ -150,17 +154,19 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends Pr
       title = "Fill images randomly",
       headerText = "Which color-range should be used?",
       graphic = DialogUtils.makeImagePreviewList(images.toSeq, model.imagePool),
-
-      content = Seq(makeGridPane(Seq(
-        Seq(new Label("Minimum color:"), loColorPicker),
-        Seq(new Label("Maximum color:"), hiColorPicker)
-      ))),
-
+      content = Seq(
+        makeGridPane(
+          Seq(
+            Seq(new Label("Minimum color:"), loColorPicker),
+            Seq(new Label("Maximum color:"), hiColorPicker)
+          )
+        )
+      ),
       resultConverter = {
-        case ButtonType.OK => Try((new Color(loColorPicker.value()), new Color(hiColorPicker.value()))).getOrElse(null)
+        case ButtonType.OK =>
+          Try((new Color(loColorPicker.value()), new Color(hiColorPicker.value()))).getOrElse(null)
         case _ => null
       },
-
       buttons = Seq(ButtonType.OK, ButtonType.Cancel)
     )
   }
@@ -168,15 +174,16 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends Pr
   override def askSaveBeforeClosing(images: Seq[ImageContent]): Option[Boolean] = {
     saveBeforeClosingAlert(images).showAndWait().map(_.buttonData) flatMap {
       case ButtonData.Yes => Some(true)
-      case ButtonData.No => Some(false)
-      case _ => None
+      case ButtonData.No  => Some(false)
+      case _              => None
     }
   }
 
   private def saveBeforeClosingAlert(images: Seq[ImageContent]): Alert = {
     val alert = new Alert(AlertType.Confirmation)
     alert.title = "Save before closing?"
-    alert.headerText = "Do you want to save " + (if (images.size == 1) "this image" else "these images") + " before closing the tab?"
+    alert.headerText = "Do you want to save " + (if (images.size == 1) "this image"
+                                                 else "these images") + " before closing the tab?"
     alert.graphic = DialogUtils.makeImagePreviewList(images, model.imagePool)
 
     alert.buttonTypes = Seq(
@@ -187,17 +194,26 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel) extends Pr
     alert
   }
 
-  override def askForFileOpenSettings(file: File, width: Int, height: Int): Option[FileOpenSettings] = {
+  override def askForFileOpenSettings(
+      file: File,
+      width: Int,
+      height: Int
+  ): Option[FileOpenSettings] = {
     DialogUtils.askForFileOpenSettings(
       imagePreview = (file, width, height),
       Seq(
         new SimpleStorageFormat -> "Simple format (old)",
         new RecursiveStorageFormat -> "Recursive format (new)"
       ),
-      1)
+      1
+    )
   }
 
-  override def shouldReplaceImage(currentImage: ImageStorage, newImage: ImageStorage, location: SaveLocation): Option[Boolean] = {
+  override def shouldReplaceImage(
+      currentImage: ImageStorage,
+      newImage: ImageStorage,
+      location: SaveLocation
+  ): Option[Boolean] = {
     val tri1 = model.imageGrid.images.find(_.storage == newImage).orNull
     val tri2 = model.imageGrid.images.find(_.storage == currentImage).orNull
     val alert = new Alert(AlertType.Confirmation)

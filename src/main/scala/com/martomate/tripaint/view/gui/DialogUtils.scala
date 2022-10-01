@@ -21,12 +21,13 @@ import scalafx.util.StringConverter
 import java.io.{File, FileInputStream, FileNotFoundException, IOException}
 import scala.util.Try
 
-
 object DialogUtils {
   private def isTrue(pred: => Boolean): Boolean = Try(pred).getOrElse(false)
 
-  def customIntRestriction(pred: Int => Boolean): String => Boolean = s => isTrue(pred(s.toInt)) || isTrue(pred((s + "1").toInt))
-  def customDoubleRestriction(pred: Double => Boolean): String => Boolean = s => isTrue(pred(s.toDouble)) || isTrue(pred((s + "1").toDouble))
+  def customIntRestriction(pred: Int => Boolean): String => Boolean = s =>
+    isTrue(pred(s.toInt)) || isTrue(pred((s + "1").toInt))
+  def customDoubleRestriction(pred: Double => Boolean): String => Boolean = s =>
+    isTrue(pred(s.toDouble)) || isTrue(pred((s + "1").toDouble))
 
   val doubleRestriction: String => Boolean = customDoubleRestriction(_ => true)
   val intRestriction: String => Boolean = customIntRestriction(_ => true)
@@ -58,14 +59,16 @@ object DialogUtils {
     gridPane
   }
 
-  def getValueFromCustomDialog[R](title: String,
-                                  headerText: String = null,
-                                  contentText: String = null,
-                                  graphic: Node = null,
-                                  content: Seq[Region] = Seq.empty,
-                                  resultConverter: ButtonType => R,
-                                  nodeWithFocus: Node = null,
-                                  buttons: Seq[ButtonType] = Seq(ButtonType.OK, ButtonType.Cancel)): Option[R] = {
+  def getValueFromCustomDialog[R](
+      title: String,
+      headerText: String = null,
+      contentText: String = null,
+      graphic: Node = null,
+      content: Seq[Region] = Seq.empty,
+      resultConverter: ButtonType => R,
+      nodeWithFocus: Node = null,
+      buttons: Seq[ButtonType] = Seq(ButtonType.OK, ButtonType.Cancel)
+  ): Option[R] = {
     val dialog = new Dialog[R]
     dialog.title = title
     dialog.headerText = headerText
@@ -76,7 +79,8 @@ object DialogUtils {
     dialog.dialogPane().setContent(contentBox)
     dialog.resultConverter = resultConverter
     for (b <- buttons) dialog.dialogPane().getButtonTypes add b
-    if (nodeWithFocus != null) dialog.setOnShowing(_ => Platform.runLater(nodeWithFocus.requestFocus()))
+    if (nodeWithFocus != null)
+      dialog.setOnShowing(_ => Platform.runLater(nodeWithFocus.requestFocus()))
     val result = dialog.delegate.showAndWait()
     if (result.isPresent) Some(result.get) else None
   }
@@ -100,24 +104,27 @@ object DialogUtils {
     getValueFromCustomDialog[(Int, Int)](
       title = title,
       headerText = headerText,
-
-      content = Seq(makeGridPane(Seq(
-        Seq(new Label("X coordinate:"), xCoordTF),
-        Seq(new Label("Y coordinate:"), yCoordTF)
-      ))),
-
+      content = Seq(
+        makeGridPane(
+          Seq(
+            Seq(new Label("X coordinate:"), xCoordTF),
+            Seq(new Label("Y coordinate:"), yCoordTF)
+          )
+        )
+      ),
       resultConverter = {
         case ButtonType.OK => coordsFromTF().getOrElse(null)
-        case _ => null
+        case _             => null
       },
-
       buttons = Seq(ButtonType.OK, ButtonType.Cancel)
     )
   }
 
-  def askForFileOpenSettings(imagePreview: (File, Int, Int),
-                             formats: Seq[(StorageFormat, String)],
-                             initiallySelectedFormat: Int): Option[FileOpenSettings] = {
+  def askForFileOpenSettings(
+      imagePreview: (File, Int, Int),
+      formats: Seq[(StorageFormat, String)],
+      initiallySelectedFormat: Int
+  ): Option[FileOpenSettings] = {
     val (previewFile, previewWidth, previewHeight) = imagePreview
 
     val xCoordTF = DialogUtils.uintTF
@@ -150,7 +157,12 @@ object DialogUtils {
     {
       import javafx.scene.layout._
       import javafx.scene.paint.Color
-      val stroke = new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)
+      val stroke = new BorderStroke(
+        Color.RED,
+        BorderStrokeStyle.SOLID,
+        CornerRadii.EMPTY,
+        BorderWidths.DEFAULT
+      )
       previewPane.delegate.setBorder(new Border(stroke))
     }
 
@@ -160,12 +172,11 @@ object DialogUtils {
     previewStack.delegate.getChildren.addAll(wholeImage, previewPane)
 
     def updatePreviewAction(): Unit = {
-      resultFromInputs() foreach {
-        case FileOpenSettings(StorageCoords(x, y), format) =>
-          previewPane.setLayoutX(x)
-          previewPane.setLayoutY(y)
+      resultFromInputs() foreach { case FileOpenSettings(StorageCoords(x, y), format) =>
+        previewPane.setLayoutX(x)
+        previewPane.setLayoutY(y)
 
-          // TODO: preview TriImage using the format
+      // TODO: preview TriImage using the format
       }
     }
 
@@ -177,26 +188,31 @@ object DialogUtils {
     getValueFromCustomDialog[FileOpenSettings](
       title = "Open image",
       headerText = "Which part of the image should be opened? Please enter the top left corner:",
-
-      content = Seq(makeGridPane(Seq(
-        Seq(new Label("X coordinate:"), xCoordTF),
-        Seq(new Label("Y coordinate:"), yCoordTF),
-        Seq(new Label("Format:"), formatChooser)
-      )), Separator(Orientation.Horizontal), previewStack),
-
+      content = Seq(
+        makeGridPane(
+          Seq(
+            Seq(new Label("X coordinate:"), xCoordTF),
+            Seq(new Label("Y coordinate:"), yCoordTF),
+            Seq(new Label("Format:"), formatChooser)
+          )
+        ),
+        Separator(Orientation.Horizontal),
+        previewStack
+      ),
       resultConverter = {
         case ButtonType.OK => resultFromInputs().getOrElse(null)
-        case _ => null
+        case _             => null
       },
-
       buttons = Seq(ButtonType.OK, ButtonType.Cancel)
-      )
+    )
   }
 
-  def askForFileSaveSettings(storage: ImageStorage,
-                             file: File,
-                             formats: Seq[(StorageFormat, String)],
-                             initiallySelectedFormat: Int): Option[FileSaveSettings] = {
+  def askForFileSaveSettings(
+      storage: ImageStorage,
+      file: File,
+      formats: Seq[(StorageFormat, String)],
+      initiallySelectedFormat: Int
+  ): Option[FileSaveSettings] = {
     val imageSize = storage.imageSize
     val (previewFile, previewWidth, previewHeight) = (file, imageSize, imageSize)
 
@@ -239,7 +255,12 @@ object DialogUtils {
     {
       import javafx.scene.layout._
       import javafx.scene.paint.Color
-      val stroke = new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)
+      val stroke = new BorderStroke(
+        Color.RED,
+        BorderStrokeStyle.SOLID,
+        CornerRadii.EMPTY,
+        BorderWidths.DEFAULT
+      )
       previewBorder.delegate.setBorder(new Border(stroke))
     }
 
@@ -249,20 +270,28 @@ object DialogUtils {
       previewStack.children.add(wholeImage)
     } catch {
       case _: FileNotFoundException =>
-      case _: IOException =>
+      case _: IOException           =>
     }
 
     previewStack.delegate.getChildren.add(previewPane)
 
     def updatePreviewAction(): Unit = {
-      resultFromInputs() foreach {
-        case FileSaveSettings(StorageCoords(x, y), format) =>
-          previewPane.setLayoutX(x)
-          previewPane.setLayoutY(y)
+      resultFromInputs() foreach { case FileSaveSettings(StorageCoords(x, y), format) =>
+        previewPane.setLayoutX(x)
+        previewPane.setLayoutY(y)
 
-          val saver = ImageSaverToArray.fromSize(imageSize)
-          saver.save(storage, format)
-          previewImage.pixelWriter.setPixels(0, 0, imageSize, imageSize, pixelFormat, saver.array, 0, imageSize)
+        val saver = ImageSaverToArray.fromSize(imageSize)
+        saver.save(storage, format)
+        previewImage.pixelWriter.setPixels(
+          0,
+          0,
+          imageSize,
+          imageSize,
+          pixelFormat,
+          saver.array,
+          0,
+          imageSize
+        )
       }
     }
 
@@ -275,29 +304,34 @@ object DialogUtils {
     getValueFromCustomDialog[FileSaveSettings](
       title = "Save file",
       headerText = "Where in the file should the image be saved, and how?",
-
-      content = Seq(makeGridPane(Seq(
-        Seq(new Label("X coordinate:"), xCoordTF),
-        Seq(new Label("Y coordinate:"), yCoordTF),
-        Seq(new Label("Format:"), formatChooser)
-        )), Separator(Orientation.Horizontal), previewStack),
-
+      content = Seq(
+        makeGridPane(
+          Seq(
+            Seq(new Label("X coordinate:"), xCoordTF),
+            Seq(new Label("Y coordinate:"), yCoordTF),
+            Seq(new Label("Format:"), formatChooser)
+          )
+        ),
+        Separator(Orientation.Horizontal),
+        previewStack
+      ),
       resultConverter = {
         case ButtonType.OK => resultFromInputs().getOrElse(null)
-        case _ => null
+        case _             => null
       },
-
       buttons = Seq(ButtonType.OK, ButtonType.Cancel)
-      )
+    )
   }
 
-  def getValueFromDialog[T](imagePool: ImagePool,
-                            images: Seq[ImageContent],
-                            title: String,
-                            headerText: String,
-                            contentText: String,
-                            restriction: String => Boolean,
-                            stringToValue: String => T): Option[T] = {
+  def getValueFromDialog[T](
+      imagePool: ImagePool,
+      images: Seq[ImageContent],
+      title: String,
+      headerText: String,
+      contentText: String,
+      restriction: String => Boolean,
+      stringToValue: String => T
+  ): Option[T] = {
     val dialog = new TextInputDialog
     dialog.title = title
     dialog.headerText = headerText

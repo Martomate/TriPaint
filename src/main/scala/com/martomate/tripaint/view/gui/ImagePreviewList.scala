@@ -9,7 +9,8 @@ import scalafx.scene.image.ImageView
 import scalafx.scene.layout.HBox
 import scalafx.scene.paint.Color
 
-class ImagePreviewList(images: Seq[ImageContent], previewSize: Int, imagePool: ImagePool) extends ScrollPane {
+class ImagePreviewList(images: Seq[ImageContent], previewSize: Int, imagePool: ImagePool)
+    extends ScrollPane {
   private val snapshotParams = new SnapshotParameters
   snapshotParams.fill = Color.Transparent
 

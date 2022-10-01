@@ -10,5 +10,6 @@ case class TriangleCoords(x: Int, y: Int) {
 }
 
 object TriangleCoords {
-  def fromInt(repr: Int): TriangleCoords = if (repr != -1) TriangleCoords(repr >>> 12, repr & 0xfff) else null
+  def fromInt(repr: Int): TriangleCoords =
+    if (repr != -1) TriangleCoords(repr >>> 12, repr & 0xfff) else null
 }

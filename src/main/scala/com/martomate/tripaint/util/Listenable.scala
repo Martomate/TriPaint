@@ -2,10 +2,10 @@ package com.martomate.tripaint.util
 
 import scala.collection.mutable.ArrayBuffer
 
-/**
-  * Like Observable but with custom listener class
+/** Like Observable but with custom listener class
   *
-  * @tparam L the listener trait/interface
+  * @tparam L
+  *   the listener trait/interface
   */
 trait Listenable[L] {
   private val listeners: ArrayBuffer[L] = ArrayBuffer.empty

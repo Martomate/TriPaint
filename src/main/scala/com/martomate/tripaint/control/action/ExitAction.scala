@@ -7,13 +7,14 @@ import com.martomate.tripaint.view.{FileSaveSettings, TriPaintView}
 
 import java.io.File
 
-class ExitAction(model: TriPaintModel,
-                 askForSaveFile: (ImageContent) => Option[File],
-                 askForFileSaveSettings: (File, ImageContent) => Option[FileSaveSettings],
-                 imageSaveCollisionHandler: ImageSaveCollisionHandler,
-                 askSaveBeforeClosing: Seq[ImageContent] => Option[Boolean],
-                 close: () => Unit
-                ) extends Action {
+class ExitAction(
+    model: TriPaintModel,
+    askForSaveFile: (ImageContent) => Option[File],
+    askForFileSaveSettings: (File, ImageContent) => Option[FileSaveSettings],
+    imageSaveCollisionHandler: ImageSaveCollisionHandler,
+    askSaveBeforeClosing: Seq[ImageContent] => Option[Boolean],
+    close: () => Unit
+) extends Action {
   override def perform(): Unit = {
     if (do_exit()) close()
   }
@@ -24,7 +25,12 @@ class ExitAction(model: TriPaintModel,
       case images =>
         saveBeforeClosing(askSaveBeforeClosing, images: _*) match {
           case Some(shouldSave) =>
-            if (shouldSave) save(model, images: _*)(askForSaveFile, askForFileSaveSettings, imageSaveCollisionHandler)
+            if (shouldSave)
+              save(model, images: _*)(
+                askForSaveFile,
+                askForFileSaveSettings,
+                imageSaveCollisionHandler
+              )
             else true
           case None => false
         }

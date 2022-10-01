@@ -3,7 +3,7 @@ package com.martomate.tripaint.model.coords
 case class PixelCoords(image: TriImageCoords, pix: TriangleCoords) {
   def neighbours(imageSize: Int): Seq[PixelCoords] = {
     toGlobal(imageSize).neighbours map (c => PixelCoords(c, imageSize))
-/*    val dyForTop = if (image.x % 2 == 0) 1 else -1
+    /*    val dyForTop = if (image.x % 2 == 0) 1 else -1
 
     val (x, y) = (pix.x, pix.y)
     val localCoords = Seq(
@@ -38,9 +38,9 @@ case class PixelCoords(image: TriImageCoords, pix: TriangleCoords) {
   def toGlobal(imageSize: Int): GlobalPixCoords = {
     val sz = imageSize
     if (image.x % 2 == 0) {
-      GlobalPixCoords(image.x * sz + pix.x, image.y * sz + sz-1 - pix.y)
+      GlobalPixCoords(image.x * sz + pix.x, image.y * sz + sz - 1 - pix.y)
     } else {
-      GlobalPixCoords(image.x * sz + sz-1 - pix.x, image.y * sz + pix.y)
+      GlobalPixCoords(image.x * sz + sz - 1 - pix.x, image.y * sz + pix.y)
     }
   }
 }

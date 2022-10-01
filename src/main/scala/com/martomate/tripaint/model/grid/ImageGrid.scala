@@ -21,8 +21,7 @@ class ImageGrid(init_imageSize: Int) extends Listenable[ImageGridListener] {
       val prev = _images(idx)
       if (prev != image) onRemoveImage(prev)
       _images(idx) = image
-    }
-    else _images += image
+    } else _images += image
     onAddImage(image)
   }
 
@@ -32,8 +31,7 @@ class ImageGrid(init_imageSize: Int) extends Listenable[ImageGridListener] {
       val ret = _images.remove(idx)
       onRemoveImage(ret)
       ret
-    }
-    else null
+    } else null
   }
 
   def setImageSizeIfEmpty(size: Int): Boolean = {

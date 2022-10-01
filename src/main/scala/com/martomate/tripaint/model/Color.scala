@@ -15,7 +15,7 @@ case class Color(r: Double, g: Double, b: Double, a: Double) {
 
   def toFXColor: FXColor = FXColor.color(clamp(r), clamp(g), clamp(b), clamp(a))
 
-  def toInt: Int = asInt(a) << 24 | asInt(r) << 16 | asInt(g) <<  8 | asInt(b)
+  def toInt: Int = asInt(a) << 24 | asInt(r) << 16 | asInt(g) << 8 | asInt(b)
 
   private def clamp(v: Double): Double = math.min(math.max(v, 0), 1)
 
@@ -29,17 +29,17 @@ object Color {
 
   def fromInt(value: Int): Color = Color(
     (value >> 16 & 0xff) / 255.0,
-    (value >>  8 & 0xff) / 255.0,
-    (value >>  0 & 0xff) / 255.0,
+    (value >> 8 & 0xff) / 255.0,
+    (value >> 0 & 0xff) / 255.0,
     (value >> 24 & 0xff) / 255.0
   )
 
-  val Black: Color   = Color(0, 0, 0, 1)
-  val Red: Color     = Color(1, 0, 0, 1)
-  val Green: Color   = Color(0, 1, 0, 1)
-  val Blue: Color    = Color(0, 0, 1, 1)
-  val Yellow: Color  = Color(1, 1, 0, 1)
+  val Black: Color = Color(0, 0, 0, 1)
+  val Red: Color = Color(1, 0, 0, 1)
+  val Green: Color = Color(0, 1, 0, 1)
+  val Blue: Color = Color(0, 0, 1, 1)
+  val Yellow: Color = Color(1, 1, 0, 1)
   val Magenta: Color = Color(1, 0, 1, 1)
-  val Cyan: Color    = Color(0, 1, 1, 1)
-  val White: Color   = Color(1, 1, 1, 1)
+  val Cyan: Color = Color(0, 1, 1, 1)
+  val White: Color = Color(1, 1, 1, 1)
 }

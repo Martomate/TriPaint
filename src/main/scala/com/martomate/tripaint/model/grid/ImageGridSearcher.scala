@@ -4,7 +4,10 @@ import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.GlobalPixCoords
 
 class ImageGridSearcher(colorLookup: ColorLookup) {
-  def search(startPos: GlobalPixCoords, predicate: (GlobalPixCoords, Color) => Boolean): Seq[GlobalPixCoords] = {
+  def search(
+      startPos: GlobalPixCoords,
+      predicate: (GlobalPixCoords, Color) => Boolean
+  ): Seq[GlobalPixCoords] = {
     val visited = collection.mutable.Set.empty[GlobalPixCoords]
     val result = collection.mutable.ArrayBuffer.empty[GlobalPixCoords]
     val q = collection.mutable.Queue(startPos)

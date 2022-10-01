@@ -2,37 +2,36 @@ package com.martomate.tripaint.model.image.format
 
 import com.martomate.tripaint.model.coords.{StorageCoords, TriangleCoords}
 
-/**
- * This recursive format is designed to map small triangles into small squares
- * If the storage image is scaled up by a factor of 2,
- * the corresponding triangle image looks the same.
- *
- * This is achieved by dividing the image into four parts,
- * flipping the center upside down, and then storing these parts as squares as shown below.
- * If the parts are not 2x2 the process is repeated recursively.
- *
- * <pre>
- *           1
- *        2  3  4
- *     5  6  7  8  9
- *  10 11 12 13 14 15 16
- *
- *  1  4  9  16
- *  2  3  14 15
- *  5  12 7  8
- *  10 11 6  13
- * </pre>
- *
- * If we consider a triangle made of four subtriangles, the transformation uses the following recursion.
- * Fa means that the transformation F is applied to the triangle a, * means 'rotate 180 degrees'.
- * <pre>
- *      a
- *    b c d
- *
- *    Fa Fd
- *    Fb (Fc)*
- * </pre>
- */
+/** This recursive format is designed to map small triangles into small squares If the storage image
+  * is scaled up by a factor of 2, the corresponding triangle image looks the same.
+  *
+  * This is achieved by dividing the image into four parts, flipping the center upside down, and
+  * then storing these parts as squares as shown below. If the parts are not 2x2 the process is
+  * repeated recursively.
+  *
+  * {{{
+  *           1
+  *        2  3  4
+  *     5  6  7  8  9
+  *  10 11 12 13 14 15 16
+  *
+  *  1  4  9  16
+  *  2  3  14 15
+  *  5  12 7  8
+  *  10 11 6  13
+  * }}}
+  *
+  * If we consider a triangle made of four subtriangles, the transformation uses the following
+  * recursion. Fa means that the transformation F is applied to the triangle a, * means 'rotate 180
+  * degrees'.
+  * {{{
+  *      a
+  *    b c d
+  *
+  *    Fa Fd
+  *    Fb (Fc)*
+  * }}}
+  */
 class RecursiveStorageFormat extends StorageFormat {
   override def transformToStorage(coords: TriangleCoords): StorageCoords = {
     if (coords.y == 0) {
@@ -48,7 +47,9 @@ class RecursiveStorageFormat extends StorageFormat {
         val subCoords = transformToStorage(TriangleCoords(coords.x - 2 * floor, rest))
         StorageCoords(floor + subCoords.x, subCoords.y)
       } else { // center
-        val subCoords = transformToStorage(TriangleCoords(2 * floor - 1 - coords.x, floor - 1 - rest))
+        val subCoords = transformToStorage(
+          TriangleCoords(2 * floor - 1 - coords.x, floor - 1 - rest)
+        )
         StorageCoords(2 * floor - 1 - subCoords.x, 2 * floor - 1 - subCoords.y)
       }
     }

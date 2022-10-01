@@ -19,7 +19,11 @@ abstract class Action {
     }
   }
 
-  protected def makeImageContent(model: TriPaintModel, coords: TriImageCoords, storage: ImageStorage): ImageContent = {
+  protected def makeImageContent(
+      model: TriPaintModel,
+      coords: TriImageCoords,
+      storage: ImageStorage
+  ): ImageContent = {
     val image = new ImageContent(coords, storage)
     model.imagePool.addListener(image)
     image
@@ -33,22 +37,24 @@ abstract class Action {
     model.imageGrid.selectedImages
   }
 
-  protected def save(model: TriPaintModel,
-                     images: ImageContent*)
-                    (askForSaveFile: ImageContent => Option[File],
-                     askForFileSaveSettings: (File, ImageContent) => Option[FileSaveSettings],
-                     imageSaveCollisionHandler: ImageSaveCollisionHandler): Boolean = {
-    images.filter(im => !model.imagePool.save(im.storage, model.imageSaver, model.fileSystem))
-      .forall(im => model.imagePool.save(im.storage, model.imageSaver, model.fileSystem) ||
-        saveAs(model, im)(askForSaveFile, askForFileSaveSettings, imageSaveCollisionHandler))
+  protected def save(model: TriPaintModel, images: ImageContent*)(
+      askForSaveFile: ImageContent => Option[File],
+      askForFileSaveSettings: (File, ImageContent) => Option[FileSaveSettings],
+      imageSaveCollisionHandler: ImageSaveCollisionHandler
+  ): Boolean = {
+    images
+      .filter(im => !model.imagePool.save(im.storage, model.imageSaver, model.fileSystem))
+      .forall(im =>
+        model.imagePool.save(im.storage, model.imageSaver, model.fileSystem) ||
+          saveAs(model, im)(askForSaveFile, askForFileSaveSettings, imageSaveCollisionHandler)
+      )
   }
 
-  protected def saveAs(model: TriPaintModel,
-                       image: ImageContent)
-                      (askForSaveFile: ImageContent => Option[File],
-                       askForFileSaveSettings: (File, ImageContent) => Option[FileSaveSettings],
-                       imageSaveCollisionHandler: ImageSaveCollisionHandler
-                      ): Boolean = {
+  protected def saveAs(model: TriPaintModel, image: ImageContent)(
+      askForSaveFile: ImageContent => Option[File],
+      askForFileSaveSettings: (File, ImageContent) => Option[FileSaveSettings],
+      imageSaveCollisionHandler: ImageSaveCollisionHandler
+  ): Boolean = {
     askForSaveFile(image) flatMap { file =>
       askForFileSaveSettings(file, image) map { settings =>
         saveImageAs(model, image, file, settings)(imageSaveCollisionHandler)
@@ -56,7 +62,12 @@ abstract class Action {
     } getOrElse false
   }
 
-  private def saveImageAs(model: TriPaintModel, image: ImageContent, file: File, settings: FileSaveSettings)(imageSaveCollisionHandler: ImageSaveCollisionHandler) = {
+  private def saveImageAs(
+      model: TriPaintModel,
+      image: ImageContent,
+      file: File,
+      settings: FileSaveSettings
+  )(imageSaveCollisionHandler: ImageSaveCollisionHandler) = {
     val location = SaveLocation(file, settings.offset)
     val info = SaveInfo(settings.format)
 
@@ -67,7 +78,10 @@ abstract class Action {
     } else false
   }
 
-  protected def saveBeforeClosing(askSaveBeforeClosing: Seq[ImageContent] => Option[Boolean], images: ImageContent*): Option[Boolean] = {
+  protected def saveBeforeClosing(
+      askSaveBeforeClosing: Seq[ImageContent] => Option[Boolean],
+      images: ImageContent*
+  ): Option[Boolean] = {
     askSaveBeforeClosing(images)
   }
 }

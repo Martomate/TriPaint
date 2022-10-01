@@ -5,7 +5,11 @@ import scalafx.beans.property.{ReadOnlyObjectProperty, ReadOnlyObjectWrapper}
 import scalafx.scene.control.{ToggleButton, Tooltip}
 import scalafx.scene.image.ImageView
 
-class EditMode(imagePath: String, val tooltipText: String, val shortCut: KeyCodeCombination = null) {
+class EditMode(
+    imagePath: String,
+    val tooltipText: String,
+    val shortCut: KeyCodeCombination = null
+) {
   val toolboxButton: ToggleButton = {
     val t = new ToggleButton(null, new ImageView("icons/editmodes/" + imagePath + ".png"))
     t.tooltip = new Tooltip(s"$tooltipText\n(Shortcut: $shortCut)")
@@ -36,11 +40,11 @@ object EditMode {
 
   def currentModeProperty: ReadOnlyObjectProperty[EditMode] = _currentMode.readOnlyProperty
 
-  val Select    = new EditMode("select",    "Select",     new KeyCodeCombination(KeyCode.S))
-  val Draw      = new EditMode("draw",      "Draw",       new KeyCodeCombination(KeyCode.P))
-  val Fill      = new EditMode("fill",      "Fill",       new KeyCodeCombination(KeyCode.F))
+  val Select = new EditMode("select", "Select", new KeyCodeCombination(KeyCode.S))
+  val Draw = new EditMode("draw", "Draw", new KeyCodeCombination(KeyCode.P))
+  val Fill = new EditMode("fill", "Fill", new KeyCodeCombination(KeyCode.F))
   val PickColor = new EditMode("pickColor", "Pick Color", new KeyCodeCombination(KeyCode.K))
-  val Organize  = new EditMode("organize",  "Organize",   new KeyCodeCombination(KeyCode.O))
+  val Organize = new EditMode("organize", "Organize", new KeyCodeCombination(KeyCode.O))
 
   Draw.select()
 

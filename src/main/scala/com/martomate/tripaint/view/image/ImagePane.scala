@@ -2,7 +2,12 @@ package com.martomate.tripaint.view.image
 
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.coords.{PixelCoords, TriImageCoords}
-import com.martomate.tripaint.model.grid.{ImageGrid, ImageGridColorLookup, ImageGridListener, ImageGridSearcher}
+import com.martomate.tripaint.model.grid.{
+  ImageGrid,
+  ImageGridColorLookup,
+  ImageGridListener,
+  ImageGridSearcher
+}
 import com.martomate.tripaint.view.EditMode
 import javafx.scene.input.{MouseButton, MouseEvent}
 import javafx.scene.paint
@@ -23,7 +28,9 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImagePaneView with Image
   private var _yScroll: Double = 0
   def yScroll: Double = _yScroll
 
-  private val gridSearcher: ImageGridSearcher = new ImageGridSearcher(new ImageGridColorLookup(imageGrid))
+  private val gridSearcher: ImageGridSearcher = new ImageGridSearcher(
+    new ImageGridColorLookup(imageGrid)
+  )
 
   private val imageMap: mutable.Map[TriImageCoords, TriImage] = mutable.Map.empty
 
@@ -71,7 +78,11 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImagePaneView with Image
               imageAt(xx, yy).filter(_.content.editable) match {
                 case Some(image) =>
                   val internalCoords = image.coordsAt(xx, yy)
-                  mousePressedAt(PixelCoords(internalCoords, image.content.coords), e, dragged = true)
+                  mousePressedAt(
+                    PixelCoords(internalCoords, image.content.coords),
+                    e,
+                    dragged = true
+                  )
                 case _ =>
               }
             }
@@ -117,25 +128,27 @@ class ImagePane(imageGrid: ImageGrid) extends Pane with ImagePaneView with Image
       color <- primaryOrSecondaryColor
     } EditMode.currentMode match {
       case EditMode.Draw =>
-          imageMap(image.coords).drawAt(coords.pix, new Color(color()))
+        imageMap(image.coords).drawAt(coords.pix, new Color(color()))
       case EditMode.Fill =>
-          fill(coords, new Color(color()))
+        fill(coords, new Color(color()))
       case EditMode.PickColor =>
-          color() = image.storage(coords.pix).toFXColor
+        color() = image.storage(coords.pix).toFXColor
       case _ =>
     }
 
     def primaryOrSecondaryColor: Option[ObjectProperty[paint.Color]] = e.getButton match {
-      case MouseButton.PRIMARY => Some(colors.primaryColor)
+      case MouseButton.PRIMARY   => Some(colors.primaryColor)
       case MouseButton.SECONDARY => Some(colors.secondaryColor)
-      case _ => None
+      case _                     => None
     }
   }
 
   def fill(coords: PixelCoords, color: Color): Unit = {
     for (image <- imageGrid(coords.image)) {
       val referenceColor = imageMap(image.coords).content.storage(coords.pix)
-      val places = gridSearcher.search(coords.toGlobal(imageSize), (_, col) => col == referenceColor).map(p => PixelCoords(p, imageSize))
+      val places = gridSearcher
+        .search(coords.toGlobal(imageSize), (_, col) => col == referenceColor)
+        .map(p => PixelCoords(p, imageSize))
 
       for {
         p <- places

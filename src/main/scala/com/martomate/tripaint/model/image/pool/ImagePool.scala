@@ -11,11 +11,10 @@ import com.martomate.tripaint.util.{InjectiveHashMap, InjectiveMap, Listenable}
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
-/**
-  * This class should keep track of Map[SaveLocation, ImageStorage]
-  * So if SaveAs then this class should be called so that collisions can be detected and dealt with,
-  * like e.g. when you save A into the same place as B the user should be asked which image to keep,
-  * and after that they will share the same ImageStorage.
+/** This class should keep track of Map[SaveLocation, ImageStorage] So if SaveAs then this class
+  * should be called so that collisions can be detected and dealt with, like e.g. when you save A
+  * into the same place as B the user should be asked which image to keep, and after that they will
+  * share the same ImageStorage.
   */
 class ImagePool extends Listenable[ImagePoolListener] {
   private val mapping: InjectiveMap[SaveLocation, ImageStorage] = new InjectiveHashMap
@@ -23,12 +22,15 @@ class ImagePool extends Listenable[ImagePoolListener] {
 
   private def contains(saveLocation: SaveLocation): Boolean = mapping.containsLeft(saveLocation)
   private def get(saveLocation: SaveLocation): ImageStorage = mapping.getRight(saveLocation).orNull
-  private def set(saveLocation: SaveLocation, imageStorage: ImageStorage): Unit = mapping.set(saveLocation, imageStorage)
+  private def set(saveLocation: SaveLocation, imageStorage: ImageStorage): Unit =
+    mapping.set(saveLocation, imageStorage)
 
   final def locationOf(image: ImageStorage): Option[SaveLocation] = mapping.getLeft(image)
   final def saveInfoFor(image: ImageStorage): Option[SaveInfo] = saveInfo.get(image)
 
-  def move(image: ImageStorage, to: SaveLocation, info: SaveInfo)(implicit handler: ImageSaveCollisionHandler): Boolean = {
+  def move(image: ImageStorage, to: SaveLocation, info: SaveInfo)(implicit
+      handler: ImageSaveCollisionHandler
+  ): Boolean = {
     val newLocation = to
     val currentImage = get(newLocation)
 
@@ -69,19 +71,26 @@ class ImagePool extends Listenable[ImagePoolListener] {
     success
   }
 
-  def fromBGColor(bgColor: Color, imageSize: Int): ImageStorage = ImageStorage.fromBGColor(bgColor, imageSize)
+  def fromBGColor(bgColor: Color, imageSize: Int): ImageStorage =
+    ImageStorage.fromBGColor(bgColor, imageSize)
 
   // TODO: This pool system will not work since you can change SaveInfo for an image without telling the pool! Some planning has to be done.
-  def fromFile(location: SaveLocation, format: StorageFormat, imageSize: Int, fileSystem: FileSystem): Try[ImageStorage] = {
+  def fromFile(
+      location: SaveLocation,
+      format: StorageFormat,
+      imageSize: Int,
+      fileSystem: FileSystem
+  ): Try[ImageStorage] = {
     if (contains(location)) Success(get(location))
     else {
       fileSystem.readImage(location.file) match {
         case Some(storedImage) =>
           val regularImage = RegularImage.fromBufferedImage(storedImage)
-          val image = ImageStorage.fromRegularImage(regularImage, location.offset, format, imageSize)
+          val image =
+            ImageStorage.fromRegularImage(regularImage, location.offset, format, imageSize)
           image.foreach(im => {
-              set(location, im)
-              saveInfo(im) = pool.SaveInfo(format)
+            set(location, im)
+            saveInfo(im) = pool.SaveInfo(format)
           })
           image
         case None =>
@@ -90,4 +99,3 @@ class ImagePool extends Listenable[ImagePoolListener] {
     }
   }
 }
-

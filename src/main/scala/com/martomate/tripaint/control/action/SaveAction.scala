@@ -7,12 +7,17 @@ import com.martomate.tripaint.view.{FileSaveSettings, TriPaintView}
 
 import java.io.File
 
-class SaveAction(model: TriPaintModel,
-                 askForSaveFile: ImageContent => Option[File],
-                 askForFileSaveSettings: (File, ImageContent) => Option[FileSaveSettings],
-                 imageSaveCollisionHandler: ImageSaveCollisionHandler
-                ) extends Action {
+class SaveAction(
+    model: TriPaintModel,
+    askForSaveFile: ImageContent => Option[File],
+    askForFileSaveSettings: (File, ImageContent) => Option[FileSaveSettings],
+    imageSaveCollisionHandler: ImageSaveCollisionHandler
+) extends Action {
   override def perform(): Unit = {
-    save(model, allSelectedImages(model).filter(_.changed): _*)(askForSaveFile, askForFileSaveSettings, imageSaveCollisionHandler)
+    save(model, allSelectedImages(model).filter(_.changed): _*)(
+      askForSaveFile,
+      askForFileSaveSettings,
+      imageSaveCollisionHandler
+    )
   }
 }

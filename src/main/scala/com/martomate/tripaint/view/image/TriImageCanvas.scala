@@ -6,10 +6,15 @@ import com.martomate.tripaint.model.image.storage.ImageStorage
 import javafx.scene.image.PixelFormat
 import scalafx.scene.canvas.Canvas
 
-class TriImageCanvas(init_width: Double, imageSize: Int) extends Canvas(init_width, init_width * Math.sqrt(3) / 2) {
-  private val coordsToRealConverter = new TriangleCoordsToReal[Double](imageSize, new Array(_), (xx, yy) => (xx * width(), yy * height()))
+class TriImageCanvas(init_width: Double, imageSize: Int)
+    extends Canvas(init_width, init_width * Math.sqrt(3) / 2) {
+  private val coordsToRealConverter = new TriangleCoordsToReal[Double](
+    imageSize,
+    new Array(_),
+    (xx, yy) => (xx * width(), yy * height())
+  )
 
-  def clearCanvas(): Unit = graphicsContext2D.clearRect(-1, -1, width()+1, height()+1)
+  def clearCanvas(): Unit = graphicsContext2D.clearRect(-1, -1, width() + 1, height() + 1)
 
   def drawTriangle(coords: TriangleCoords, color: Color, pixels: ImageStorage): Unit = {
     val gc = graphicsContext2D
@@ -87,4 +92,3 @@ class TriImageCanvas(init_width: Double, imageSize: Int) extends Canvas(init_wid
     (xLo, yLo, xHi, yHi)
   }
 }
-

@@ -6,7 +6,7 @@ import com.martomate.tripaint.model.coords.StorageCoords
 import java.awt.image.BufferedImage
 import java.util
 
-class RegularImage private(val width: Int, val height: Int, private val pixels: Array[Int]) {
+class RegularImage private (val width: Int, val height: Int, private val pixels: Array[Int]) {
   def getColor(x: Int, y: Int): Color = {
     require(x >= 0)
     require(y >= 0)
@@ -51,7 +51,8 @@ class RegularImage private(val width: Int, val height: Int, private val pixels: 
   }
 
   override def toString: String = {
-    pixels.grouped(width)
+    pixels
+      .grouped(width)
       .map(_.map(Integer.toHexString).mkString(", "))
       .mkString("\n")
   }

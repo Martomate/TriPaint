@@ -9,7 +9,9 @@ import scalafx.scene.layout.TilePane
 
 import scala.collection.mutable
 
-class ImageTabs(controls: TriPaintViewListener, model: TriPaintModel) extends TilePane with ImageGridListener {
+class ImageTabs(controls: TriPaintViewListener, model: TriPaintModel)
+    extends TilePane
+    with ImageGridListener {
   maxWidth = TriImageForPreview.previewSize
   model.imageGrid.addListener(this)
 
@@ -22,8 +24,6 @@ class ImageTabs(controls: TriPaintViewListener, model: TriPaintModel) extends Ti
   }
 
   def onRemoveImage(image: ImageContent): Unit = {
-    imageTabMap.remove(image).foreach(pane =>
-      children.remove(pane.delegate)
-    )
+    imageTabMap.remove(image).foreach(pane => children.remove(pane.delegate))
   }
 }

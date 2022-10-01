@@ -8,9 +8,12 @@ import com.martomate.tripaint.util.Listenable
 
 import scala.util.Try
 
-class ImageStorage private (val imageSize: Int, initialPixels: TriangleCoords => Color) extends Listenable[ImageStorageListener] {
+class ImageStorage private (val imageSize: Int, initialPixels: TriangleCoords => Color)
+    extends Listenable[ImageStorageListener] {
   private val coordsFormatter = new SimpleStorageFormat
-  private val pixels = Array.tabulate(imageSize, imageSize)((x, y) => initialPixels(coordsFormatter.transformFromStorage(StorageCoords(x, y))))
+  private val pixels = Array.tabulate(imageSize, imageSize)((x, y) =>
+    initialPixels(coordsFormatter.transformFromStorage(StorageCoords(x, y)))
+  )
 
   private def get(coords: TriangleCoords): Color = {
     val sc = coordsFormatter.transformToStorage(coords)
@@ -61,7 +64,12 @@ object ImageStorage {
     new ImageStorage(imageSize, _ => bgColor)
   }
 
-  def fromRegularImage(image: RegularImage, offset: StorageCoords, format: StorageFormat, imageSize: Int): Try[ImageStorage] = Try {
+  def fromRegularImage(
+      image: RegularImage,
+      offset: StorageCoords,
+      format: StorageFormat,
+      imageSize: Int
+  ): Try[ImageStorage] = Try {
     def colorAt(coords: TriangleCoords): Color = {
       val stCoords = format.transformToStorage(coords)
       image.getColor(offset.x + stCoords.x, offset.y + stCoords.y)

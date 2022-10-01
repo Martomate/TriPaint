@@ -9,7 +9,8 @@ import scalafx.scene.control.{Button, ToggleButton}
 import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout.StackPane
 
-class ImageTabPane(val image: ImageContent, control: TriPaintViewListener, model: TriPaintModel) extends StackPane {
+class ImageTabPane(val image: ImageContent, control: TriPaintViewListener, model: TriPaintModel)
+    extends StackPane {
   private val preview = new TriImageForPreview(image, TriImageForPreview.previewSize)
 
   private val closeButton = new Button {
@@ -35,7 +36,7 @@ class ImageTabPane(val image: ImageContent, control: TriPaintViewListener, model
   children add starView
 
   onMouseEntered = _ => closeButton.visible = true
-  onMouseExited  = _ => closeButton.visible = false
+  onMouseExited = _ => closeButton.visible = false
 
   private def makeStarView(): ImageView = {
     val star: ImageView = new ImageView
@@ -48,7 +49,11 @@ class ImageTabPane(val image: ImageContent, control: TriPaintViewListener, model
 }
 
 object ImageTabPane {
-  def apply(image: ImageContent, control: TriPaintViewListener, model: TriPaintModel): ImageTabPane = {
+  def apply(
+      image: ImageContent,
+      control: TriPaintViewListener,
+      model: TriPaintModel
+  ): ImageTabPane = {
     new ImageTabPane(image, control, model)
   }
 }

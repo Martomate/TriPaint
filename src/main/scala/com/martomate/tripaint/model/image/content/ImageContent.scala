@@ -10,7 +10,10 @@ import com.martomate.tripaint.model.undo.UndoManager
 import com.martomate.tripaint.util.Listenable
 import scalafx.beans.property.{BooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanWrapper}
 
-class ImageContent(val coords: TriImageCoords, init_image: ImageStorage) extends Listenable[ImageChangeListener] with ImagePoolListener with ImageStorageListener {
+class ImageContent(val coords: TriImageCoords, init_image: ImageStorage)
+    extends Listenable[ImageChangeListener]
+    with ImagePoolListener
+    with ImageStorageListener {
   private var _image: ImageStorage = init_image
 
   _image.addListener(this)
@@ -36,7 +39,11 @@ class ImageContent(val coords: TriImageCoords, init_image: ImageStorage) extends
     }
   }
 
-  def onImageReplaced(oldImage: ImageStorage, newImage: ImageStorage, location: SaveLocation): Unit = {
+  def onImageReplaced(
+      oldImage: ImageStorage,
+      newImage: ImageStorage,
+      location: SaveLocation
+  ): Unit = {
     if (oldImage == _image) {
       _image.removeListener(this)
       _image = newImage
