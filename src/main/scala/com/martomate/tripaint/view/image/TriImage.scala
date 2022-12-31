@@ -1,29 +1,75 @@
 package com.martomate.tripaint.view.image
 
 import com.martomate.tripaint.model.Color
-import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.content.{
+  CumulativeImageChange,
+  ImageChangeListener,
+  ImageContent
+}
 import com.martomate.tripaint.model.coords.TriangleCoords
+import com.martomate.tripaint.model.image.storage.ImageStorage
 import javafx.scene.input.{MouseEvent, ScrollEvent}
-import scalafx.beans.property._
+import scalafx.beans.property.ReadOnlyBooleanProperty
 import scalafx.scene.layout.Pane
 
-trait TriImage extends ITriImage {
-  def content: ImageContent
-  def imagePane: ImagePaneView
+class TriImage(val content: ImageContent, init_zoom: Double) extends ImageChangeListener:
+  val pane: Pane = new Pane()
 
-  def changed: Boolean
-  def changedProperty: ReadOnlyBooleanProperty
+  private val indexMap = new IndexMap(storage.imageSize)
 
-  def onMouseReleased(e: MouseEvent): Unit
-  def onScroll(e: ScrollEvent): Unit
+  private val canvas: TriImageCanvas =
+    new TriImageCanvas((storage.imageSize * 2 + 1) * init_zoom, storage.imageSize)
 
-  def undo(): Unit
-  def redo(): Unit
+  private val cumulativeImageChange = new CumulativeImageChange
 
-  def coordsAt(x: Double, y: Double): TriangleCoords
-  def drawAt(coords: TriangleCoords, color: Color): Unit
+  content.addListener(this)
+  pane.children.add(canvas)
 
-  def relocate(x: Double, y: Double): Unit
+  if content.coords.x % 2 != 0 then canvas.rotate() += 180
+  updateCanvasSize(init_zoom)
 
-  def pane: Pane
-}
+  redraw()
+
+  private def storage: ImageStorage = content.storage
+
+  private def panX(zoom: Double) = content.coords.centerX * (storage.imageSize * 2 + 1) * zoom
+  private def panY(zoom: Double) = content.coords.centerY * (storage.imageSize * 2 + 1) * zoom
+
+  def onStoppedDrawing(): Unit =
+    content.undoManager.append(cumulativeImageChange.done("draw", content))
+
+  def onZoom(zoom: Double): Unit =
+    updateCanvasSize(zoom)
+    redraw()
+
+  def drawAt(coords: TriangleCoords, color: Color): Unit =
+    if storage.contains(coords) then
+      cumulativeImageChange.addChange(coords, storage(coords), color)
+      storage(coords) = color
+
+  /** @param x
+    *   the x coordinate in scene space
+    * @param y
+    *   the y coordinate in scene space
+    * @return
+    *   the `TriangleCoords` of the point if it lies inside the triangle, null otherwise
+    */
+  def coordsAt(x: Double, y: Double): TriangleCoords =
+    val pt = canvas.sceneToLocal(x, y)
+    indexMap.coordsAt(pt.getX / canvas.width(), pt.getY / canvas.height())
+
+  private def updateCanvasSize(zoom: Double): Unit =
+    canvas.setCanvasSize((storage.imageSize * 2 + 1) * zoom)
+    canvas.setCanvasLocationUsingCenter(panX(zoom), panY(zoom))
+
+  private def drawTriangle(coords: TriangleCoords): Unit =
+    canvas.drawTriangle(coords, storage(coords), storage)
+
+  private def redraw(): Unit =
+    canvas.clearCanvas()
+    canvas.redraw(storage)
+
+  override def onPixelChanged(coords: TriangleCoords, from: Color, to: Color): Unit =
+    drawTriangle(coords)
+
+  override def onImageChangedALot(): Unit = redraw()

@@ -14,6 +14,18 @@ class TriImageCanvas(init_width: Double, imageSize: Int)
     (xx, yy) => (xx * width(), yy * height())
   )
 
+  def setCanvasSize(width: Double): Unit =
+    this.width = width
+    this.height = width * Math.sqrt(3) / 2
+
+  def setCanvasLocationUsingCenter(centerX: Double, centerY: Double): Unit =
+    // adjustment caused by canvas center not being the wanted rotation center (i.e. the centroid)
+    val adjLen = this.height() / 6
+    val angle = this.rotate() / 180 * math.Pi
+    val dx = -adjLen * math.sin(angle)
+    val dy = -adjLen * math.cos(angle)
+    this.relocate(centerX - this.width() / 2 + dx, centerY - this.height() / 2 + dy)
+
   def clearCanvas(): Unit = graphicsContext2D.clearRect(-1, -1, width() + 1, height() + 1)
 
   def drawTriangle(coords: TriangleCoords, color: Color, pixels: ImageStorage): Unit = {

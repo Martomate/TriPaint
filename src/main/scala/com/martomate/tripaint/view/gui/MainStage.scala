@@ -5,7 +5,7 @@ import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.format.{RecursiveStorageFormat, SimpleStorageFormat}
 import com.martomate.tripaint.model.image.storage.ImageStorage
-import com.martomate.tripaint.view.image.ImagePane
+import com.martomate.tripaint.view.image.ImageGridPane
 import com.martomate.tripaint.view._
 import scalafx.application.JFXApp3.PrimaryStage
 import scalafx.scene.Scene
@@ -23,7 +23,7 @@ import scala.util.Try
 class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     extends PrimaryStage
     with TriPaintView {
-  private val imageDisplay: ImagePane = new ImagePane(model.imageGrid)
+  private val imageDisplay: ImageGridPane = new ImageGridPane(model.imageGrid)
 
   private val buttons = new MainStageButtons(controls)
 
