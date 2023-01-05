@@ -17,7 +17,8 @@ class OpenActionTest extends AnyFlatSpec with Matchers {
     val image = RegularImage.fill(8, 8, Color.Yellow)
     image.setColor(5, 6, Color.Cyan)
 
-    val model = TriPaintModel.createNull(new FileSystem.NullArgs(initialImages = Map(file -> image.toBufferedImage)))
+    val model =
+      TriPaintModel.createNull(new FileSystem.NullArgs(initialImages = Map(file -> image)))
     model.imageGrid.setImageSizeIfEmpty(8)
 
     new OpenAction(
@@ -27,7 +28,8 @@ class OpenActionTest extends AnyFlatSpec with Matchers {
       () => Some((3, 4))
     ).perform()
 
-    val actualImage = model.imageGrid(TriImageCoords(3, 4))
+    val actualImage = model
+      .imageGrid(TriImageCoords(3, 4))
       .map(_.storage)
       .map(_.toRegularImage(new SimpleStorageFormat))
       .orNull
@@ -44,7 +46,9 @@ class OpenActionTest extends AnyFlatSpec with Matchers {
     val offset = StorageCoords(1, 2)
     storedImage.pasteImage(offset, image)
 
-    val model = TriPaintModel.createNull(new FileSystem.NullArgs(initialImages = Map(file -> storedImage.toBufferedImage)))
+    val model = TriPaintModel.createNull(
+      new FileSystem.NullArgs(initialImages = Map(file -> storedImage))
+    )
     model.imageGrid.setImageSizeIfEmpty(8)
 
     new OpenAction(
@@ -54,7 +58,8 @@ class OpenActionTest extends AnyFlatSpec with Matchers {
       () => Some((3, 4))
     ).perform()
 
-    val actualImage = model.imageGrid(TriImageCoords(3, 4))
+    val actualImage = model
+      .imageGrid(TriImageCoords(3, 4))
       .map(_.storage)
       .map(_.toRegularImage(new SimpleStorageFormat))
       .orNull

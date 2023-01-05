@@ -57,17 +57,18 @@ class ImagePool extends Listenable[ImagePoolListener] {
     } else true
   }
 
-  def save(image: ImageStorage, saver: ImageSaverToFile, fileSystem: FileSystem): Boolean = {
+  def save(image: ImageStorage, fileSystem: FileSystem): Boolean = {
     val success = (locationOf(image), saveInfoFor(image)) match {
       case (Some(loc), Some(info)) =>
-        val oldImage = fileSystem.readImage(loc.file).map(RegularImage.fromBufferedImage)
-        val newImage = saver.overwritePartOfImage(image, info.format, loc.offset, oldImage)
-        fileSystem.writeImage(newImage.toBufferedImage, loc.file)
+        val oldImage = fileSystem.readImage(loc.file)
+        val newImage =
+          ImageSaverToFile.overwritePartOfImage(image, info.format, loc.offset, oldImage)
+        fileSystem.writeImage(newImage, loc.file)
       case _ =>
         false
     }
 
-    if (success) notifyListeners(_.onImageSaved(image, saver))
+    if (success) notifyListeners(_.onImageSaved(image))
     success
   }
 
@@ -84,8 +85,7 @@ class ImagePool extends Listenable[ImagePoolListener] {
     if (contains(location)) Success(get(location))
     else {
       fileSystem.readImage(location.file) match {
-        case Some(storedImage) =>
-          val regularImage = RegularImage.fromBufferedImage(storedImage)
+        case Some(regularImage) =>
           val image =
             ImageStorage.fromRegularImage(regularImage, location.offset, format, imageSize)
           image.foreach(im => {

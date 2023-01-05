@@ -1,19 +1,30 @@
 package com.martomate.tripaint.infrastructure
 
+import com.martomate.tripaint.model.image.RegularImage
+import com.martomate.tripaint.util.{EventDispatcher, Tracker}
+
 import java.awt.image.BufferedImage
 import java.io.{File, IOException}
 import scala.util.Try
 
 class FileSystem private (imageIO: ImageIOWrapper) {
+  import FileSystem.Event.*
+
+  private val dispatcher = new EventDispatcher[FileSystem.Event]
+
+  /** @param tracker the tracker to notify when an event occurs */
+  def trackChanges(tracker: Tracker[FileSystem.Event]): Unit = dispatcher.track(tracker)
 
   /** @return Some(image) if it exists, None otherwise */
-  def readImage(file: File): Option[BufferedImage] = {
-    Try(imageIO.read(file)).toOption
+  def readImage(file: File): Option[RegularImage] = {
+    Try(imageIO.read(file)).toOption.map(RegularImage.fromBufferedImage)
   }
 
   /** @return true if the format is supported and the image was written successfully */
-  def writeImage(image: BufferedImage, file: File): Boolean = {
-    imageIO.write(image, getExtension(file).toUpperCase, file)
+  def writeImage(image: RegularImage, file: File): Boolean = {
+    val res = imageIO.write(image.toBufferedImage, getExtension(file).toUpperCase, file)
+    dispatcher.notify(ImageWritten(image, file))
+    res
   }
 
   private def getExtension(file: File): String =
@@ -22,7 +33,7 @@ class FileSystem private (imageIO: ImageIOWrapper) {
 
 object FileSystem {
   class NullArgs(
-      val initialImages: Map[File, BufferedImage] = Map.empty,
+      val initialImages: Map[File, RegularImage] = Map.empty,
       val supportedImageFormats: Set[String] = Set("png", "jpg")
   )
 
@@ -33,6 +44,9 @@ object FileSystem {
     val imageIO = new NullImageIO(args.initialImages, allSupportedFormats)
     new FileSystem(imageIO)
   }
+
+  enum Event:
+    case ImageWritten(image: RegularImage, file: File)
 }
 
 private sealed trait ImageIOWrapper {
@@ -50,13 +64,13 @@ private class RealImageIO extends ImageIOWrapper {
 }
 
 private class NullImageIO(
-    initialImages: Map[File, BufferedImage],
+    initialImages: Map[File, RegularImage],
     supportedFileFormats: Set[String]
 ) extends ImageIOWrapper {
-  private var images: Map[File, BufferedImage] = initialImages.view.mapValues(deepCopy).toMap
+  private var images: Map[File, RegularImage] = initialImages.view.mapValues(deepCopy).toMap
 
   override def read(file: File): BufferedImage = images.get(file) match {
-    case Some(image) => deepCopy(image)
+    case Some(image) => image.toBufferedImage
     case None        => throw new IOException("Can't read input file!")
   }
 
@@ -64,13 +78,10 @@ private class NullImageIO(
     if (!supportedFileFormats.contains(formatName.toLowerCase)) {
       return false
     }
-    images += file -> deepCopy(image)
+    images += file -> RegularImage.fromBufferedImage(image)
     true
   }
 
-  private def deepCopy(bi: BufferedImage): BufferedImage = {
-    val cm = bi.getColorModel
-    val raster = bi.copyData(null)
-    new BufferedImage(cm, raster, cm.isAlphaPremultiplied, null)
-  }
+  private def deepCopy(bi: RegularImage): RegularImage =
+    RegularImage.fromBufferedImage(bi.toBufferedImage)
 }

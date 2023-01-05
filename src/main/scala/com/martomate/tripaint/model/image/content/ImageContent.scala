@@ -33,7 +33,7 @@ class ImageContent(val coords: TriImageCoords, init_image: ImageStorage)
 
   def tellListenersAboutBigChange(): Unit = notifyListeners(_.onImageChangedALot())
 
-  def onImageSaved(image: ImageStorage, saver: ImageSaverToFile): Unit = {
+  def onImageSaved(image: ImageStorage): Unit = {
     if (image == _image) {
       _changed.value = false
     }

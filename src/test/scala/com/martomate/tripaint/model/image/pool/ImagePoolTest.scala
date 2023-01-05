@@ -7,11 +7,12 @@ import com.martomate.tripaint.model.image.format.{SimpleStorageFormat, StorageFo
 import com.martomate.tripaint.model.image.save.ImageSaverToFile
 import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.model.image.{RegularImage, SaveLocation, pool}
+import com.martomate.tripaint.util.Tracker
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
-import scalafx.scene.paint.{Color => FXColor}
+import scalafx.scene.paint.Color as FXColor
 
 import java.io.File
 import scala.util.{Failure, Success}
@@ -22,7 +23,7 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
 
   "save" should "return false if the image doesn't exist" in {
     val image = ImageStorage.fromBGColor(Color.Black, 2)
-    new ImagePool().save(image, null, null) shouldBe false
+    new ImagePool().save(image, null) shouldBe false
   }
 
   it should "return false if the saver reports failure" in {
@@ -35,7 +36,7 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     f.move(image, location, info)
 
     val fs = FileSystem.createNull(new FileSystem.NullArgs(supportedImageFormats = Set()))
-    f.save(image, new ImageSaverToFile, fs) shouldBe false
+    f.save(image, fs) shouldBe false
   }
 
   it should "notify listeners and return true if the saver reports success" in {
@@ -49,10 +50,8 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     f.addListener(listener)
     f.move(image, location, info)
 
-    val saver = new ImageSaverToFile
-
-    f.save(image, saver, FileSystem.createNull()) shouldBe true
-    verify(listener).onImageSaved(image, saver)
+    f.save(image, FileSystem.createNull()) shouldBe true
+    verify(listener).onImageSaved(image)
   }
 
   it should "write image if it does not exist" in {
@@ -65,16 +64,15 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     val imagePool = new ImagePool()
     imagePool.move(image, location, info)
 
-    val saver = new ImageSaverToFile
     val fs = FileSystem.createNull()
+    val tracker = Tracker.withStorage[FileSystem.Event]
+    fs.trackChanges(tracker)
 
-    imagePool.save(image, saver, fs)
+    imagePool.save(image, fs)
 
-    val expectedImage = RegularImage.fill(2, 2, Color.Blue)
-
-    val result = fs.readImage(new File(path))
-    result.isDefined shouldBe true
-    RegularImage.fromBufferedImage(result.get) shouldBe expectedImage
+    tracker.events shouldBe Seq(
+      FileSystem.Event.ImageWritten(image.toRegularImage(format), new File(path))
+    )
   }
 
   it should "overwrite image if it exists and has the same size" in {
@@ -87,18 +85,18 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     val imagePool = new ImagePool()
     imagePool.move(image, location, info)
 
-    val saver = new ImageSaverToFile
+    val existingImage = RegularImage.fill(2, 2, Color.Red)
+    val fs = FileSystem.createNull(
+      new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage))
+    )
+    val tracker = Tracker.withStorage[FileSystem.Event]
+    fs.trackChanges(tracker)
 
-    val existingImage = RegularImage.fill(2, 2, Color.Red).toBufferedImage
-    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage)))
+    imagePool.save(image, fs)
 
-    imagePool.save(image, saver, fs)
-
-    val expectedImage = RegularImage.fill(2, 2, Color.Blue)
-
-    val result = fs.readImage(new File(path))
-    result.isDefined shouldBe true
-    RegularImage.fromBufferedImage(result.get) shouldBe expectedImage
+    tracker.events shouldBe Seq(
+      FileSystem.Event.ImageWritten(image.toRegularImage(format), new File(path))
+    )
   }
 
   it should "overwrite part of image if there already exists a bigger image" in {
@@ -112,19 +110,19 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     val imagePool = new ImagePool()
     imagePool.move(image, location, info)
 
-    val saver = new ImageSaverToFile
+    val existingImage = RegularImage.fill(3, 5, Color.Red)
+    val fs = FileSystem.createNull(
+      new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage))
+    )
+    val tracker = Tracker.withStorage[FileSystem.Event]
+    fs.trackChanges(tracker)
 
-    val existingImage = RegularImage.fill(3, 5, Color.Red).toBufferedImage
-    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage)))
-
-    imagePool.save(image, saver, fs)
+    imagePool.save(image, fs)
 
     val expectedImage = RegularImage.fill(3, 5, Color.Red)
     expectedImage.pasteImage(offset, RegularImage.fill(2, 2, Color.Blue))
 
-    val result = fs.readImage(new File(path))
-    result.isDefined shouldBe true
-    RegularImage.fromBufferedImage(result.get) shouldBe expectedImage
+    tracker.events shouldBe Seq(FileSystem.Event.ImageWritten(expectedImage, new File(path)))
   }
 
   it should "overwrite part of image if there already exists an image even if it is too small" in {
@@ -138,20 +136,20 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     val imagePool = new ImagePool()
     imagePool.move(image, location, info)
 
-    val saver = new ImageSaverToFile
+    val existingImage = RegularImage.fill(3, 2, Color.Red)
+    val fs = FileSystem.createNull(
+      new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage))
+    )
+    val tracker = Tracker.withStorage[FileSystem.Event]
+    fs.trackChanges(tracker)
 
-    val existingImage = RegularImage.fill(3, 2, Color.Red).toBufferedImage
-    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage)))
+    imagePool.save(image, fs)
 
-    imagePool.save(image, saver, fs)
-
-    val expectedImage = RegularImage.fill(3, 4, Color.Black)
+    val expectedImage = RegularImage.ofSize(3, 4)
     expectedImage.pasteImage(StorageCoords(0, 0), RegularImage.fill(3, 2, Color.Red))
     expectedImage.pasteImage(offset, RegularImage.fill(2, 2, Color.Blue))
 
-    val result = fs.readImage(new File(path))
-    result.isDefined shouldBe true
-    RegularImage.fromBufferedImage(result.get) shouldBe expectedImage
+    tracker.events shouldBe Seq(FileSystem.Event.ImageWritten(expectedImage, new File(path)))
   }
 
   "locationOf" should "return None if the image doesn't exist" in {
@@ -198,9 +196,9 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
 
     val image = ImageStorage.fromBGColor(FXColor.Orange, imageSize)
     val regularImage = image.toRegularImage(storageFormat)
-    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map(
-      file -> regularImage.toBufferedImage
-    )))
+    val fs = FileSystem.createNull(
+      new FileSystem.NullArgs(initialImages = Map(file -> regularImage))
+    )
 
     val pool = new ImagePool()
 
@@ -223,9 +221,9 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
 
     val storedImage = RegularImage.ofSize(imageSize + offset.x, imageSize + offset.y)
     storedImage.pasteImage(offset, regularImage)
-    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map(
-      file -> storedImage.toBufferedImage
-    )))
+    val fs = FileSystem.createNull(
+      new FileSystem.NullArgs(initialImages = Map(file -> storedImage))
+    )
 
     val pool = new ImagePool()
 

@@ -54,7 +54,7 @@ class ImageContentTest extends AnyFlatSpec with Matchers {
     pool.addListener(f)
 
     image.update(TriangleCoords(0, 0), Color.Blue)
-    pool.save(image, new ImageSaverToFile, FileSystem.createNull())
+    pool.save(image, FileSystem.createNull())
 
     f.changed shouldBe false
   }

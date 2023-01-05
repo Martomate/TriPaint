@@ -54,7 +54,7 @@ class RegularImage private (val width: Int, val height: Int, private val pixels:
     pixels
       .grouped(width)
       .map(_.map(Integer.toHexString).mkString(", "))
-      .mkString("\n")
+      .mkString("RegularImage(\n", "\n", "\n)")
   }
 }
 

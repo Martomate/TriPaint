@@ -25,8 +25,7 @@ class ImageSaverToFileTest extends AnyFlatSpec with Matchers {
     val expectedImage = RegularImage.fill(storage.imageSize, storage.imageSize, Color.Blue)
     expectedImage.pasteImage(StorageCoords(0, 0), storage.toRegularImage(format))
 
-    val saver = new ImageSaverToFile
-    val storedImage = saver.overwritePartOfImage(storage, format, location.offset, None)
+    val storedImage = ImageSaverToFile.overwritePartOfImage(storage, format, location.offset, None)
 
     storedImage shouldBe expectedImage
   }
@@ -42,9 +41,8 @@ class ImageSaverToFileTest extends AnyFlatSpec with Matchers {
 
     val image = ImageStorage.fromBGColor(Color.Cyan, 4)
 
-    val saver = new ImageSaverToFile
-
-    val storedImage = saver.overwritePartOfImage(image, format, offset, Some(existingImage))
+    val storedImage =
+      ImageSaverToFile.overwritePartOfImage(image, format, offset, Some(existingImage))
 
     val expectedImage = RegularImage.fill(8, 8, Color.Yellow)
     expectedImage.pasteImage(offset, RegularImage.fill(4, 4, Color.Cyan))

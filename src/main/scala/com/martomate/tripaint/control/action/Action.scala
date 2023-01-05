@@ -43,9 +43,9 @@ abstract class Action {
       imageSaveCollisionHandler: ImageSaveCollisionHandler
   ): Boolean = {
     images
-      .filter(im => !model.imagePool.save(im.storage, model.imageSaver, model.fileSystem))
+      .filter(im => !model.imagePool.save(im.storage, model.fileSystem))
       .forall(im =>
-        model.imagePool.save(im.storage, model.imageSaver, model.fileSystem) ||
+        model.imagePool.save(im.storage, model.fileSystem) ||
           saveAs(model, im)(askForSaveFile, askForFileSaveSettings, imageSaveCollisionHandler)
       )
   }
@@ -72,7 +72,7 @@ abstract class Action {
     val info = SaveInfo(settings.format)
 
     if (model.imagePool.move(image.storage, location, info)(imageSaveCollisionHandler)) {
-      val saved = model.imagePool.save(image.storage, model.imageSaver, model.fileSystem)
+      val saved = model.imagePool.save(image.storage, model.fileSystem)
       if (!saved) println("Image could not be saved!!")
       saved
     } else false
