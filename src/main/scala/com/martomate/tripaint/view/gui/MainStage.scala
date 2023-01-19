@@ -6,13 +6,13 @@ import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.format.{RecursiveStorageFormat, SimpleStorageFormat}
 import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.view.image.ImageGridPane
-import com.martomate.tripaint.view._
+import com.martomate.tripaint.view.*
 import scalafx.application.JFXApp3.PrimaryStage
 import scalafx.scene.Scene
 import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.control.ButtonBar.ButtonData
-import scalafx.scene.control._
-import scalafx.scene.layout.{AnchorPane, BorderPane, VBox}
+import scalafx.scene.control.*
+import scalafx.scene.layout.{AnchorPane, BorderPane, TilePane, VBox}
 import scalafx.scene.paint.Color
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
@@ -27,10 +27,11 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
 
   private val buttons = new MainStageButtons(controls)
 
-  private val menuBar: TheMenuBar = new TheMenuBar(buttons)
-  private val toolBar: TheToolBar = new TheToolBar(buttons)
-  private val toolBox: ToolBox = new ToolBox
-  private val imageTabs: ImageTabs = new ImageTabs(controls, model)
+  private val menuBar: MenuBar = TheMenuBar.create(buttons)
+  private val toolBar: ToolBar = TheToolBar.create(buttons)
+  private val toolBox: TilePane = ToolBox.create(EditMode.modes)
+  private val imageTabs: TilePane =
+    ImageTabs.fromImagePool(model.imageGrid, model.imagePool, controls.requestImageRemoval)
   private val colorBox: VBox = makeColorBox()
 
   private var currentFolder: Option[File] = None

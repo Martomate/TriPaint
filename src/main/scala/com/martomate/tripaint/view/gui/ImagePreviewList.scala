@@ -9,22 +9,28 @@ import scalafx.scene.image.ImageView
 import scalafx.scene.layout.HBox
 import scalafx.scene.paint.Color
 
-class ImagePreviewList(images: Seq[ImageContent], previewSize: Int, imagePool: ImagePool)
-    extends ScrollPane {
-  private val snapshotParams = new SnapshotParameters
-  snapshotParams.fill = Color.Transparent
+object ImagePreviewList:
+  def fromImagePool(images: Seq[ImageContent], previewSize: Int, imagePool: ImagePool): ScrollPane =
+    val imageViews = for im <- images yield makeImagePreview(im, previewSize, imagePool)
 
-  private val imageViews = images.map(im => makeImageView(im, previewSize))
+    val scrollPane = new ScrollPane()
+    scrollPane.maxWidth = previewSize * 5
+    scrollPane.content = new HBox(children = imageViews: _*)
+    scrollPane.minViewportHeight = previewSize * Math.sqrt(3) / 2
+    scrollPane
 
-  maxWidth = previewSize * 5
-  content = new HBox(children = imageViews: _*)
-  minViewportHeight = previewSize * Math.sqrt(3) / 2
+  private def makeImagePreview(
+      content: ImageContent,
+      previewSize: Int,
+      imagePool: ImagePool
+  ): ImageView =
+    val preview = new TriImageForPreview(content, previewSize)
+    val tooltip = TriImageTooltip.fromImagePool(content, imagePool)
 
-  private def makeImageView(content: ImageContent, previewWidth: Double): ImageView = {
-    val preview: TriImageForPreview = new TriImageForPreview(content, previewWidth)
+    val snapshotParams = new SnapshotParameters
+    snapshotParams.fill = Color.Transparent
+
     val view = new ImageView
     view.image = preview.toImage(snapshotParams)
-    Tooltip.install(view, new TriImageTooltip(content, imagePool))
+    Tooltip.install(view, tooltip)
     view
-  }
-}

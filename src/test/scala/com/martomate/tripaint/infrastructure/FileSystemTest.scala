@@ -105,4 +105,74 @@ class FileSystemTest extends AnyFlatSpec with Matchers {
 
     tracker.events shouldBe Seq(FileSystem.Event.ImageWritten(image, file))
   }
+
+  "null version" should "return no image when reading by default" in {
+    FileSystem.createNull().readImage(new File("file.png")) shouldBe None
+  }
+
+  it should "return the correct pre-configured image when reading" in {
+    val image = RegularImage.fill(3, 4, Color.Cyan)
+    val fs = FileSystem.createNull(
+      new FileSystem.NullArgs(
+        initialImages = Map(
+          new File("image.png") -> image
+        )
+      )
+    )
+    fs.readImage(new File("image.png")) shouldBe Some(image)
+    fs.readImage(new File("something_else.png")) shouldBe None
+  }
+
+  it should "return true after successfully writing an image" in {
+    val image = RegularImage.fill(3, 4, Color.Cyan)
+    FileSystem.createNull().writeImage(image, new File("a.png")) shouldBe true
+  }
+
+  it should "notify trackers after successfully writing an image" in {
+    val image = RegularImage.fill(3, 4, Color.Cyan)
+
+    val fs = FileSystem.createNull()
+    val tracker = Tracker.withStorage[FileSystem.Event]
+    fs.trackChanges(tracker)
+
+    fs.writeImage(image, new File("a.png"))
+
+    tracker.events shouldBe Seq(FileSystem.Event.ImageWritten(image, new File("a.png")))
+  }
+
+  it should "return false if the image cannot be written" in {
+    val image = RegularImage.fill(3, 4, Color.Cyan)
+
+    val config = new FileSystem.NullArgs(supportedImageFormats = Set("jpg", "gif"))
+    val fs = FileSystem.createNull(config)
+
+    fs.writeImage(image, new File("a.png")) shouldBe false
+  }
+
+  it should "not notify trackers after failing to write an image" in {
+    val image = RegularImage.fill(3, 4, Color.Cyan)
+
+    val config = new FileSystem.NullArgs(supportedImageFormats = Set("jpg", "gif"))
+    val fs = FileSystem.createNull(config)
+    val tracker = Tracker.withStorage[FileSystem.Event]
+    fs.trackChanges(tracker)
+
+    fs.writeImage(image, new File("a.png"))
+
+    tracker.events shouldBe Seq()
+  }
+
+  it should "overwrite existing images" in {
+    val existingImage = RegularImage.fill(3, 4, Color.Yellow)
+    val newImage = RegularImage.fill(3, 4, Color.Cyan)
+
+    val config = new FileSystem.NullArgs(initialImages = Map(new File("a.png") -> existingImage))
+    val fs = FileSystem.createNull(config)
+    val tracker = Tracker.withStorage[FileSystem.Event]
+    fs.trackChanges(tracker)
+
+    fs.writeImage(newImage, new File("a.png")) shouldBe true
+
+    tracker.events shouldBe Seq(FileSystem.Event.ImageWritten(newImage, new File("a.png")))
+  }
 }

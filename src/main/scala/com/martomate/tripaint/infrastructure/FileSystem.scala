@@ -22,9 +22,9 @@ class FileSystem private (imageIO: ImageIOWrapper) {
 
   /** @return true if the format is supported and the image was written successfully */
   def writeImage(image: RegularImage, file: File): Boolean = {
-    val res = imageIO.write(image.toBufferedImage, getExtension(file).toUpperCase, file)
-    dispatcher.notify(ImageWritten(image, file))
-    res
+    val success = imageIO.write(image.toBufferedImage, getExtension(file).toUpperCase, file)
+    if success then dispatcher.notify(ImageWritten(image, file))
+    success
   }
 
   private def getExtension(file: File): String =

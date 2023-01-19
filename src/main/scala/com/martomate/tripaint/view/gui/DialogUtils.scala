@@ -13,51 +13,45 @@ import scalafx.beans.property.StringProperty
 import scalafx.collections.ObservableBuffer
 import scalafx.geometry.Orientation
 import scalafx.scene.Node
-import scalafx.scene.control._
+import scalafx.scene.control.*
 import scalafx.scene.image.{Image, ImageView, PixelFormat, WritableImage}
-import scalafx.scene.layout._
+import scalafx.scene.layout.*
 import scalafx.util.StringConverter
 
 import java.io.{File, FileInputStream, FileNotFoundException, IOException}
-import scala.util.Try
+import scala.util.{Success, Try}
 
 object DialogUtils {
   private def isTrue(pred: => Boolean): Boolean = Try(pred).getOrElse(false)
 
   def customIntRestriction(pred: Int => Boolean): String => Boolean = s =>
     isTrue(pred(s.toInt)) || isTrue(pred((s + "1").toInt))
-  def customDoubleRestriction(pred: Double => Boolean): String => Boolean = s =>
-    isTrue(pred(s.toDouble)) || isTrue(pred((s + "1").toDouble))
 
-  val doubleRestriction: String => Boolean = customDoubleRestriction(_ => true)
   val intRestriction: String => Boolean = customIntRestriction(_ => true)
   val uintRestriction: String => Boolean = customIntRestriction(_ >= 0)
 
-  def doubleTF: TextField = makeTF(doubleRestriction)
   def intTF: TextField = makeTF(intRestriction)
   def uintTF: TextField = makeTF(uintRestriction)
 
-  def makeTF(restriction: String => Boolean): TextField = {
+  def makeTF(restriction: String => Boolean): TextField =
     val tf = new TextField
     restrictTextField(tf, restriction)
     tf
-  }
 
-  def restrictTextField(tf: TextField, contentAllowed: String => Boolean): Unit = {
+  private def restrictTextField(tf: TextField, contentAllowed: String => Boolean): Unit =
     tf.text.onChange((ob, oldVal, newVal) => {
-      ob.asInstanceOf[StringProperty].value = if (contentAllowed(newVal)) newVal else oldVal
+      ob.asInstanceOf[StringProperty].value = if contentAllowed(newVal) then newVal else oldVal
     })
-  }
 
-  def makeGridPane(content: Seq[Seq[Node]]): GridPane = {
+  def makeGridPane(content: Seq[Seq[Node]]): GridPane =
     val gridPane = new GridPane
     gridPane.vgap = 10
     gridPane.hgap = 10
-    for (i <- content.indices)
-      for (j <- content(i).indices)
-        gridPane.add(content(i)(j), j, i)
+    for
+      i <- content.indices
+      j <- content(i).indices
+    do gridPane.add(content(i)(j), j, i)
     gridPane
-  }
 
   def getValueFromCustomDialog[R](
       title: String,
@@ -68,22 +62,26 @@ object DialogUtils {
       resultConverter: ButtonType => R,
       nodeWithFocus: Node = null,
       buttons: Seq[ButtonType] = Seq(ButtonType.OK, ButtonType.Cancel)
-  ): Option[R] = {
+  ): Option[R] =
     val dialog = new Dialog[R]
     dialog.title = title
     dialog.headerText = headerText
     dialog.contentText = contentText
     dialog.graphic = graphic
+
     val contentBox = new VBox(content: _*)
     contentBox.setSpacing(10)
+
     dialog.dialogPane().setContent(contentBox)
     dialog.resultConverter = resultConverter
-    for (b <- buttons) dialog.dialogPane().getButtonTypes add b
-    if (nodeWithFocus != null)
+
+    for b <- buttons do dialog.dialogPane().getButtonTypes.add(b)
+
+    if nodeWithFocus != null then
       dialog.setOnShowing(_ => Platform.runLater(nodeWithFocus.requestFocus()))
+
     val result = dialog.delegate.showAndWait()
-    if (result.isPresent) Some(result.get) else None
-  }
+    if result.isPresent then Some(result.get) else None
 
   def askForXY(title: String, headerText: String): Option[(Int, Int)] = {
     val xCoordTF = DialogUtils.intTF
@@ -95,10 +93,10 @@ object DialogUtils {
       val xt = xCoordTF.text()
       val yt = yCoordTF.text()
 
-      for {
-        xOffset <- Try(if (xt != "") xt.toInt else 0)
-        yOffset <- Try(if (yt != "") yt.toInt else 0)
-      } yield (xOffset, yOffset)
+      for
+        xOffset <- Try(if xt != "" then xt.toInt else 0)
+        yOffset <- Try(if yt != "" then yt.toInt else 0)
+      yield (xOffset, yOffset)
     }
 
     getValueFromCustomDialog[(Int, Int)](
@@ -144,10 +142,10 @@ object DialogUtils {
       val yt = yCoordTF.text()
       val format = formatChooser.selectionModel.value.getSelectedItem
 
-      for {
-        xOffset <- Try(if (xt != "") xt.toInt else 0)
-        yOffset <- Try(if (yt != "") yt.toInt else 0)
-      } yield FileOpenSettings(StorageCoords(xOffset, yOffset), format)
+      for
+        xOffset <- Try(if xt != "" then xt.toInt else 0)
+        yOffset <- Try(if yt != "" then yt.toInt else 0)
+      yield FileOpenSettings(StorageCoords(xOffset, yOffset), format)
     }
 
     val previewPane = new Pane
@@ -155,7 +153,7 @@ object DialogUtils {
     previewPane.setMaxSize(previewWidth, previewHeight)
 
     {
-      import javafx.scene.layout._
+      import javafx.scene.layout.*
       import javafx.scene.paint.Color
       val stroke = new BorderStroke(
         Color.RED,
@@ -171,14 +169,14 @@ object DialogUtils {
     val previewStack = new Pane
     previewStack.delegate.getChildren.addAll(wholeImage, previewPane)
 
-    def updatePreviewAction(): Unit = {
-      resultFromInputs() foreach { case FileOpenSettings(StorageCoords(x, y), format) =>
-        previewPane.setLayoutX(x)
-        previewPane.setLayoutY(y)
+    def updatePreviewAction(): Unit =
+      resultFromInputs() match
+        case Success(FileOpenSettings(StorageCoords(x, y), _)) =>
+          previewPane.setLayoutX(x)
+          previewPane.setLayoutY(y)
 
-      // TODO: preview TriImage using the format
-      }
-    }
+        // TODO: preview TriImage using the format
+        case _ =>
 
     updatePreviewAction()
 
@@ -233,10 +231,10 @@ object DialogUtils {
       val yt = yCoordTF.text()
       val format = formatChooser.selectionModel.value.getSelectedItem
 
-      for {
-        xOffset <- Try(if (xt != "") xt.toInt else 0)
-        yOffset <- Try(if (yt != "") yt.toInt else 0)
-      } yield FileSaveSettings(StorageCoords(xOffset, yOffset), format)
+      for
+        xOffset <- Try(if xt != "" then xt.toInt else 0)
+        yOffset <- Try(if yt != "" then yt.toInt else 0)
+      yield FileSaveSettings(StorageCoords(xOffset, yOffset), format)
     }
 
     val previewPane = new StackPane
@@ -253,7 +251,7 @@ object DialogUtils {
     previewPane.children.add(previewBorder)
 
     {
-      import javafx.scene.layout._
+      import javafx.scene.layout.*
       import javafx.scene.paint.Color
       val stroke = new BorderStroke(
         Color.RED,
@@ -265,35 +263,34 @@ object DialogUtils {
     }
 
     val previewStack = new Pane
-    try {
+    try
       val wholeImage = new ImageView(new Image(new FileInputStream(previewFile)))
       previewStack.children.add(wholeImage)
-    } catch {
+    catch
       case _: FileNotFoundException =>
       case _: IOException           =>
-    }
 
     previewStack.delegate.getChildren.add(previewPane)
 
-    def updatePreviewAction(): Unit = {
-      resultFromInputs() foreach { case FileSaveSettings(StorageCoords(x, y), format) =>
-        previewPane.setLayoutX(x)
-        previewPane.setLayoutY(y)
+    def updatePreviewAction(): Unit =
+      resultFromInputs() match
+        case Success(FileSaveSettings(StorageCoords(x, y), format)) =>
+          previewPane.setLayoutX(x)
+          previewPane.setLayoutY(y)
 
-        val saver = ImageSaverToArray.fromSize(imageSize)
-        saver.save(storage, format)
-        previewImage.pixelWriter.setPixels(
-          0,
-          0,
-          imageSize,
-          imageSize,
-          pixelFormat,
-          saver.array,
-          0,
-          imageSize
-        )
-      }
-    }
+          val saver = ImageSaverToArray.fromSize(imageSize)
+          saver.save(storage, format)
+          previewImage.pixelWriter.setPixels(
+            0,
+            0,
+            imageSize,
+            imageSize,
+            pixelFormat,
+            saver.array,
+            0,
+            imageSize
+          )
+        case _ =>
 
     updatePreviewAction()
 
@@ -331,22 +328,20 @@ object DialogUtils {
       contentText: String,
       restriction: String => Boolean,
       stringToValue: String => T
-  ): Option[T] = {
+  ): Option[T] =
     val dialog = new TextInputDialog
     dialog.title = title
     dialog.headerText = headerText
     dialog.contentText = contentText
     dialog.graphic = makeImagePreviewList(images, imagePool)
     DialogUtils.restrictTextField(dialog.editor, restriction)
-    dialog.showAndWait() match {
+    dialog.showAndWait() match
       case Some(str) =>
         val num = stringToValue(str)
         Some(num)
       case None =>
         None
-    }
-  }
 
   def makeImagePreviewList(images: Seq[ImageContent], imagePool: ImagePool): ScrollPane =
-    new ImagePreviewList(images, TriImageForPreview.previewSize, imagePool)
+    ImagePreviewList.fromImagePool(images, TriImageForPreview.previewSize, imagePool)
 }

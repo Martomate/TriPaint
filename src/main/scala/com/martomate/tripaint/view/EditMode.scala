@@ -32,13 +32,11 @@ object EditMode {
 
   def modes: Vector[EditMode] = _modes
 
-  private val _currentMode: ReadOnlyObjectWrapper[EditMode] = new ReadOnlyObjectWrapper(null, null)
+  private val _currentMode = new ReadOnlyObjectWrapper[EditMode](null, null)
 
   private def currentMode_=(mode: EditMode): Unit = _currentMode.value = mode
 
   def currentMode: EditMode = _currentMode.value
-
-  def currentModeProperty: ReadOnlyObjectProperty[EditMode] = _currentMode.readOnlyProperty
 
   val Select = new EditMode("select", "Select", new KeyCodeCombination(KeyCode.S))
   val Draw = new EditMode("draw", "Draw", new KeyCodeCombination(KeyCode.P))

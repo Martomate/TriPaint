@@ -4,7 +4,9 @@ import com.martomate.tripaint.view.EditMode
 import scalafx.geometry.Orientation
 import scalafx.scene.layout.TilePane
 
-class ToolBox extends TilePane {
-  orientation = Orientation.Vertical
-  children = EditMode.modes.map(_.toolboxButton)
-}
+object ToolBox:
+  def create(editModes: Seq[EditMode]): TilePane =
+    val pane = new TilePane
+    pane.orientation = Orientation.Vertical
+    pane.children = editModes.map(_.toolboxButton)
+    pane

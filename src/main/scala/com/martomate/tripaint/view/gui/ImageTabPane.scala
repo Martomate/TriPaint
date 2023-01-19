@@ -2,6 +2,7 @@ package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.pool.ImagePool
 import com.martomate.tripaint.view.TriPaintViewListener
 import com.martomate.tripaint.view.image.TriImageForPreview
 import scalafx.geometry.Pos
@@ -9,51 +10,43 @@ import scalafx.scene.control.{Button, ToggleButton}
 import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout.StackPane
 
-class ImageTabPane(val image: ImageContent, control: TriPaintViewListener, model: TriPaintModel)
-    extends StackPane {
-  private val preview = new TriImageForPreview(image, TriImageForPreview.previewSize)
+object ImageTabPane:
+  def apply(
+      image: ImageContent,
+      requestImageRemoval: ImageContent => Unit,
+      imagePool: ImagePool
+  ): StackPane =
+    val preview = new TriImageForPreview(image, TriImageForPreview.previewSize)
 
-  private val closeButton = new Button {
-    text = "X"
-    visible = false
-    alignmentInParent = Pos.TopRight
+    val closeButton = new Button {
+      text = "X"
+      visible = false
+      alignmentInParent = Pos.TopRight
 
-    onAction = e => {
-      control.requestImageRemoval(image)
+      onAction = _ => requestImageRemoval(image)
     }
-  }
 
-  private val previewButton = new ToggleButton {
-    this.graphic = preview
-    this.tooltip = new TriImageTooltip(image, model.imagePool)
-    this.selected <==> image.editableProperty
-  }
+    val previewButton = new ToggleButton {
+      this.graphic = preview
+      this.tooltip = TriImageTooltip.fromImagePool(image, imagePool)
+      this.selected <==> image.editableProperty
+    }
 
-  private val starView: ImageView = makeStarView()
+    val starView: ImageView = makeStarView(image)
 
-  children add previewButton
-  children add closeButton
-  children add starView
+    val stackPane = new StackPane
 
-  onMouseEntered = _ => closeButton.visible = true
-  onMouseExited = _ => closeButton.visible = false
+    stackPane.children.addAll(previewButton, closeButton, starView)
 
-  private def makeStarView(): ImageView = {
+    stackPane.onMouseEntered = _ => closeButton.visible = true
+    stackPane.onMouseExited = _ => closeButton.visible = false
+
+    stackPane
+
+  private def makeStarView(image: ImageContent): ImageView =
     val star: ImageView = new ImageView
     star.image = new Image("/icons/star.png")
     star.alignmentInParent = Pos.TopLeft
     star.mouseTransparent = true
     star.visible <== image.changedProperty
     star
-  }
-}
-
-object ImageTabPane {
-  def apply(
-      image: ImageContent,
-      control: TriPaintViewListener,
-      model: TriPaintModel
-  ): ImageTabPane = {
-    new ImageTabPane(image, control, model)
-  }
-}
