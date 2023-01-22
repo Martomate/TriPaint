@@ -1,20 +1,31 @@
 package com.martomate.tripaint.view.gui
 
-import scalafx.scene.control.{Separator, ToolBar}
+import com.martomate.tripaint.view.MenuBarAction
+import scalafx.scene.control.{Button, Separator, ToolBar, Tooltip}
+import scalafx.scene.image.ImageView
 
 object TheToolBar:
   def create(controls: MainStageButtons): ToolBar =
     val toolBar = new ToolBar
     toolBar.items = Seq(
-      controls.New.button,
-      controls.Open.button,
-      controls.Save.button,
+      makeButton(controls.New),
+      makeButton(controls.Open),
+      makeButton(controls.Save),
       new Separator,
-      controls.Cut.button,
-      controls.Copy.button,
-      controls.Paste.button,
+      makeButton(controls.Cut),
+      makeButton(controls.Copy),
+      makeButton(controls.Paste),
       new Separator,
-      controls.Undo.button,
-      controls.Redo.button
+      makeButton(controls.Undo),
+      makeButton(controls.Redo)
     )
     toolBar
+
+  private def makeButton(action: MenuBarAction): Button =
+    val item =
+      if action.imagePath == null
+      then new Button(action.text)
+      else new Button(null, new ImageView("icons/" + action.imagePath + ".png"))
+    item.onAction = _ => action.onAction()
+    item.tooltip = new Tooltip(action.text)
+    item

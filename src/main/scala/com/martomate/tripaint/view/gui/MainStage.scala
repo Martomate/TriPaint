@@ -95,7 +95,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
   }
 
   override def askForFileSaveSettings(file: File, image: ImageContent): Option[FileSaveSettings] = {
-    DialogUtils.askForFileSaveSettings(
+    AskForFileSaveSettingsDialog.askForFileSaveSettings(
       image.storage,
       file,
       Seq(
@@ -116,7 +116,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
   }
 
   override def askForWhereToPutImage(): Option[(Int, Int)] = {
-    DialogUtils.askForXY(
+    AskForXYDialog.askForXY(
       title = "New image",
       headerText = "Please enter where it should be placed."
     )
@@ -125,11 +125,11 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
   override def askForBlurRadius(): Option[Int] = {
     DialogUtils.getValueFromDialog[Int](
       model.imagePool,
-      model.imageGrid.selectedImages.toSeq,
+      model.imageGrid.selectedImages,
       "Blur images",
       "How much should the images be blurred?",
       "Radius:",
-      DialogUtils.uintRestriction,
+      TextFieldRestriction.uintRestriction,
       str => Try(str.toInt).getOrElse(0)
     )
   }
@@ -137,11 +137,11 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
   override def askForMotionBlurRadius(): Option[Int] = {
     DialogUtils.getValueFromDialog[Int](
       model.imagePool,
-      model.imageGrid.selectedImages.toSeq,
+      model.imageGrid.selectedImages,
       "Motion blur images",
       "How much should the images be motion blurred?",
       "Radius:",
-      DialogUtils.uintRestriction,
+      TextFieldRestriction.uintRestriction,
       str => Try(str.toInt).getOrElse(0)
     )
   }
@@ -154,7 +154,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     getValueFromCustomDialog[(Color, Color)](
       title = "Fill images randomly",
       headerText = "Which color-range should be used?",
-      graphic = DialogUtils.makeImagePreviewList(images.toSeq, model.imagePool),
+      graphic = DialogUtils.makeImagePreviewList(images, model.imagePool),
       content = Seq(
         makeGridPane(
           Seq(
@@ -200,7 +200,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
       width: Int,
       height: Int
   ): Option[FileOpenSettings] = {
-    DialogUtils.askForFileOpenSettings(
+    AskForFileOpenSettingsDialog.askForFileOpenSettings(
       imagePreview = (file, width, height),
       Seq(
         new SimpleStorageFormat -> "Simple format (old)",

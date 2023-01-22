@@ -1,45 +1,47 @@
 package com.martomate.tripaint.view.gui
 
+import com.martomate.tripaint.view.MenuBarAction
 import scalafx.scene.control.{Menu, MenuBar, MenuItem, SeparatorMenuItem}
+import scalafx.scene.image.ImageView
 
 object TheMenuBar:
   def create(controls: MainStageButtons): MenuBar =
     val menu_file = makeMenu(
       "File",
-      controls.New.menuItem,
-      controls.Open.menuItem,
-      controls.OpenHexagon.menuItem,
+      makeMenuItem(controls.New),
+      makeMenuItem(controls.Open),
+      makeMenuItem(controls.OpenHexagon),
       new SeparatorMenuItem,
-      controls.Save.menuItem,
-      controls.SaveAs.menuItem,
+      makeMenuItem(controls.Save),
+      makeMenuItem(controls.SaveAs),
       new SeparatorMenuItem,
-      controls.Exit.menuItem
+      makeMenuItem(controls.Exit)
     )
 
     val menu_edit = makeMenu(
       "Edit",
-      controls.Undo.menuItem,
-      controls.Redo.menuItem,
+      makeMenuItem(controls.Undo),
+      makeMenuItem(controls.Redo),
       new SeparatorMenuItem,
-      controls.Cut.menuItem,
-      controls.Copy.menuItem,
-      controls.Paste.menuItem
+      makeMenuItem(controls.Cut),
+      makeMenuItem(controls.Copy),
+      makeMenuItem(controls.Paste)
     )
 
     val menu_organize =
       makeMenu(
         "Organize",
-        controls.Move.menuItem,
-        controls.Scale.menuItem,
-        controls.Rotate.menuItem
+        makeMenuItem(controls.Move),
+        makeMenuItem(controls.Scale),
+        makeMenuItem(controls.Rotate)
       )
 
     val menu_effects = makeMenu(
       "Effects",
-      controls.Blur.menuItem,
-      controls.MotionBlur.menuItem,
-      controls.RandomNoise.menuItem,
-      controls.Scramble.menuItem
+      makeMenuItem(controls.Blur),
+      makeMenuItem(controls.MotionBlur),
+      makeMenuItem(controls.RandomNoise),
+      makeMenuItem(controls.Scramble)
     )
 
     val menuBar = new MenuBar
@@ -51,3 +53,12 @@ object TheMenuBar:
     val menu = new Menu(text)
     menu.items = menuItems
     menu
+
+  private def makeMenuItem(action: MenuBarAction): MenuItem =
+    val item =
+      if action.imagePath == null
+      then new MenuItem(action.text)
+      else new MenuItem(action.text, new ImageView("icons/" + action.imagePath + ".png"))
+    item.onAction = _ => action.onAction()
+    if (action.accelerator != null) item.accelerator = action.accelerator
+    item
