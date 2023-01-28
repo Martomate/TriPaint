@@ -7,7 +7,7 @@ import com.martomate.tripaint.model.grid.ColorLookup
 class BlurEffect(radius: Int) extends LocalEffect {
   def name: String = "Blur"
 
-  private val radiusSq = radius * radius
+  private val radiusSq = radius.toDouble * radius
 
   override protected def predicate(
       image: ColorLookup,

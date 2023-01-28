@@ -2,6 +2,7 @@ package com.martomate.tripaint.model.image.content
 
 import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.coords.{TriImageCoords, TriangleCoords}
+import com.martomate.tripaint.model.grid.ImageGrid
 import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
 import com.martomate.tripaint.model.image.pool.{ImagePool, SaveInfo}
@@ -20,12 +21,13 @@ class ImageContentTest extends AnyFlatSpec with Matchers {
   "tellListenersAboutBigChange" should "tell the listeners that a lot has changed" in {
     val image = ImageStorage.fromBGColor(Color.Black, 2)
     val f = new ImageContent(TriImageCoords(0, 0), image)
-    val listener = mock[ImageChangeListener]
+    val listener = mock[ImageContent.Event => Unit]
     f.addListener(listener)
 
     f.tellListenersAboutBigChange()
 
-    verify(listener).onImageChangedALot()
+    import ImageContent.Event.*
+    verify(listener).apply(ImageChangedALot)
   }
 
   "changed" should "return false if nothing has happened" in {
@@ -48,10 +50,15 @@ class ImageContentTest extends AnyFlatSpec with Matchers {
     val location = SaveLocation(new File("a.png"))
     val format = new SimpleStorageFormat
     val info = SaveInfo(format)
+
     val pool = new ImagePool()
     pool.move(image, location, info)(null)
+
+    val grid = new ImageGrid(2)
+    pool.addListener(grid)
+
     val f = new ImageContent(TriImageCoords(0, 0), image)
-    pool.addListener(f)
+    grid.set(f)
 
     image.update(TriangleCoords(0, 0), Color.Blue)
     pool.save(image, FileSystem.createNull())

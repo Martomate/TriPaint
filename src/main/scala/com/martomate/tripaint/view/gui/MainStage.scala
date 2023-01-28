@@ -1,6 +1,7 @@
 package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.TriPaintModel
+import com.martomate.tripaint.model.effects.{BlurEffect, MotionBlurEffect, RandomNoiseEffect}
 import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.format.{RecursiveStorageFormat, SimpleStorageFormat}
@@ -123,6 +124,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
   }
 
   override def askForBlurRadius(): Option[Int] = {
+    val selectedImagesCoords = model.imageGrid.selectedImages.map(_.coords)
     DialogUtils.getValueFromDialog[Int](
       model.imagePool,
       model.imageGrid.selectedImages,
@@ -130,11 +132,15 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
       "How much should the images be blurred?",
       "Radius:",
       TextFieldRestriction.uintRestriction,
-      str => Try(str.toInt).getOrElse(0)
+      str => Try(str.toInt).getOrElse(0),
+      Some((radius, grid) =>
+        if radius > 0 then new BlurEffect(radius).action(selectedImagesCoords, grid)
+      )
     )
   }
 
   override def askForMotionBlurRadius(): Option[Int] = {
+    val selectedImagesCoords = model.imageGrid.selectedImages.map(_.coords)
     DialogUtils.getValueFromDialog[Int](
       model.imagePool,
       model.imageGrid.selectedImages,
@@ -142,19 +148,36 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
       "How much should the images be motion blurred?",
       "Radius:",
       TextFieldRestriction.uintRestriction,
-      str => Try(str.toInt).getOrElse(0)
+      str => Try(str.toInt).getOrElse(0),
+      Some((radius, grid) =>
+        if radius > 0 then new MotionBlurEffect(radius).action(selectedImagesCoords, grid)
+      )
     )
   }
 
   override def askForRandomNoiseColors(): Option[(Color, Color)] = {
     val images = model.imageGrid.selectedImages
+    val selectedImagesCoords = model.imageGrid.selectedImages.map(_.coords)
     val loColorPicker = new ColorPicker(Color.Black)
     val hiColorPicker = new ColorPicker(Color.White)
     import DialogUtils._
+
+    val (previewPane, updatePreview) = DialogUtils.makeImagePreviewList(images, model.imagePool)
+
+    def updatePreviewFromInputs(): Unit =
+      val lo = new Color(loColorPicker.value())
+      val hi = new Color(hiColorPicker.value())
+      updatePreview(grid => new RandomNoiseEffect(lo, hi).action(selectedImagesCoords, grid))
+
+    loColorPicker.value.onChange((_, _, _) => updatePreviewFromInputs())
+    hiColorPicker.value.onChange((_, _, _) => updatePreviewFromInputs())
+
+    updatePreviewFromInputs()
+
     getValueFromCustomDialog[(Color, Color)](
       title = "Fill images randomly",
       headerText = "Which color-range should be used?",
-      graphic = DialogUtils.makeImagePreviewList(images, model.imagePool),
+      graphic = previewPane,
       content = Seq(
         makeGridPane(
           Seq(
@@ -181,11 +204,13 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
   }
 
   private def saveBeforeClosingAlert(images: Seq[ImageContent]): Alert = {
+    val (previewPane, _) = DialogUtils.makeImagePreviewList(images, model.imagePool)
+
     val alert = new Alert(AlertType.Confirmation)
     alert.title = "Save before closing?"
     alert.headerText = "Do you want to save " + (if (images.size == 1) "this image"
                                                  else "these images") + " before closing the tab?"
-    alert.graphic = DialogUtils.makeImagePreviewList(images, model.imagePool)
+    alert.graphic = previewPane
 
     alert.buttonTypes = Seq(
       new ButtonType("Save", ButtonData.Yes),
@@ -217,10 +242,12 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
   ): Option[Boolean] = {
     val tri1 = model.imageGrid.images.find(_.storage == newImage).orNull
     val tri2 = model.imageGrid.images.find(_.storage == currentImage).orNull
+    val (previewPane, _) = DialogUtils.makeImagePreviewList(Seq(tri1, tri2), model.imagePool)
+
     val alert = new Alert(AlertType.Confirmation)
     alert.title = "Collision"
     alert.headerText = "The image already exists on the screen. Which one should be used?"
-    alert.graphic = DialogUtils.makeImagePreviewList(Seq(tri1, tri2), model.imagePool)
+    alert.graphic = previewPane
 
     alert.buttonTypes = Seq(
       new ButtonType("Left", ButtonData.Yes),

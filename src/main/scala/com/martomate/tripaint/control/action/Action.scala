@@ -23,11 +23,7 @@ abstract class Action {
       model: TriPaintModel,
       coords: TriImageCoords,
       storage: ImageStorage
-  ): ImageContent = {
-    val image = new ImageContent(coords, storage)
-    model.imagePool.addListener(image)
-    image
-  }
+  ): ImageContent = new ImageContent(coords, storage)
 
   protected def allImages(model: TriPaintModel): Seq[ImageContent] = {
     model.imageGrid.images

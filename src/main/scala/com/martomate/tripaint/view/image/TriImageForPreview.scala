@@ -8,14 +8,12 @@ import scalafx.scene.SnapshotParameters
 import scalafx.scene.image.Image
 import scalafx.scene.layout.Pane
 
-class TriImageForPreview(content: ImageContent, previewWidth: Double)
-    extends Pane
-    with ImageChangeListener:
+class TriImageForPreview(content: ImageContent, previewWidth: Double) extends Pane:
   private def storage: ImageStorage = content.storage
 
   private val canvas: TriImageCanvas = new TriImageCanvas(previewWidth, storage.imageSize)
 
-  content.addListener(this)
+  content.addListener(onImageChanged)
   children.add(canvas)
 
   redraw()
@@ -27,10 +25,13 @@ class TriImageForPreview(content: ImageContent, previewWidth: Double)
     canvas.clearCanvas()
     for c <- storage.allPixels do drawTriangle(c)
 
-  override def onPixelChanged(coords: TriangleCoords, from: Color, to: Color): Unit =
-    drawTriangle(coords)
-
-  override def onImageChangedALot(): Unit = redraw()
+  private def onImageChanged(event: ImageContent.Event): Unit =
+    import ImageContent.Event.*
+    event match
+      case PixelChanged(coords, _, _) =>
+        drawTriangle(coords)
+      case ImageChangedALot =>
+        redraw()
 
   def toImage(params: SnapshotParameters): Image = canvas.snapshot(params, null)
 

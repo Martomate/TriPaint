@@ -22,7 +22,7 @@ class TriImage(val content: ImageContent, init_zoom: Double) extends ImageChange
 
   private val cumulativeImageChange = new CumulativeImageChange
 
-  content.addListener(this)
+  content.addListener(onImageChanged)
   pane.children.add(canvas)
 
   if content.coords.x % 2 != 0 then canvas.rotate() += 180
@@ -69,7 +69,10 @@ class TriImage(val content: ImageContent, init_zoom: Double) extends ImageChange
     canvas.clearCanvas()
     canvas.redraw(storage)
 
-  override def onPixelChanged(coords: TriangleCoords, from: Color, to: Color): Unit =
-    drawTriangle(coords)
-
-  override def onImageChangedALot(): Unit = redraw()
+  override def onImageChanged(event: ImageContent.Event): Unit =
+    import ImageContent.Event.*
+    event match
+      case PixelChanged(coords, _, _) =>
+        drawTriangle(coords)
+      case ImageChangedALot =>
+        redraw()

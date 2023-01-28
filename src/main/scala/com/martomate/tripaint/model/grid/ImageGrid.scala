@@ -1,12 +1,15 @@
 package com.martomate.tripaint.model.grid
 
 import com.martomate.tripaint.model.coords.TriImageCoords
+import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.pool.ImagePoolListener
+import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.util.Listenable
 
 import scala.collection.mutable.ArrayBuffer
 
-class ImageGrid(init_imageSize: Int) extends Listenable[ImageGridListener] {
+class ImageGrid(init_imageSize: Int) extends Listenable[ImageGridListener] with ImagePoolListener {
   private var _imageSize: Int = init_imageSize
   def imageSize: Int = _imageSize
 
@@ -40,6 +43,22 @@ class ImageGrid(init_imageSize: Int) extends Listenable[ImageGridListener] {
       true
     } else false
   }
+
+  def onImageSaved(image: ImageStorage): Unit =
+    for
+      im <- this._images
+      if im.storage == image
+    do im.setImageSaved()
+
+  def onImageReplaced(
+      oldImage: ImageStorage,
+      newImage: ImageStorage,
+      location: SaveLocation
+  ): Unit =
+    for
+      im <- this._images
+      if im.storage == oldImage
+    do im.replaceImage(newImage)
 
   private def onAddImage(image: ImageContent): Unit = notifyListeners(_.onAddImage(image))
 

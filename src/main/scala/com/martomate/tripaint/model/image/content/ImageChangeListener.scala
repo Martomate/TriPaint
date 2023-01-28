@@ -1,7 +1,8 @@
 package com.martomate.tripaint.model.image.content
 
-import com.martomate.tripaint.model.image.storage.ImageStorageListener
+import com.martomate.tripaint.model.Color
+import com.martomate.tripaint.model.coords.TriangleCoords
 
-trait ImageChangeListener extends ImageStorageListener {
-  def onImageChangedALot(): Unit
+trait ImageChangeListener {
+  def onImageChanged(event: ImageContent.Event): Unit
 }

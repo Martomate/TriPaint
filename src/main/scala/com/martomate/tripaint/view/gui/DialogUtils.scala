@@ -1,11 +1,13 @@
 package com.martomate.tripaint.view.gui
 
-import com.martomate.tripaint.model.coords.StorageCoords
+import com.martomate.tripaint.model.coords.{StorageCoords, TriImageCoords}
+import com.martomate.tripaint.model.grid.ImageGrid
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.model.image.pool.ImagePool
 import com.martomate.tripaint.model.image.save.ImageSaverToArray
 import com.martomate.tripaint.model.image.storage.ImageStorage
+import com.martomate.tripaint.util.Listenable
 import com.martomate.tripaint.view.gui.DialogUtils.{getValueFromCustomDialog, makeGridPane}
 import com.martomate.tripaint.view.image.TriImageForPreview
 import com.martomate.tripaint.view.{FileOpenSettings, FileSaveSettings}
@@ -91,14 +93,28 @@ object DialogUtils:
       headerText: String,
       contentText: String,
       restriction: String => Boolean,
-      stringToValue: String => T
+      stringToValue: String => T,
+      refreshPreviewFn: Option[(T, ImageGrid) => Unit] = None
   ): Option[T] =
+    val (previewPane, updatePreview) = makeImagePreviewList(images, imagePool)
+
     val dialog = new TextInputDialog
     dialog.title = title
     dialog.headerText = headerText
     dialog.contentText = contentText
-    dialog.graphic = makeImagePreviewList(images, imagePool)
+    dialog.graphic = previewPane
     RestrictedTextField.restrict(dialog.editor, restriction)
+
+    refreshPreviewFn match
+      case Some(refreshFn) =>
+        dialog.editor.text.onChange((_, _, s) =>
+          if restriction(s) then
+            val value = stringToValue(s)
+            updatePreview(imageGrid => refreshFn(value, imageGrid))
+          else updatePreview(_ => ())
+        )
+      case None =>
+
     dialog.showAndWait() match
       case Some(str) =>
         val num = stringToValue(str)
@@ -106,5 +122,8 @@ object DialogUtils:
       case None =>
         None
 
-  def makeImagePreviewList(images: Seq[ImageContent], imagePool: ImagePool): ScrollPane =
+  def makeImagePreviewList(
+      images: Seq[ImageContent],
+      imagePool: ImagePool
+  ): (ScrollPane, (ImageGrid => Unit) => Unit) =
     ImagePreviewList.fromImagePool(images, TriImageForPreview.previewSize, imagePool)
