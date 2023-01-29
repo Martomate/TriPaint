@@ -2,6 +2,7 @@ package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.coords.{StorageCoords, TriImageCoords}
 import com.martomate.tripaint.model.grid.ImageGrid
+import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
 import com.martomate.tripaint.model.image.pool.ImagePool
@@ -16,10 +17,10 @@ import scalafx.scene.layout.HBox
 import scalafx.scene.paint.Color
 
 object ImagePreviewList:
-  def fromImagePool(
+  def fromImageContent(
       images: Seq[ImageContent],
       previewSize: Int,
-      imagePool: ImagePool
+      locationOfImage: ImageStorage => Option[SaveLocation]
   ): (ScrollPane, (ImageGrid => Unit) => Unit) =
     val imageSize = if images.nonEmpty then images.head.storage.imageSize else 8
 
@@ -33,25 +34,10 @@ object ImagePreviewList:
       val previewImageGrid = new ImageGrid(imageSize)
       for im <- previewImages do previewImageGrid.set(im)
       effect.apply(previewImageGrid)
-      for im <- previewImages yield makeImagePreview(im, previewSize, imagePool)
+      for im <- previewImages
+      yield ImagePreview.fromImageContent(im, previewSize, locationOfImage)
 
     (scrollPane, effect => scrollPane.content = new HBox(children = makeContent(effect): _*))
-
-  private def makeImagePreview(
-      content: ImageContent,
-      previewSize: Int,
-      imagePool: ImagePool
-  ): ImageView =
-    val preview = new TriImageForPreview(content, previewSize)
-    val tooltip = TriImageTooltip.fromImagePool(content, imagePool)
-
-    val snapshotParams = new SnapshotParameters
-    snapshotParams.fill = Color.Transparent
-
-    val view = new ImageView
-    view.image = preview.toImage(snapshotParams)
-    Tooltip.install(view, tooltip)
-    view
 
   private def cloneImageContent(content: ImageContent): ImageContent =
     val format = new SimpleStorageFormat
@@ -66,3 +52,20 @@ object ImagePreviewList:
         )
         .get
     )
+
+object ImagePreview:
+  def fromImageContent(
+      content: ImageContent,
+      previewSize: Int,
+      locationOfImage: ImageStorage => Option[SaveLocation]
+  ): ImageView =
+    val preview = new TriImageForPreview(content, previewSize)
+    val tooltip = TriImageTooltip.fromImagePool(content, locationOfImage)
+
+    val snapshotParams = new SnapshotParameters
+    snapshotParams.fill = Color.Transparent
+
+    val view = new ImageView
+    view.image = preview.toImage(snapshotParams)
+    Tooltip.install(view, tooltip)
+    view

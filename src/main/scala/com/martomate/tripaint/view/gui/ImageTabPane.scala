@@ -28,7 +28,7 @@ object ImageTabPane:
 
     val previewButton = new ToggleButton {
       this.graphic = preview
-      this.tooltip = TriImageTooltip.fromImagePool(image, imagePool)
+      this.tooltip = TriImageTooltip.fromImagePool(image, imagePool.locationOf)
       this.selected <==> image.editableProperty
     }
 

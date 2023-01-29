@@ -11,14 +11,14 @@ import scala.util.{Failure, Success}
 class OpenAction(
     model: TriPaintModel,
     askForFileToOpen: () => Option[File],
-    askForFileOpenSettings: (File, Int, Int) => Option[FileOpenSettings],
+    askForFileOpenSettings: (File, Int, Int, Int) => Option[FileOpenSettings],
     askForWhereToPutImage: () => Option[(Int, Int)]
 ) extends Action {
   override def perform(): Unit = {
     val imageSize = model.imageGrid.imageSize
     for {
       file <- askForFileToOpen()
-      FileOpenSettings(offset, format) <- askForFileOpenSettings(file, imageSize, imageSize)
+      FileOpenSettings(offset, format) <- askForFileOpenSettings(file, imageSize, 1, 1)
       coords <- askForWhereToPutImage()
     } model.imagePool.fromFile(
       SaveLocation(file, offset),

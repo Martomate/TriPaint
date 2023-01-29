@@ -24,7 +24,7 @@ class OpenActionTest extends AnyFlatSpec with Matchers {
     new OpenAction(
       model,
       () => Some(file),
-      (_, _, _) => Some(FileOpenSettings(StorageCoords(0, 0), new SimpleStorageFormat)),
+      (_, _, _, _) => Some(FileOpenSettings(StorageCoords(0, 0), new SimpleStorageFormat)),
       () => Some((3, 4))
     ).perform()
 
@@ -54,7 +54,7 @@ class OpenActionTest extends AnyFlatSpec with Matchers {
     new OpenAction(
       model,
       () => Some(file),
-      (_, _, _) => Some(FileOpenSettings(offset, new SimpleStorageFormat)),
+      (_, _, _, _) => Some(FileOpenSettings(offset, new SimpleStorageFormat)),
       () => Some((3, 4))
     ).perform()
 

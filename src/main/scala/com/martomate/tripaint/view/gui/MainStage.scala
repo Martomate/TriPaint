@@ -109,7 +109,6 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
 
   override def askForFileToOpen(): Option[File] = {
     val chooser = new FileChooser
-    currentFolder.foreach(chooser.initialDirectory = _)
     chooser.title = "Open file"
     val result = Option(chooser.showOpenDialog(this))
     result.foreach(r => currentFolder = Some(r.getParentFile))
@@ -222,16 +221,18 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
 
   override def askForFileOpenSettings(
       file: File,
-      width: Int,
-      height: Int
+      imageSize: Int,
+      xCount: Int,
+      yCount: Int
   ): Option[FileOpenSettings] = {
     AskForFileOpenSettingsDialog.askForFileOpenSettings(
-      imagePreview = (file, width, height),
+      imagePreview = (file, imageSize, xCount, yCount),
       Seq(
         new SimpleStorageFormat -> "Simple format (old)",
         new RecursiveStorageFormat -> "Recursive format (new)"
       ),
-      1
+      1,
+      model.fileSystem
     )
   }
 

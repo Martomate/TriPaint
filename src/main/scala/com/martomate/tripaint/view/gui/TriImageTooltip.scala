@@ -1,22 +1,30 @@
 package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.coords.StorageCoords
+import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.pool.ImagePool
+import com.martomate.tripaint.model.image.storage.ImageStorage
 import scalafx.scene.control.Tooltip
 
 object TriImageTooltip:
-  def fromImagePool(content: ImageContent, imagePool: ImagePool): Tooltip =
+  def fromImagePool(
+      content: ImageContent,
+      locationOfImage: ImageStorage => Option[SaveLocation]
+  ): Tooltip =
     val tooltip = new Tooltip()
 
-    tooltip.text = makeText(content, imagePool)
-    tooltip.activated.onChange(tooltip.text = makeText(content, imagePool))
+    tooltip.text = makeText(content, locationOfImage)
+    tooltip.activated.onChange(tooltip.text = makeText(content, locationOfImage))
 
     tooltip
 
-  private def makeText(content: ImageContent, imagePool: ImagePool) =
+  private def makeText(
+      content: ImageContent,
+      locationOfImage: ImageStorage => Option[SaveLocation]
+  ) =
     val storage = content.storage
-    val startText = imagePool.locationOf(storage) match
+    val startText = locationOfImage(storage) match
       case Some(location) =>
         val fileName = location.file.getName
         val offsetText =

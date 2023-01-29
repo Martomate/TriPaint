@@ -11,14 +11,14 @@ import scala.util.{Failure, Success}
 class OpenHexagonAction(
     model: TriPaintModel,
     askForFileToOpen: () => Option[File],
-    askForFileOpenSettings: (File, Int, Int) => Option[FileOpenSettings],
+    askForFileOpenSettings: (File, Int, Int, Int) => Option[FileOpenSettings],
     askForWhereToPutImage: () => Option[(Int, Int)]
 ) extends Action {
   override def perform(): Unit = {
     val imageSize = model.imageGrid.imageSize
     for {
       file <- askForFileToOpen()
-      FileOpenSettings(offset, format) <- askForFileOpenSettings(file, imageSize * 6, imageSize)
+      FileOpenSettings(offset, format) <- askForFileOpenSettings(file, imageSize, 6, 1)
       coords <- askForWhereToPutImage()
     } for (idx <- 0 until 6) {
       model.imagePool.fromFile(

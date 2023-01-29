@@ -1,10 +1,16 @@
 package com.martomate.tripaint.view.gui
 
-import com.martomate.tripaint.model.coords.StorageCoords
-import com.martomate.tripaint.model.image.format.StorageFormat
+import com.martomate.tripaint.infrastructure.FileSystem
+import com.martomate.tripaint.model.Color
+import com.martomate.tripaint.model.coords.{StorageCoords, TriImageCoords}
+import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
+import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.view.FileOpenSettings
 import com.martomate.tripaint.view.gui.DialogUtils.{getValueFromCustomDialog, makeGridPane}
+import com.martomate.tripaint.view.image.TriImageForPreview
 import scalafx.collections.ObservableBuffer
+import scalafx.embed.swing.SwingFXUtils
 import scalafx.geometry.Orientation
 import scalafx.scene.control.{ButtonType, ChoiceBox, Label, Separator}
 import scalafx.scene.image.{Image, ImageView}
@@ -16,11 +22,13 @@ import scala.util.{Success, Try}
 
 object AskForFileOpenSettingsDialog:
   def askForFileOpenSettings(
-      imagePreview: (File, Int, Int),
+      imagePreview: (File, Int, Int, Int),
       formats: Seq[(StorageFormat, String)],
-      initiallySelectedFormat: Int
+      initiallySelectedFormat: Int,
+      fileSystem: FileSystem
   ): Option[FileOpenSettings] = {
-    val (previewFile, previewWidth, previewHeight) = imagePreview
+    val (previewFile, imageSize, xCount, yCount) = imagePreview
+    val (previewWidth, previewHeight) = (xCount * imageSize, yCount * imageSize)
 
     val xCoordTF = RestrictedTextField.uintTF
     xCoordTF.promptText = "0"
@@ -61,24 +69,49 @@ object AskForFileOpenSettingsDialog:
       previewPane.delegate.setBorder(new Border(stroke))
     }
 
-    val wholeImage = new ImageView(new Image(new FileInputStream(previewFile)))
+    val underlyingImage = fileSystem.readImage(previewFile).get
+
+    val wholeImage = new ImageView(SwingFXUtils.toFXImage(underlyingImage.toBufferedImage, null))
 
     val previewStack = new Pane
     previewStack.delegate.getChildren.addAll(wholeImage, previewPane)
 
+    val blankImage = ImageStorage.fromBGColor(Color.White, imageSize)
+    val triPreviewImages =
+      Seq.tabulate(xCount)(_ => new ImageContent(TriImageCoords(0, 0), blankImage))
+
+    val (triPreviewPane, updateTriPreview) = ImagePreviewList.fromImageContent(
+      triPreviewImages,
+      TriImageForPreview.previewSize,
+      _ => None
+    )
+
     def updatePreviewAction(): Unit =
       resultFromInputs() match
-        case Success(FileOpenSettings(StorageCoords(x, y), _)) =>
-          previewPane.setLayoutX(x)
-          previewPane.setLayoutY(y)
+        case Success(FileOpenSettings(StorageCoords(sx, sy), format)) =>
+          previewPane.setLayoutX(sx)
+          previewPane.setLayoutY(sy)
 
-        // TODO: preview TriImage using the format
+          for x <- 0 until xCount do
+            ImageStorage.fromRegularImage(
+              underlyingImage,
+              StorageCoords(sx + x * imageSize, sy),
+              format,
+              imageSize
+            ) match
+              case Success(imageStorage) =>
+                triPreviewImages(x).replaceImage(imageStorage)
+              case _ =>
+                triPreviewImages(x).replaceImage(blankImage)
+
+          updateTriPreview(_ => ())
         case _ =>
 
     updatePreviewAction()
 
     xCoordTF.text.onChange(updatePreviewAction())
     yCoordTF.text.onChange(updatePreviewAction())
+    formatChooser.onAction = _ => updatePreviewAction()
 
     getValueFromCustomDialog[FileOpenSettings](
       title = "Open image",
@@ -94,6 +127,7 @@ object AskForFileOpenSettingsDialog:
         Separator(Orientation.Horizontal),
         previewStack
       ),
+      graphic = triPreviewPane,
       resultConverter = {
         case ButtonType.OK => resultFromInputs().getOrElse(null)
         case _             => null

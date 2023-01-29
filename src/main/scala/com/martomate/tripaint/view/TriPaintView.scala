@@ -19,7 +19,12 @@ trait TriPaintView extends ImageSaveCollisionHandler {
   def askForFileSaveSettings(file: File, image: ImageContent): Option[FileSaveSettings]
 
   def askForFileToOpen(): Option[File]
-  def askForFileOpenSettings(file: File, width: Int, height: Int): Option[FileOpenSettings]
+  def askForFileOpenSettings(
+      file: File,
+      imageSize: Int,
+      xCount: Int,
+      yCount: Int
+  ): Option[FileOpenSettings]
 
   def askForBlurRadius(): Option[Int]
   def askForMotionBlurRadius(): Option[Int]

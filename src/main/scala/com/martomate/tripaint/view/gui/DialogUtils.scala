@@ -126,4 +126,4 @@ object DialogUtils:
       images: Seq[ImageContent],
       imagePool: ImagePool
   ): (ScrollPane, (ImageGrid => Unit) => Unit) =
-    ImagePreviewList.fromImagePool(images, TriImageForPreview.previewSize, imagePool)
+    ImagePreviewList.fromImageContent(images, TriImageForPreview.previewSize, imagePool.locationOf)
