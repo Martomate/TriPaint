@@ -8,17 +8,16 @@ import com.martomate.tripaint.model.image.format.SimpleStorageFormat
 import com.martomate.tripaint.model.image.pool.{ImagePool, SaveInfo}
 import com.martomate.tripaint.model.image.save.ImageSaverToFile
 import com.martomate.tripaint.model.image.storage.ImageStorage
+import munit.FunSuite
 import org.mockito.Mockito.verify
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar.mock
 import scalafx.scene.paint.Color
 
 import java.io.File
 
-class ImageContentTest extends AnyFlatSpec with Matchers {
+class ImageContentTest extends FunSuite {
 
-  "tellListenersAboutBigChange" should "tell the listeners that a lot has changed" in {
+  test("tellListenersAboutBigChange should tell the listeners that a lot has changed") {
     val image = ImageStorage.fromBGColor(Color.Black, 2)
     val f = new ImageContent(TriImageCoords(0, 0), image)
     val listener = mock[ImageContent.Event => Unit]
@@ -30,22 +29,22 @@ class ImageContentTest extends AnyFlatSpec with Matchers {
     verify(listener).apply(ImageChangedALot)
   }
 
-  "changed" should "return false if nothing has happened" in {
+  test("changed should return false if nothing has happened") {
     val image = ImageStorage.fromBGColor(Color.Black, 2)
     val f = new ImageContent(TriImageCoords(0, 0), image)
-    f.changed shouldBe false
+    assert(!f.changed)
   }
 
-  it should "return true if the image has been modified since the last save" in {
+  test("changed should return true if the image has been modified since the last save") {
     val image = ImageStorage.fromBGColor(Color.Black, 2)
     val f = new ImageContent(TriImageCoords(0, 0), image)
 
     image.update(TriangleCoords(0, 0), Color.Blue)
 
-    f.changed shouldBe true
+    assert(f.changed)
   }
 
-  it should "return false if the image was just saved" in {
+  test("changed should return false if the image was just saved") {
     val image = ImageStorage.fromBGColor(Color.Black, 2)
     val location = SaveLocation(new File("a.png"))
     val format = new SimpleStorageFormat
@@ -63,13 +62,15 @@ class ImageContentTest extends AnyFlatSpec with Matchers {
     image.update(TriangleCoords(0, 0), Color.Blue)
     pool.save(image, FileSystem.createNull())
 
-    f.changed shouldBe false
+    assert(!f.changed)
   }
 
-  "changedProperty" should "return a property with the same value as 'changed'"
+  test("changedProperty should return a property with the same value as 'changed'".ignore) {}
 
-  "image" should "return the initial image if the image hasn't been replaced in the pool"
+  test(
+    "image should return the initial image if the image hasn't been replaced in the pool".ignore
+  ) {}
 
-  it should "return the new image if the image was replaced in the pool"
+  test("image should return the new image if the image was replaced in the pool".ignore) {}
   // TODO: maybe it should take a coordinate instead of an initial image
 }

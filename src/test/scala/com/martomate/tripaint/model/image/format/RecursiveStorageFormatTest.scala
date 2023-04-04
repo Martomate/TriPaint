@@ -1,7 +1,7 @@
 package com.martomate.tripaint.model.image.format
 
 class RecursiveStorageFormatTest extends StorageFormatTest {
-  "transformToStorage" should "transform correctly" in {
+  test("transformToStorage should transform correctly") {
     // upper triangle
     triToStorage(0, 0)(0, 0)
     triToStorage(0, 1)(0, 1)
@@ -39,7 +39,7 @@ class RecursiveStorageFormatTest extends StorageFormatTest {
   }
 
   def triToStorage(from: (Int, Int))(to: (Int, Int)): Unit = {
-    make.transformToStorage(trCoords(from)) shouldBe stCoords(to)
+    assertEquals(make.transformToStorage(trCoords(from)), stCoords(to))
   }
 
   override def make: StorageFormat = new RecursiveStorageFormat

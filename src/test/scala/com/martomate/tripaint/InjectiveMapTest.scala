@@ -1,169 +1,168 @@
 package com.martomate.tripaint
 
 import com.martomate.tripaint.util.InjectiveMap
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import munit.FunSuite
 
-abstract class InjectiveMapTest extends AnyFlatSpec with Matchers {
+abstract class InjectiveMapTest extends FunSuite {
   def createMap[L, R]: InjectiveMap[L, R]
 
-  "InjectiveMap" should "work with L = R" in {
+  test("InjectiveMap should work with L = R") {
     val map = createMap[Int, Int]
     map.set(6, 1)
     map.set(2, 134)
     map.set(1, 2)
-    map.getRight(2) shouldBe Some(134)
-    map.getLeft(1) shouldBe Some(6)
+    assertEquals(map.getRight(2), Some(134))
+    assertEquals(map.getLeft(1), Some(6))
     map.set(2, 1)
-    map.getRight(6) shouldBe None
-    map.getLeft(1) shouldBe Some(2)
-    map.getLeft(134) shouldBe None
+    assertEquals(map.getRight(6), None)
+    assertEquals(map.getLeft(1), Some(2))
+    assertEquals(map.getLeft(134), None)
   }
 
-  "getRight" should "return None for an empty map" in {
+  test("getRight should return None for an empty map") {
     val map = createMap[String, Int]
-    map.getRight("") shouldBe None
+    assertEquals(map.getRight(""), None)
   }
 
-  it should "return the value mapped to by 'left'" in {
-    val map = createMap[String, Int]
-    map.set("", 0)
-    map.getRight("") shouldBe Some(0)
-  }
-
-  "getLeft" should "return None for an empty map" in {
-    val map = createMap[String, Int]
-    map.getLeft(0) shouldBe None
-  }
-
-  it should "return the value mapped to by 'right'" in {
+  test("getRight should return the value mapped to by 'left'") {
     val map = createMap[String, Int]
     map.set("", 0)
-    map.getLeft(0) shouldBe Some("")
+    assertEquals(map.getRight(""), Some(0))
   }
 
-  "set" should "return true for an empty map" in {
+  test("getLeft should return None for an empty map") {
     val map = createMap[String, Int]
-    map.set("", 0) shouldBe true
+    assertEquals(map.getLeft(0), None)
   }
 
-  it should "return false if the mapping already exists" in {
+  test("getLeft should return the value mapped to by 'right'") {
     val map = createMap[String, Int]
-    map.set("", 0) shouldBe true
-    map.set("", 0) shouldBe false
-    map.set("", 0) shouldBe false
+    map.set("", 0)
+    assertEquals(map.getLeft(0), Some(""))
   }
 
-  it should "be able to store several mappings" in {
+  test("set should return true for an empty map") {
+    val map = createMap[String, Int]
+    assertEquals(map.set("", 0), true)
+  }
+
+  test("set should return false if the mapping already exists") {
+    val map = createMap[String, Int]
+    assertEquals(map.set("", 0), true)
+    assertEquals(map.set("", 0), false)
+    assertEquals(map.set("", 0), false)
+  }
+
+  test("set should be able to store several mappings") {
     val map = createMap[String, Int]
     map.set("", 1)
     map.set("hello", 134)
     map.set("str", 2)
-    map.getRight("hello") shouldBe Some(134)
-    map.getLeft(1) shouldBe Some("")
+    assertEquals(map.getRight("hello"), Some(134))
+    assertEquals(map.getLeft(1), Some(""))
     map.set("hello", 1)
-    map.getRight("") shouldBe None
-    map.getLeft(1) shouldBe Some("hello")
-    map.getLeft(134) shouldBe None
+    assertEquals(map.getRight(""), None)
+    assertEquals(map.getLeft(1), Some("hello"))
+    assertEquals(map.getLeft(134), None)
   }
 
-  "containsRight" should "return false for an empty map" in {
+  test("containsRight should return false for an empty map") {
     val map = createMap[String, Int]
-    map.containsRight(0) shouldBe false
+    assertEquals(map.containsRight(0), false)
   }
 
-  it should "return true for an existing mapping" in {
-    val map = createMap[String, Int]
-    map.set("", 0)
-    map.containsRight(0) shouldBe true
-  }
-
-  it should "return false for a non-existing mapping" in {
+  test("containsRight should return true for an existing mapping") {
     val map = createMap[String, Int]
     map.set("", 0)
-    map.containsRight(1) shouldBe false
+    assertEquals(map.containsRight(0), true)
   }
 
-  "containsLeft" should "return false for an empty map" in {
-    val map = createMap[String, Int]
-    map.containsLeft("") shouldBe false
-  }
-
-  it should "return true for an existing mapping" in {
+  test("containsRight should return false for a non-existing mapping") {
     val map = createMap[String, Int]
     map.set("", 0)
-    map.containsLeft("") shouldBe true
+    assertEquals(map.containsRight(1), false)
   }
 
-  it should "return false for a non-existing mapping" in {
+  test("containsLeft should return false for an empty map") {
+    val map = createMap[String, Int]
+    assertEquals(map.containsLeft(""), false)
+  }
+
+  test("containsLeft should return true for an existing mapping") {
     val map = createMap[String, Int]
     map.set("", 0)
-    map.containsLeft("a") shouldBe false
+    assertEquals(map.containsLeft(""), true)
   }
 
-  "removeRight" should "return false for an empty map" in {
-    val map = createMap[String, Int]
-    map.removeRight(0) shouldBe false
-  }
-
-  it should "return true for an existing mapping" in {
+  test("containsLeft should return false for a non-existing mapping") {
     val map = createMap[String, Int]
     map.set("", 0)
-    map.removeRight(0) shouldBe true
+    assertEquals(map.containsLeft("a"), false)
   }
 
-  it should "return false for a non-existing mapping" in {
+  test("removeRight should return false for an empty map") {
+    val map = createMap[String, Int]
+    assertEquals(map.removeRight(0), false)
+  }
+
+  test("removeRight should return true for an existing mapping") {
     val map = createMap[String, Int]
     map.set("", 0)
-    map.removeRight(1) shouldBe false
+    assertEquals(map.removeRight(0), true)
   }
 
-  it should "remove the entire mapping, not only the right value" in {
+  test("removeRight should return false for a non-existing mapping") {
+    val map = createMap[String, Int]
+    map.set("", 0)
+    assertEquals(map.removeRight(1), false)
+  }
+
+  test("removeRight should remove the entire mapping, not only the right value") {
     val map = createMap[String, Int]
     map.set("", 0)
     map.removeRight(0)
-    map.containsLeft("") shouldBe false
-    map.containsRight(0) shouldBe false
+    assertEquals(map.containsLeft(""), false)
+    assertEquals(map.containsRight(0), false)
   }
 
-  it should "only return true once for repeated removes" in {
+  test("removeRight should only return true once for repeated removes") {
     val map = createMap[String, Int]
     map.set("", 0)
-    map.removeRight(0) shouldBe true
-    map.removeRight(0) shouldBe false
-    map.removeRight(0) shouldBe false
+    assertEquals(map.removeRight(0), true)
+    assertEquals(map.removeRight(0), false)
+    assertEquals(map.removeRight(0), false)
   }
 
-  "removeLeft" should "return false for an empty map" in {
+  test("removeLeft should return false for an empty map") {
     val map = createMap[String, Int]
-    map.removeLeft("") shouldBe false
+    assertEquals(map.removeLeft(""), false)
   }
 
-  it should "return true for an existing mapping" in {
-    val map = createMap[String, Int]
-    map.set("", 0)
-    map.removeLeft("") shouldBe true
-  }
-
-  it should "return false for a non-existing mapping" in {
+  test("removeLeft should return true for an existing mapping") {
     val map = createMap[String, Int]
     map.set("", 0)
-    map.removeLeft("a") shouldBe false
+    assertEquals(map.removeLeft(""), true)
   }
 
-  it should "remove the entire mapping, not only the left value" in {
+  test("removeLeft should return false for a non-existing mapping") {
+    val map = createMap[String, Int]
+    map.set("", 0)
+    assertEquals(map.removeLeft("a"), false)
+  }
+
+  test("removeLeft should remove the entire mapping, not only the left value") {
     val map = createMap[String, Int]
     map.set("", 0)
     map.removeLeft("")
-    map.containsLeft("") shouldBe false
-    map.containsRight(0) shouldBe false
+    assertEquals(map.containsLeft(""), false)
+    assertEquals(map.containsRight(0), false)
   }
 
-  it should "only return true once for repeated removes" in {
+  test("removeLeft should only return true once for repeated removes") {
     val map = createMap[String, Int]
     map.set("", 0)
-    map.removeLeft("") shouldBe true
-    map.removeLeft("") shouldBe false
-    map.removeLeft("") shouldBe false
+    assertEquals(map.removeLeft(""), true)
+    assertEquals(map.removeLeft(""), false)
+    assertEquals(map.removeLeft(""), false)
   }
 }

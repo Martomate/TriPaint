@@ -3,27 +3,26 @@ package com.martomate.tripaint.infrastructure
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.image.RegularImage
 import com.martomate.tripaint.util.Tracker
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import munit.FunSuite
 
 import java.awt.image.BufferedImage
 import java.io.File
 
-class FileSystemTest extends AnyFlatSpec with Matchers {
+class FileSystemTest extends FunSuite {
 
   private val tempDir: String = System.getProperty("java.io.tmpdir")
 
-  "readImage" should "return None if the image does not exist" in {
+  test("readImage should return None if the image does not exist") {
     val fs = FileSystem.create()
     val file = new File(tempDir, "a_non_existent_file_93784.png")
-    file.exists() shouldBe false
+    assert(!file.exists())
     val image = fs.readImage(file)
-    image shouldBe None
+    assertEquals(image, None)
   }
 
-  it should "return the image if it exists"
+  test("readImage should return the image if it exists".ignore) {}
 
-  "writeImage" should "return false if the format is not supported" in {
+  test("writeImage should return false if the format is not supported") {
     val fs = FileSystem.create()
     val image = RegularImage.ofSize(10, 10)
     val file = new File(tempDir, "filename72454.xyz")
@@ -32,37 +31,33 @@ class FileSystemTest extends AnyFlatSpec with Matchers {
       val success = fs.writeImage(image, file)
 
       // The 'xyz' extension is not supported, so the write is aborted
-      success shouldBe false
-      file.exists() shouldBe false
-    } catch {
-      case _: Exception => fail()
+      assert(!success)
+      assert(!file.exists())
     } finally {
       // Clean up if needed
       file.delete()
     }
   }
 
-  it should "return true if the image was written" in {
+  test("writeImage should return true if the image was written") {
     val fs = FileSystem.create()
     val image = RegularImage.ofSize(10, 10)
     val file = new File(tempDir, "filename38475.png")
-    file.exists() shouldBe false
+    assert(!file.exists())
 
     try {
       val success = fs.writeImage(image, file)
 
       // The 'png' extension is supported, so the write can proceed
-      success shouldBe true
-      file.exists() shouldBe true
-    } catch {
-      case _: Exception => fail()
+      assert(success)
+      assert(file.exists())
     } finally {
       // Clean up after the test
       file.delete()
     }
   }
 
-  it should "save an opaque version of the image" in {
+  test("writeImage should save an opaque version of the image") {
     val fs = FileSystem.create()
     val file = new File(tempDir, "filename72454.png")
 
@@ -78,15 +73,15 @@ class FileSystemTest extends AnyFlatSpec with Matchers {
 
     try {
       val success = fs.writeImage(image, file)
-      success shouldBe true
+      assert(success)
 
-      fs.readImage(file) shouldBe Some(opaqueImage)
+      assertEquals(fs.readImage(file), Some(opaqueImage))
     } finally {
       file.delete()
     }
   }
 
-  it should "notify trackers about the file being written" in {
+  test("writeImage should notify trackers about the file being written") {
     val fs = FileSystem.create()
     val image = RegularImage.ofSize(10, 10)
     val file = new File(tempDir, "filename38475.png")
@@ -94,7 +89,7 @@ class FileSystemTest extends AnyFlatSpec with Matchers {
     val tracker = Tracker.withStorage[FileSystem.Event]
     fs.trackChanges(tracker)
 
-    tracker.events.size shouldBe 0
+    assertEquals(tracker.events.size, 0)
 
     try {
       fs.writeImage(image, file)
@@ -103,14 +98,16 @@ class FileSystemTest extends AnyFlatSpec with Matchers {
       file.delete()
     }
 
-    tracker.events shouldBe Seq(FileSystem.Event.ImageWritten(image, file))
+    assertEquals(tracker.events, Seq(FileSystem.Event.ImageWritten(image, file)))
+  }
+}
+
+class FileSystemNullTest extends FunSuite {
+  test("readImage returns None by default") {
+    assertEquals(FileSystem.createNull().readImage(new File("file.png")), None)
   }
 
-  "null version" should "return no image when reading by default" in {
-    FileSystem.createNull().readImage(new File("file.png")) shouldBe None
-  }
-
-  it should "return the correct pre-configured image when reading" in {
+  test("readImage returns the pre-configured image if set") {
     val image = RegularImage.fill(3, 4, Color.Cyan)
     val fs = FileSystem.createNull(
       new FileSystem.NullArgs(
@@ -119,24 +116,26 @@ class FileSystemTest extends AnyFlatSpec with Matchers {
         )
       )
     )
-    fs.readImage(new File("image.png")) shouldBe Some(image)
-    fs.readImage(new File("something_else.png")) shouldBe None
+    assertEquals(fs.readImage(new File("image.png")), Some(image))
+    assertEquals(fs.readImage(new File("something_else.png")), None)
   }
 
-  it should "return true after successfully writing an image" in {
+  test("writeImage returns true after successfully writing an image") {
     val image = RegularImage.fill(3, 4, Color.Cyan)
-    FileSystem.createNull().writeImage(image, new File("a.png")) shouldBe true
+    assert(FileSystem.createNull().writeImage(image, new File("a.png")))
   }
 
-  it should "not actually write an image to disk" in {
+  test("writeImage does not actually write an image to disk") {
+    val tempDir: String = System.getProperty("java.io.tmpdir")
+
     val image = RegularImage.fill(3, 4, Color.Cyan)
     val file = new File(tempDir, "filename23843.png")
 
-    FileSystem.createNull().writeImage(image, file) shouldBe true
-    file.exists() shouldBe false
+    assert(FileSystem.createNull().writeImage(image, file))
+    assert(!file.exists())
   }
 
-  it should "notify trackers after successfully writing an image" in {
+  test("writeImage notifies trackers after successfully writing an image") {
     val image = RegularImage.fill(3, 4, Color.Cyan)
 
     val fs = FileSystem.createNull()
@@ -145,19 +144,19 @@ class FileSystemTest extends AnyFlatSpec with Matchers {
 
     fs.writeImage(image, new File("a.png"))
 
-    tracker.events shouldBe Seq(FileSystem.Event.ImageWritten(image, new File("a.png")))
+    assertEquals(tracker.events, Seq(FileSystem.Event.ImageWritten(image, new File("a.png"))))
   }
 
-  it should "return false if the image cannot be written" in {
+  test("writeImage returns false if the image could not be written") {
     val image = RegularImage.fill(3, 4, Color.Cyan)
 
     val config = new FileSystem.NullArgs(supportedImageFormats = Set("jpg", "gif"))
     val fs = FileSystem.createNull(config)
 
-    fs.writeImage(image, new File("a.png")) shouldBe false
+    assert(!fs.writeImage(image, new File("a.png")))
   }
 
-  it should "not notify trackers after failing to write an image" in {
+  test("writeImage does not notify trackers if the image could not be written") {
     val image = RegularImage.fill(3, 4, Color.Cyan)
 
     val config = new FileSystem.NullArgs(supportedImageFormats = Set("jpg", "gif"))
@@ -167,10 +166,10 @@ class FileSystemTest extends AnyFlatSpec with Matchers {
 
     fs.writeImage(image, new File("a.png"))
 
-    tracker.events shouldBe Seq()
+    assertEquals(tracker.events, Seq())
   }
 
-  it should "overwrite existing images" in {
+  test("writeImage overwrites the existing image if needed") {
     val existingImage = RegularImage.fill(3, 4, Color.Yellow)
     val newImage = RegularImage.fill(3, 4, Color.Cyan)
 
@@ -179,8 +178,8 @@ class FileSystemTest extends AnyFlatSpec with Matchers {
     val tracker = Tracker.withStorage[FileSystem.Event]
     fs.trackChanges(tracker)
 
-    fs.writeImage(newImage, new File("a.png")) shouldBe true
+    assert(fs.writeImage(newImage, new File("a.png")))
 
-    tracker.events shouldBe Seq(FileSystem.Event.ImageWritten(newImage, new File("a.png")))
+    assertEquals(tracker.events, Seq(FileSystem.Event.ImageWritten(newImage, new File("a.png"))))
   }
 }

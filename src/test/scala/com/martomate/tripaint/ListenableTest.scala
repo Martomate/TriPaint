@@ -1,31 +1,30 @@
 package com.martomate.tripaint
 
 import com.martomate.tripaint.util.Listenable
+import munit.FunSuite
 
 import scala.collection.mutable.ArrayBuffer
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 
-class ListenableTest extends AnyFlatSpec with Matchers {
+class ListenableTest extends FunSuite {
   class LocalListenable[T] extends Listenable[T] {
     def testNotify(func: T => Unit): Unit = notifyListeners(func)
   }
-  "addListener" should "notify it's listeners" in {
+  test("addListener should notify it's listeners") {
     val listenable = new LocalListenable[Int]
     listenable.addListener(7)
     var success = false
     listenable.testNotify(a => success = a == 7)
-    success shouldBe true
+    assert(success)
   }
 
-  it should "not notify if no listeners were added" in {
+  test("addListener should not notify if no listeners were added") {
     val listenable = new LocalListenable[Int]
     var success = false
     listenable.testNotify(_ => success = true)
-    success shouldBe false
+    assert(!success)
   }
 
-  it should "notify ALL listeners once" in {
+  test("addListener should notify ALL listeners once") {
     val listenable = new LocalListenable[Int]
     listenable.addListener(7)
     listenable.addListener(9)
@@ -33,10 +32,10 @@ class ListenableTest extends AnyFlatSpec with Matchers {
 
     val nums = ArrayBuffer.empty[Int]
     listenable.testNotify(nums += _)
-    nums.sortBy(a => a) shouldBe Seq(2, 7, 9)
+    assertEquals(nums.sortBy(a => a).toSeq, Seq(2, 7, 9))
   }
 
-  "removeListener" should "remove the listener" in {
+  test("removeListener should remove the listener") {
     val listenable = new LocalListenable[Int]
     listenable.addListener(7)
     listenable.addListener(9)
@@ -46,6 +45,6 @@ class ListenableTest extends AnyFlatSpec with Matchers {
 
     val nums = ArrayBuffer.empty[Int]
     listenable.testNotify(nums += _)
-    nums.sortBy(a => a) shouldBe Seq(2, 7)
+    assertEquals(nums.sortBy(a => a).toSeq, Seq(2, 7))
   }
 }

@@ -5,12 +5,10 @@ import com.martomate.tripaint.model.image.RegularImage
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
 import com.martomate.tripaint.model.{Color, TriPaintModel}
 import com.martomate.tripaint.view.TriPaintView
-import org.mockito.Mockito.when
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import munit.FunSuite
 
-class NewActionTest extends AnyFlatSpec with Matchers {
-  "NewAction" should "add a new image to the grid" in {
+class NewActionTest extends FunSuite {
+  test("NewAction should add a new image to the grid") {
     val model = TriPaintModel.createNull()
     model.imageGrid.setImageSizeIfEmpty(8)
 
@@ -27,10 +25,10 @@ class NewActionTest extends AnyFlatSpec with Matchers {
       .map(_.toRegularImage(new SimpleStorageFormat))
       .orNull
 
-    actualImage shouldBe expectedImage
+    assertEquals(actualImage, expectedImage)
   }
 
-  it should "do nothing if no image location is provided" in {
+  test("NewAction should do nothing if no image location is provided") {
     val model = TriPaintModel.createNull()
     model.imageGrid.setImageSizeIfEmpty(8)
 
@@ -42,11 +40,11 @@ class NewActionTest extends AnyFlatSpec with Matchers {
       .map(_.toRegularImage(new SimpleStorageFormat))
       .orNull
 
-    actualImage shouldBe null
+    assertEquals(actualImage, null)
   }
 
   // TODO: Is this really how it should work?
-  it should "replace any existing image at the location" in {
+  test("NewAction should replace any existing image at the location") {
     val model = TriPaintModel.createNull()
     model.imageGrid.setImageSizeIfEmpty(8)
 
@@ -64,6 +62,6 @@ class NewActionTest extends AnyFlatSpec with Matchers {
       .map(_.toRegularImage(new SimpleStorageFormat))
       .orNull
 
-    actualImage shouldBe expectedImage
+    assertEquals(actualImage, expectedImage)
   }
 }

@@ -3,6 +3,7 @@ package com.martomate.tripaint.model.grid
 import com.martomate.tripaint.model.coords.TriImageCoords
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.storage.ImageStorage
+import munit.FunSuite
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{never, verify}
 import org.scalatest.flatspec.AnyFlatSpec
@@ -10,7 +11,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import scalafx.scene.paint.Color
 
-class ImageGridTest extends AnyFlatSpec with Matchers with MockitoSugar {
+class ImageGridTest extends FunSuite with Matchers with MockitoSugar {
   def make(): ImageGrid = new ImageGrid(16)
 
   def makeImage(x: Int, y: Int): ImageContent = {
@@ -20,14 +21,16 @@ class ImageGridTest extends AnyFlatSpec with Matchers with MockitoSugar {
 
   private def tc(x: Int, y: Int): TriImageCoords = TriImageCoords(x, y)
 
-  "setImageSizeIfEmpty" should "set the image size and return true if the grid is new" in {
+  test("setImageSizeIfEmpty should set the image size and return true if the grid is new") {
     val f = make()
     val initSize = f.imageSize
     f.setImageSizeIfEmpty(initSize + 16) shouldBe true
     f.imageSize shouldBe initSize + 16
   }
 
-  it should "not set the image size and return false if the grid contains images" in {
+  test(
+    "setImageSizeIfEmpty should not set the image size and return false if the grid contains images"
+  ) {
     val f = make()
     val initSize = f.imageSize
 
@@ -37,7 +40,9 @@ class ImageGridTest extends AnyFlatSpec with Matchers with MockitoSugar {
     f.imageSize shouldBe initSize
   }
 
-  it should "set the image size and return true if the grid no longer contains images" in {
+  test(
+    "setImageSizeIfEmpty should set the image size and return true if the grid no longer contains images"
+  ) {
     val f = make()
     val initSize = f.imageSize
 
@@ -48,7 +53,7 @@ class ImageGridTest extends AnyFlatSpec with Matchers with MockitoSugar {
     f.imageSize shouldBe initSize + 16
   }
 
-  "apply" should "return None if there is no image there" in {
+  test("apply should return None if there is no image there") {
     val f = make()
     val image = makeImage(1, 0)
 
@@ -57,7 +62,7 @@ class ImageGridTest extends AnyFlatSpec with Matchers with MockitoSugar {
     f(tc(0, 0)) shouldBe None
   }
 
-  it should "return the image at the given location" in {
+  test("apply should return the image at the given location") {
     val f = make()
     val image = makeImage(1, 0)
 
@@ -68,7 +73,7 @@ class ImageGridTest extends AnyFlatSpec with Matchers with MockitoSugar {
     f(tc(1, 0)) shouldBe Some(image)
   }
 
-  "update" should "add the image if it doesn't already exist" in {
+  test("update should add the image if it doesn't already exist") {
     val f = make()
     val image = makeImage(1, 0)
 
@@ -76,7 +81,7 @@ class ImageGridTest extends AnyFlatSpec with Matchers with MockitoSugar {
     f(tc(1, 0)) shouldBe Some(image)
   }
 
-  it should "replace the image if there is already one at that location" in {
+  test("update should replace the image if there is already one at that location") {
     val f = make()
     val image = makeImage(1, 0)
     val image2 = makeImage(1, 0)
@@ -86,7 +91,7 @@ class ImageGridTest extends AnyFlatSpec with Matchers with MockitoSugar {
     f(tc(1, 0)) shouldBe Some(image2)
   }
 
-  it should "notify listeners about image addition, and image removal if there was one" in {
+  test("update should notify listeners about image addition, and image removal if there was one") {
     val f = make()
     val image = makeImage(1, 0)
     val image2 = makeImage(1, 0)
@@ -102,12 +107,12 @@ class ImageGridTest extends AnyFlatSpec with Matchers with MockitoSugar {
     verify(listener).onRemoveImage(image)
   }
 
-  "-=" should "return null if there is no image there" in {
+  test("-= should return null if there is no image there") {
     val f = make()
     (f -= tc(1, 2)) shouldBe null
   }
 
-  it should "remove the image and return it if it exists" in {
+  test("-= should remove the image and return it if it exists") {
     val f = make()
     val image = makeImage(1, 0)
 
@@ -116,7 +121,7 @@ class ImageGridTest extends AnyFlatSpec with Matchers with MockitoSugar {
     f(tc(1, 0)) shouldBe None
   }
 
-  it should "notify listeners if there was a removal" in {
+  test("-= should notify listeners if there was a removal") {
     val f = make()
     val image = makeImage(1, 0)
 
@@ -132,7 +137,7 @@ class ImageGridTest extends AnyFlatSpec with Matchers with MockitoSugar {
     verify(listener).onRemoveImage(image)
   }
 
-  "selectedImages" should "return all images that are currently selected" in {
+  test("selectedImages should return all images that are currently selected") {
     val f = make()
     val image = makeImage(1, 0)
     val image2 = makeImage(2, 0)

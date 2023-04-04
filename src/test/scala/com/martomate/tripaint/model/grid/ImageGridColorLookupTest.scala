@@ -4,23 +4,24 @@ import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.{GlobalPixCoords, TriImageCoords, TriangleCoords}
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.storage.ImageStorage
+import munit.FunSuite
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class ImageGridColorLookupTest extends AnyFlatSpec with Matchers {
-  "lookup" should "return None if there is no image" in {
+class ImageGridColorLookupTest extends FunSuite {
+  test("lookup should return None if there is no image") {
     val grid = new ImageGrid(16)
     val lookup = new ImageGridColorLookup(grid)
 
-    lookup.lookup(GlobalPixCoords(0, 0)) shouldBe None
-    lookup.lookup(GlobalPixCoords(10, 0)) shouldBe None
-    lookup.lookup(GlobalPixCoords(100, 0)) shouldBe None
-    lookup.lookup(GlobalPixCoords(0, 100)) shouldBe None
-    lookup.lookup(GlobalPixCoords(0, -100)) shouldBe None
-    lookup.lookup(GlobalPixCoords(-40, 10)) shouldBe None
+    assertEquals(lookup.lookup(GlobalPixCoords(0, 0)), None)
+    assertEquals(lookup.lookup(GlobalPixCoords(10, 0)), None)
+    assertEquals(lookup.lookup(GlobalPixCoords(100, 0)), None)
+    assertEquals(lookup.lookup(GlobalPixCoords(0, 100)), None)
+    assertEquals(lookup.lookup(GlobalPixCoords(0, -100)), None)
+    assertEquals(lookup.lookup(GlobalPixCoords(-40, 10)), None)
   }
 
-  it should "return the correct color for the (0, 0) image" in {
+  test("lookup should return the correct color for the (0, 0) image") {
     val grid = new ImageGrid(16)
     val lookup = new ImageGridColorLookup(grid)
     val storage = ImageStorage.fromBGColor(Color.Black, 16)
@@ -30,12 +31,12 @@ class ImageGridColorLookupTest extends AnyFlatSpec with Matchers {
 
     grid.set(content)
 
-    lookup.lookup(GlobalPixCoords(1, 2)) shouldBe Some(Color.White)
-    lookup.lookup(GlobalPixCoords(1, 3)) shouldBe Some(Color.Black)
-    lookup.lookup(GlobalPixCoords(-1, 3)) shouldBe None
+    assertEquals(lookup.lookup(GlobalPixCoords(1, 2)), Some(Color.White))
+    assertEquals(lookup.lookup(GlobalPixCoords(1, 3)), Some(Color.Black))
+    assertEquals(lookup.lookup(GlobalPixCoords(-1, 3)), None)
   }
 
-  it should "return the correct color for any image" in {
+  test("lookup should return the correct color for any image") {
     val grid = new ImageGrid(16)
     val lookup = new ImageGridColorLookup(grid)
     val storage = ImageStorage.fromBGColor(Color.Black, 16)
@@ -45,8 +46,8 @@ class ImageGridColorLookupTest extends AnyFlatSpec with Matchers {
 
     grid.set(content)
 
-    lookup.lookup(GlobalPixCoords(-1, 2)) shouldBe Some(Color.White)
-    lookup.lookup(GlobalPixCoords(-1, 3)) shouldBe Some(Color.Black)
-    lookup.lookup(GlobalPixCoords(0, 3)) shouldBe None
+    assertEquals(lookup.lookup(GlobalPixCoords(-1, 2)), Some(Color.White))
+    assertEquals(lookup.lookup(GlobalPixCoords(-1, 3)), Some(Color.Black))
+    assertEquals(lookup.lookup(GlobalPixCoords(0, 3)), None)
   }
 }

@@ -1,19 +1,23 @@
 package com.martomate.tripaint.model.effects
 
 import com.martomate.tripaint.model.Color
-import com.martomate.tripaint.model.coords.{GlobalPixCoords, PixelCoords, TriImageCoords, TriangleCoords}
+import com.martomate.tripaint.model.coords.{
+  GlobalPixCoords,
+  PixelCoords,
+  TriImageCoords,
+  TriangleCoords
+}
 import com.martomate.tripaint.model.grid.{ImageGrid, ImageGridColorLookup}
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.storage.ImageStorage
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import munit.FunSuite
 
-class BlurEffectTest extends AnyFlatSpec with Matchers {
-  "name" should "be 'Blur'" in {
-    new BlurEffect(3).name shouldBe "Blur"
+class BlurEffectTest extends FunSuite {
+  test("name should be 'Blur'") {
+    assertEquals(new BlurEffect(3).name, "Blur")
   }
 
-  "the effect" should "be symmetric far from border" in {
+  test("the effect should be symmetric far from border") {
     val radius = 2
     val imageSize = 32
     checkSymmetrySimple(radius, imageSize, TriangleCoords(imageSize / 2, imageSize / 2))
@@ -22,7 +26,11 @@ class BlurEffectTest extends AnyFlatSpec with Matchers {
     checkSymmetrySimple(radius, imageSize, TriangleCoords(imageSize / 2 - 2, imageSize / 2 + 2))
   }
 
-  private def checkSymmetrySimple(radius: Int, imageSize: Int, dotLocation: TriangleCoords): Unit = {
+  private def checkSymmetrySimple(
+      radius: Int,
+      imageSize: Int,
+      dotLocation: TriangleCoords
+  ): Unit = {
     val effect = new BlurEffect(radius)
     val thisImage = TriImageCoords(0, 0)
 
@@ -40,7 +48,7 @@ class BlurEffectTest extends AnyFlatSpec with Matchers {
       val col1 = storage(look1)
       val col2 = storage(look2)
       try {
-        col1 shouldBe col2
+        assertEquals(col1, col2)
       } catch {
         case e: Exception =>
           println(s"dx = $dx")
@@ -49,15 +57,30 @@ class BlurEffectTest extends AnyFlatSpec with Matchers {
     }
   }
 
-  it should "be symmetric on the border between images" in {
+  test("the effect should be symmetric on the border between images") {
     val radius = 2
     val imageSize = 16 // has to be high enough to not limit the search
     checkSymmetryBorder(radius, imageSize, TriangleCoords(0, imageSize / 2), TriImageCoords(-1, 0))
-    checkSymmetryBorder(radius, imageSize, TriangleCoords(imageSize, imageSize / 2), TriImageCoords(1, 0))
-    checkSymmetryBorder(radius, imageSize, TriangleCoords(imageSize, imageSize - 1), TriImageCoords(1, -1))
+    checkSymmetryBorder(
+      radius,
+      imageSize,
+      TriangleCoords(imageSize, imageSize / 2),
+      TriImageCoords(1, 0)
+    )
+    checkSymmetryBorder(
+      radius,
+      imageSize,
+      TriangleCoords(imageSize, imageSize - 1),
+      TriImageCoords(1, -1)
+    )
   }
 
-  private def checkSymmetryBorder(radius: Int, imageSize: Int, dotLocation: TriangleCoords, borderingImage: TriImageCoords): Unit = {
+  private def checkSymmetryBorder(
+      radius: Int,
+      imageSize: Int,
+      dotLocation: TriangleCoords,
+      borderingImage: TriImageCoords
+  ): Unit = {
     val effect = new BlurEffect(radius)
     val thisImage = TriImageCoords(0, 0)
 
@@ -80,7 +103,7 @@ class BlurEffectTest extends AnyFlatSpec with Matchers {
       val col1 = colorLookup.lookup(look1).get
       val col2 = colorLookup.lookup(look2).get
       try {
-        col1 shouldBe col2
+        assertEquals(col1, col2)
       } catch {
         case e: Exception =>
           println(s"dx = $dx")
@@ -89,5 +112,5 @@ class BlurEffectTest extends AnyFlatSpec with Matchers {
     }
   }
 
-  it should "be additive for multiple sources"
+  test("the effect should be additive for multiple sources".ignore) {}
 }

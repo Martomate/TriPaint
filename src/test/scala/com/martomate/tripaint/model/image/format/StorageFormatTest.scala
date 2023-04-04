@@ -1,13 +1,12 @@
 package com.martomate.tripaint.model.image.format
 
 import com.martomate.tripaint.model.coords.{StorageCoords, TriangleCoords}
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import munit.FunSuite
 
-abstract class StorageFormatTest extends AnyFlatSpec with Matchers {
+abstract class StorageFormatTest extends FunSuite {
   def make: StorageFormat
 
-  "transformToStorage" should "be the inverse of transformFromStorage" in {
+  test("transformToStorage should be the inverse of transformFromStorage") {
     val f = make
 
     comp(0, 0)
@@ -23,9 +22,9 @@ abstract class StorageFormatTest extends AnyFlatSpec with Matchers {
     }
 
     def comp(c: (Int, Int)): Unit =
-      f.transformToStorage(f.transformFromStorage(stCoords(c))) shouldBe stCoords(c)
+      assertEquals(f.transformToStorage(f.transformFromStorage(stCoords(c))), stCoords(c))
   }
-  "transformFromStorage" should "be the inverse of transformToStorage" in {
+  test("transformFromStorage should be the inverse of transformToStorage") {
     val f = make
 
     comp(0, 0)
@@ -40,7 +39,7 @@ abstract class StorageFormatTest extends AnyFlatSpec with Matchers {
     }
 
     def comp(c: (Int, Int)): Unit =
-      f.transformFromStorage(f.transformToStorage(trCoords(c))) shouldBe trCoords(c)
+      assertEquals(f.transformFromStorage(f.transformToStorage(trCoords(c))), trCoords(c))
   }
 
   def stCoords(c: (Int, Int)): StorageCoords = StorageCoords(c._1, c._2)

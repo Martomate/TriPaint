@@ -8,25 +8,24 @@ import com.martomate.tripaint.model.image.save.ImageSaverToFile
 import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.model.image.{RegularImage, SaveLocation, pool}
 import com.martomate.tripaint.util.Tracker
+import munit.FunSuite
 import org.mockito.Mockito.{verify, when}
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import scalafx.scene.paint.Color as FXColor
 
 import java.io.File
 import scala.util.{Failure, Success}
 
-class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
+class ImagePoolTest extends FunSuite with MockitoSugar {
   implicit val collisionHandler: ImageSaveCollisionHandler = mock[ImageSaveCollisionHandler]
   val storageFormat: StorageFormat = new SimpleStorageFormat
 
-  "save" should "return false if the image doesn't exist" in {
+  test("save should return false if the image doesn't exist") {
     val image = ImageStorage.fromBGColor(Color.Black, 2)
-    new ImagePool().save(image, null) shouldBe false
+    assertEquals(new ImagePool().save(image, null), false)
   }
 
-  it should "return false if the saver reports failure" in {
+  test("save should return false if the saver reports failure") {
     val image = ImageStorage.fromBGColor(Color.Black, 2)
     val location = SaveLocation(new File("a.png"))
     val format = new SimpleStorageFormat
@@ -36,10 +35,10 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     f.move(image, location, info)
 
     val fs = FileSystem.createNull(new FileSystem.NullArgs(supportedImageFormats = Set()))
-    f.save(image, fs) shouldBe false
+    assertEquals(f.save(image, fs), false)
   }
 
-  it should "notify listeners and return true if the saver reports success" in {
+  test("save should notify listeners and return true if the saver reports success") {
     val listener = mock[ImagePoolListener]
     val image = ImageStorage.fromBGColor(Color.Black, 2)
     val location = SaveLocation(new File("a.png"))
@@ -50,11 +49,11 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     f.addListener(listener)
     f.move(image, location, info)
 
-    f.save(image, FileSystem.createNull()) shouldBe true
+    assertEquals(f.save(image, FileSystem.createNull()), true)
     verify(listener).onImageSaved(image)
   }
 
-  it should "write image if it does not exist" in {
+  test("save should write image if it does not exist") {
     val image = ImageStorage.fromBGColor(Color.Blue, 2)
     val path = "a.png"
     val location = SaveLocation(new File(path))
@@ -70,12 +69,15 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
 
     imagePool.save(image, fs)
 
-    tracker.events shouldBe Seq(
-      FileSystem.Event.ImageWritten(image.toRegularImage(format), new File(path))
+    assertEquals(
+      tracker.events,
+      Seq(
+        FileSystem.Event.ImageWritten(image.toRegularImage(format), new File(path))
+      )
     )
   }
 
-  it should "overwrite image if it exists and has the same size" in {
+  test("save should overwrite image if it exists and has the same size") {
     val image = ImageStorage.fromBGColor(Color.Blue, 2)
     val path = "a.png"
     val location = SaveLocation(new File(path))
@@ -94,12 +96,15 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
 
     imagePool.save(image, fs)
 
-    tracker.events shouldBe Seq(
-      FileSystem.Event.ImageWritten(image.toRegularImage(format), new File(path))
+    assertEquals(
+      tracker.events,
+      Seq(
+        FileSystem.Event.ImageWritten(image.toRegularImage(format), new File(path))
+      )
     )
   }
 
-  it should "overwrite part of image if there already exists a bigger image" in {
+  test("save should overwrite part of image if there already exists a bigger image") {
     val image = ImageStorage.fromBGColor(Color.Blue, 2)
     val path = "a.png"
     val offset = StorageCoords(1, 2)
@@ -122,10 +127,12 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     val expectedImage = RegularImage.fill(3, 5, Color.Red)
     expectedImage.pasteImage(offset, RegularImage.fill(2, 2, Color.Blue))
 
-    tracker.events shouldBe Seq(FileSystem.Event.ImageWritten(expectedImage, new File(path)))
+    assertEquals(tracker.events, Seq(FileSystem.Event.ImageWritten(expectedImage, new File(path))))
   }
 
-  it should "overwrite part of image if there already exists an image even if it is too small" in {
+  test(
+    "save should overwrite part of image if there already exists an image even if it is too small"
+  ) {
     val image = ImageStorage.fromBGColor(Color.Blue, 2)
     val path = "a.png"
     val offset = StorageCoords(1, 2)
@@ -149,15 +156,15 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     expectedImage.pasteImage(StorageCoords(0, 0), RegularImage.fill(3, 2, Color.Red))
     expectedImage.pasteImage(offset, RegularImage.fill(2, 2, Color.Blue))
 
-    tracker.events shouldBe Seq(FileSystem.Event.ImageWritten(expectedImage, new File(path)))
+    assertEquals(tracker.events, Seq(FileSystem.Event.ImageWritten(expectedImage, new File(path))))
   }
 
-  "locationOf" should "return None if the image doesn't exist" in {
+  test("locationOf should return None if the image doesn't exist") {
     val image = ImageStorage.fromBGColor(Color.Black, 2)
-    new ImagePool().locationOf(image) shouldBe None
+    assertEquals(new ImagePool().locationOf(image), None)
   }
 
-  it should "return the location of the image if it exists" in {
+  test("locationOf should return the location of the image if it exists") {
     val image = ImageStorage.fromBGColor(Color.Black, 2)
     val location = SaveLocation(null)
     val info = pool.SaveInfo(null)
@@ -165,10 +172,10 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     val f = new ImagePool()
     f.move(image, location, info)
 
-    f.locationOf(image) shouldBe Some(location)
+    assertEquals(f.locationOf(image), Some(location))
   }
 
-  "fromFile" should "return the image at that location if it exists" in {
+  test("fromFile should return the image at that location if it exists") {
     val image = ImageStorage.fromBGColor(FXColor.Blue, 16)
     val location = SaveLocation(null)
     val info = pool.SaveInfo(null)
@@ -176,20 +183,20 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     val f = new ImagePool()
     f.move(image, location, info)
 
-    f.fromFile(location, storageFormat, 16, FileSystem.createNull()) shouldBe Success(image)
+    assertEquals(f.fromFile(location, storageFormat, 16, FileSystem.createNull()), Success(image))
   }
 
-  it should "return Failure if there is no image there and the loading failed" in {
+  test("fromFile should return Failure if there is no image there and the loading failed") {
     val location = SaveLocation(null)
     val imageSize = 16
     val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map.empty))
 
     val pool = new ImagePool()
 
-    pool.fromFile(location, storageFormat, imageSize, fs).isFailure shouldBe true
+    assertEquals(pool.fromFile(location, storageFormat, imageSize, fs).isFailure, true)
   }
 
-  it should "save and return the newly loaded image if there was none already" in {
+  test("fromFile should save and return the newly loaded image if there was none already") {
     val file = new File("path/to/image.png")
     val location = SaveLocation(file)
     val imageSize = 16
@@ -204,13 +211,13 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
 
     pool.fromFile(location, storageFormat, imageSize, fs) match {
       case Success(actualImage) =>
-        actualImage.toRegularImage(storageFormat) shouldBe regularImage
-        pool.locationOf(actualImage) shouldBe Some(location)
-      case Failure(_) => fail()
+        assertEquals(actualImage.toRegularImage(storageFormat), regularImage)
+        assertEquals(pool.locationOf(actualImage), Some(location))
+      case Failure(_) => fail("The image pool failed to load the image from file")
     }
   }
 
-  it should "load image with offset" in {
+  test("fromFile should load image with offset") {
     val file = new File("path/to/image.png")
     val offset = StorageCoords(2, 3)
     val location = SaveLocation(file, offset)
@@ -229,32 +236,32 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
 
     pool.fromFile(location, storageFormat, imageSize, fs) match {
       case Success(actualImage) =>
-        actualImage.toRegularImage(storageFormat) shouldBe regularImage
-        pool.locationOf(actualImage) shouldBe Some(location)
-      case Failure(_) => fail()
+        assertEquals(actualImage.toRegularImage(storageFormat), regularImage)
+        assertEquals(pool.locationOf(actualImage), Some(location))
+      case Failure(_) => fail("The image pool failed to load the image from file")
     }
   }
 
-  "move" should "set the image and return true if the location is empty" in {
+  test("move should set the image and return true if the location is empty") {
     val p = new ImagePool()
     val image = ImageStorage.fromBGColor(Color.Blue, 8)
     val location = SaveLocation(null)
     val info = pool.SaveInfo(null)
-    p.move(image, location, info) shouldBe true
-    p.locationOf(image) shouldBe Some(location)
+    assertEquals(p.move(image, location, info), true)
+    assertEquals(p.locationOf(image), Some(location))
   }
 
-  it should "simply return true if the image is already there" in {
+  test("move should simply return true if the image is already there") {
     val p = new ImagePool()
     val image = ImageStorage.fromBGColor(Color.Blue, 8)
     val location = SaveLocation(null)
     val info = pool.SaveInfo(null)
     p.move(image, location, info)
-    p.move(image, location, info) shouldBe true
-    p.locationOf(image) shouldBe Some(location)
+    assertEquals(p.move(image, location, info), true)
+    assertEquals(p.locationOf(image), Some(location))
   }
 
-  it should "return false if the handler doesn't accept the collision" in {
+  test("move should return false if the handler doesn't accept the collision") {
     val handler = collisionHandler
     val p = new ImagePool()
     val currentImage = ImageStorage.fromBGColor(Color.Blue, 8)
@@ -265,10 +272,12 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     when(handler.shouldReplaceImage(currentImage, newImage, location)).thenReturn(None)
 
     p.move(currentImage, location, info)
-    p.move(newImage, location, info) shouldBe false
+    assertEquals(p.move(newImage, location, info), false)
   }
 
-  it should "replace the current image, notify listeners, and return true if the handler wants to replace it" in {
+  test(
+    "move should replace the current image, notify listeners, and return true if the handler wants to replace it"
+  ) {
     val handler = collisionHandler
     val listener = mock[ImagePoolListener]
 
@@ -282,14 +291,16 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     when(handler.shouldReplaceImage(currentImage, newImage, location)).thenReturn(Some(true))
 
     p.move(currentImage, location, info)
-    p.move(newImage, location, info) shouldBe true
-    p.locationOf(currentImage) shouldBe None
-    p.locationOf(newImage) shouldBe Some(location)
+    assertEquals(p.move(newImage, location, info), true)
+    assertEquals(p.locationOf(currentImage), None)
+    assertEquals(p.locationOf(newImage), Some(location))
 
     verify(listener).onImageReplaced(currentImage, newImage, location)
   }
 
-  it should "keep the current image, notify listeners, and return true if the handler wants to keep it" in {
+  test(
+    "move should keep the current image, notify listeners, and return true if the handler wants to keep it"
+  ) {
     val handler = collisionHandler
     val listener = mock[ImagePoolListener]
 
@@ -303,9 +314,9 @@ class ImagePoolTest extends AnyFlatSpec with Matchers with MockitoSugar {
     when(handler.shouldReplaceImage(currentImage, newImage, location)).thenReturn(Some(false))
 
     p.move(currentImage, location, info)
-    p.move(newImage, location, info) shouldBe true
-    p.locationOf(currentImage) shouldBe Some(location)
-    p.locationOf(newImage) shouldBe None
+    assertEquals(p.move(newImage, location, info), true)
+    assertEquals(p.locationOf(currentImage), Some(location))
+    assertEquals(p.locationOf(newImage), None)
 
     verify(listener).onImageReplaced(newImage, currentImage, location)
   }

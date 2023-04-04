@@ -5,14 +5,13 @@ import com.martomate.tripaint.model.coords.StorageCoords
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
 import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.model.image.{RegularImage, SaveLocation}
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import munit.FunSuite
 
 import java.io.File
 
-class ImageSaverToFileTest extends AnyFlatSpec with Matchers {
+class ImageSaverToFileTest extends FunSuite {
 
-  "overwritePartOfImage" should "write image if it doesn't exist" in {
+  test("overwritePartOfImage should write image if it doesn't exist") {
     val file = new File("file.png")
     val location = SaveLocation(file)
     val format = new SimpleStorageFormat
@@ -27,10 +26,10 @@ class ImageSaverToFileTest extends AnyFlatSpec with Matchers {
 
     val storedImage = ImageSaverToFile.overwritePartOfImage(storage, format, location.offset, None)
 
-    storedImage shouldBe expectedImage
+    assertEquals(storedImage, expectedImage)
   }
 
-  it should "overwrite part of image if it already exists" in {
+  test("overwritePartOfImage should overwrite part of image if it already exists") {
     val offset = StorageCoords(2, 3)
     val format = new SimpleStorageFormat
 
@@ -47,7 +46,7 @@ class ImageSaverToFileTest extends AnyFlatSpec with Matchers {
     val expectedImage = RegularImage.fill(8, 8, Color.Yellow)
     expectedImage.pasteImage(offset, RegularImage.fill(4, 4, Color.Cyan))
 
-    storedImage shouldBe expectedImage
+    assertEquals(storedImage, expectedImage)
   }
 
 }

@@ -6,13 +6,12 @@ import com.martomate.tripaint.model.coords.{StorageCoords, TriImageCoords}
 import com.martomate.tripaint.model.image.RegularImage
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
 import com.martomate.tripaint.view.FileOpenSettings
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import munit.FunSuite
 
 import java.io.File
 
-class OpenActionTest extends AnyFlatSpec with Matchers {
-  "OpenAction" should "open an image" in {
+class OpenActionTest extends FunSuite {
+  test("OpenAction should open an image") {
     val file = new File("image.png")
     val image = RegularImage.fill(8, 8, Color.Yellow)
     image.setColor(5, 6, Color.Cyan)
@@ -34,10 +33,10 @@ class OpenActionTest extends AnyFlatSpec with Matchers {
       .map(_.toRegularImage(new SimpleStorageFormat))
       .orNull
 
-    actualImage shouldBe image
+    assertEquals(actualImage, image)
   }
 
-  it should "open an image at an offset" in {
+  test("OpenAction should open an image at an offset") {
     val file = new File("image.png")
     val image = RegularImage.fill(8, 8, Color.Yellow)
     image.setColor(5, 6, Color.Cyan)
@@ -64,6 +63,6 @@ class OpenActionTest extends AnyFlatSpec with Matchers {
       .map(_.toRegularImage(new SimpleStorageFormat))
       .orNull
 
-    actualImage shouldBe image
+    assertEquals(actualImage, image)
   }
 }

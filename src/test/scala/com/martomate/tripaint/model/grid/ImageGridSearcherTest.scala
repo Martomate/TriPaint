@@ -1,22 +1,24 @@
 package com.martomate.tripaint.model.grid
 
 import com.martomate.tripaint.model.coords.GlobalPixCoords
+import munit.FunSuite
 import scalafx.scene.paint.Color
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 
-class ImageGridSearcherTest extends AnyFlatSpec with Matchers {
+class ImageGridSearcherTest extends FunSuite {
   private def makeWhite = new ImageGridSearcher(_ => Some(Color.White))
 
-  "search" should "return nothing for the 'false' predicate" in {
+  test("search should return nothing for the 'false' predicate") {
     val startPos = GlobalPixCoords(4, 7)
     val s = makeWhite
-    s.search(startPos, (_, _) => false) shouldBe Seq()
+    assertEquals(s.search(startPos, (_, _) => false), Seq())
   }
 
-  it should "return the startPos if the predicate is false for the neighbors" in {
+  test("search should return the startPos if the predicate is false for the neighbors") {
     val startPos = GlobalPixCoords(4, 7)
     val s = makeWhite
-    s.search(startPos, (c, _) => c == startPos || c.distanceSq(startPos) > 0.34) shouldBe Seq(startPos)
+    assertEquals(
+      s.search(startPos, (c, _) => c == startPos || c.distanceSq(startPos) > 0.34),
+      Seq(startPos)
+    )
   }
 }
