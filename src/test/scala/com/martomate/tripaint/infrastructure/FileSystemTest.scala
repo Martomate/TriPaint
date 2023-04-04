@@ -128,6 +128,14 @@ class FileSystemTest extends AnyFlatSpec with Matchers {
     FileSystem.createNull().writeImage(image, new File("a.png")) shouldBe true
   }
 
+  it should "not actually write an image to disk" in {
+    val image = RegularImage.fill(3, 4, Color.Cyan)
+    val file = new File(tempDir, "filename23843.png")
+
+    FileSystem.createNull().writeImage(image, file) shouldBe true
+    file.exists() shouldBe false
+  }
+
   it should "notify trackers after successfully writing an image" in {
     val image = RegularImage.fill(3, 4, Color.Cyan)
 
