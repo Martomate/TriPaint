@@ -1,15 +1,19 @@
 package com.martomate.tripaint.model.coords
 
 import munit.FunSuite
-import org.scalatest.matchers.should.Matchers
 
 class PixelCoordsTest extends FunSuite {
   private def tc(x: Int, y: Int): TriangleCoords = TriangleCoords(x, y)
   private def ic(x: Int, y: Int): TriImageCoords = TriImageCoords(x, y)
 
+  extension [T](s: Seq[T]) private def occurrences = s.groupMapReduce(identity)(_ => 1)(_ + _)
+
+  private def assertSameElementsIgnoringOrder[T](left: Seq[T], right: Seq[T])(using
+      munit.Location
+  ): Unit = assertEquals(left.occurrences, right.occurrences)
+
   private def testNeighbours(sz: Int, pc: PixelCoords)(result: PixelCoords*): Unit =
-    import Matchers.*
-    pc.neighbours(sz) should contain theSameElementsAs result
+    assertSameElementsIgnoringOrder(pc.neighbours(sz), result)
 
   test("neighbours should work for upside up") {
     val pc = PixelCoords(tc(2, 3), ic(0, 0))

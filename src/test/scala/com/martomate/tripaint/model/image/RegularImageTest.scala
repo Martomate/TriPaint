@@ -3,8 +3,6 @@ package com.martomate.tripaint.model.image
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.StorageCoords
 import munit.FunSuite
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 
 import java.awt.image.BufferedImage
 

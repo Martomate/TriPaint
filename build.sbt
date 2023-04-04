@@ -27,7 +27,6 @@ Compile / scalacOptions += "-deprecation"
 
 libraryDependencies ++= Seq(
   "org.scalameta" %% "munit" % "0.7.29" % "test",
-  "org.scalatest" %% "scalatest" % "3.2.12" % "test",
   "org.scalatestplus" %% "mockito-4-5" % "3.2.12.0" % "test"
 )
 

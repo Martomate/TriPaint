@@ -5,8 +5,6 @@ import com.martomate.tripaint.model.coords.{GlobalPixCoords, TriImageCoords, Tri
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.storage.ImageStorage
 import munit.FunSuite
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 
 class ImageGridColorLookupTest extends FunSuite {
   test("lookup should return None if there is no image") {
