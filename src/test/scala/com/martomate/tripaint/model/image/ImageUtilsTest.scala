@@ -1,4 +1,4 @@
-package com.martomate.tripaint.model.image.save
+package com.martomate.tripaint.model.image
 
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.StorageCoords

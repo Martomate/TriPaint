@@ -1,4 +1,4 @@
-package com.martomate.tripaint
+package com.martomate.tripaint.util
 
 import com.martomate.tripaint.util.Listenable
 import munit.FunSuite

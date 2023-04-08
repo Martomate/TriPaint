@@ -1,16 +1,15 @@
-package com.martomate.tripaint.model.image.pool
+package com.martomate.tripaint.model.image
 
 import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.StorageCoords
-import com.martomate.tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
 import com.martomate.tripaint.model.image.ImagePool.SaveLocation
+import com.martomate.tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
 import com.martomate.tripaint.model.image.{
   ImagePool,
   ImageSaveCollisionHandler,
   ImageStorage,
-  RegularImage,
-  pool
+  RegularImage
 }
 import com.martomate.tripaint.util.Tracker
 import munit.FunSuite

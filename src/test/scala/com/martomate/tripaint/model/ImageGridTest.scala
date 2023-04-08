@@ -1,4 +1,4 @@
-package com.martomate.tripaint.model.grid
+package com.martomate.tripaint.model
 
 import com.martomate.tripaint.model.ImageGrid
 import com.martomate.tripaint.model.coords.TriImageCoords

@@ -1,11 +1,11 @@
-package com.martomate.tripaint.model.grid
+package com.martomate.tripaint.model
 
 import com.martomate.tripaint.model.FloodFillSearcher
 import com.martomate.tripaint.model.coords.GlobalPixCoords
 import munit.FunSuite
 import scalafx.scene.paint.Color
 
-class ImageGridSearcherTest extends FunSuite {
+class FloodFillSearcherTest extends FunSuite {
   private def makeWhite = new FloodFillSearcher(_ => Some(Color.White))
 
   test("search should return nothing for the 'false' predicate") {
