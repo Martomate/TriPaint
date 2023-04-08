@@ -6,7 +6,7 @@ import com.martomate.tripaint.model.image.SaveLocation
 import com.martomate.tripaint.model.image.save.ImageSaverToFile
 import com.martomate.tripaint.model.image.storage.{ImageStorage, ImageStorageListener}
 import com.martomate.tripaint.model.undo.UndoManager
-import com.martomate.tripaint.util.Listenable
+import com.martomate.tripaint.util.{EventDispatcher, Tracker}
 import scalafx.beans.property.{BooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanWrapper}
 
 object ImageContent:
@@ -15,9 +15,11 @@ object ImageContent:
     case ImageChangedALot
 
 class ImageContent(val coords: TriImageCoords, init_image: ImageStorage)
-    extends Listenable[ImageContent.Event => Unit]
-    with ImageStorageListener:
+    extends ImageStorageListener:
   private var _image: ImageStorage = init_image
+
+  private val dispatcher = new EventDispatcher[ImageContent.Event]
+  def trackChanges(tracker: Tracker[ImageContent.Event]): Unit = dispatcher.track(tracker)
 
   _image.addListener(this)
 
@@ -36,7 +38,7 @@ class ImageContent(val coords: TriImageCoords, init_image: ImageStorage)
 
   def tellListenersAboutBigChange(): Unit =
     import ImageContent.Event.*
-    notifyListeners(_.apply(ImageChangedALot))
+    dispatcher.notify(ImageContent.Event.ImageChangedALot)
 
   def setImageSaved(): Unit = _changed.value = false
 
@@ -46,10 +48,10 @@ class ImageContent(val coords: TriImageCoords, init_image: ImageStorage)
     _image.removeListener(this)
     _image = newImage
     _image.addListener(this)
-    notifyListeners(_.apply(ImageChangedALot))
+    dispatcher.notify(ImageContent.Event.ImageChangedALot)
 
   def onPixelChanged(coords: TriangleCoords, from: Color, to: Color): Unit =
     import ImageContent.Event.*
 
     _changed.value = true
-    notifyListeners(_.apply(PixelChanged(coords, from, to)))
+    dispatcher.notify(ImageContent.Event.PixelChanged(coords, from, to))
