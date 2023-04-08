@@ -1,12 +1,10 @@
 package com.martomate.tripaint.model.image.content
 
 import com.martomate.tripaint.infrastructure.FileSystem
+import com.martomate.tripaint.model.ImageGrid
 import com.martomate.tripaint.model.coords.{TriImageCoords, TriangleCoords}
-import com.martomate.tripaint.model.grid.ImageGrid
-import com.martomate.tripaint.model.image.{ImageStorage, SaveLocation}
+import com.martomate.tripaint.model.image.{ImagePool, ImageStorage}
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
-import com.martomate.tripaint.model.image.pool.{ImagePool, SaveInfo}
-import com.martomate.tripaint.model.image.save.ImageSaverToFile
 import com.martomate.tripaint.util.Tracker
 import munit.FunSuite
 import scalafx.scene.paint.Color
@@ -44,9 +42,9 @@ class ImageContentTest extends FunSuite {
 
   test("changed should return false if the image was just saved") {
     val image = ImageStorage.fromBGColor(Color.Black, 2)
-    val location = SaveLocation(new File("a.png"))
+    val location = ImagePool.SaveLocation(new File("a.png"))
     val format = new SimpleStorageFormat
-    val info = SaveInfo(format)
+    val info = ImagePool.SaveInfo(format)
 
     val pool = new ImagePool()
     pool.move(image, location, info)(null)

@@ -1,9 +1,8 @@
-package com.martomate.tripaint.model.grid
+package com.martomate.tripaint.model
 
-import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.GlobalPixCoords
 
-class ImageGridSearcher(colorLookup: ColorLookup) {
+class FloodFillSearcher(colorLookup: ColorLookup) {
   def search(
       startPos: GlobalPixCoords,
       predicate: (GlobalPixCoords, Color) => Boolean

@@ -1,13 +1,7 @@
 package com.martomate.tripaint.model.effects
 
-import com.martomate.tripaint.model.Color
+import com.martomate.tripaint.model.{Color, ColorLookup, FloodFillSearcher, ImageGrid, ImageGridColorLookup}
 import com.martomate.tripaint.model.coords.{GlobalPixCoords, PixelCoords, TriImageCoords}
-import com.martomate.tripaint.model.grid.{
-  ColorLookup,
-  ImageGrid,
-  ImageGridColorLookup,
-  ImageGridSearcher
-}
 import scalafx.scene.paint.{Color => FXColor}
 
 abstract class LocalEffect extends Effect {
@@ -24,7 +18,7 @@ abstract class LocalEffect extends Effect {
   override def action(images: Seq[TriImageCoords], grid: ImageGrid): Unit = {
     val colorLookup = new ImageGridColorLookup(grid)
 
-    val searcher = new ImageGridSearcher(colorLookup)
+    val searcher = new FloodFillSearcher(colorLookup)
     val allChanges = for (imageCoords <- images) yield {
       val image = grid(imageCoords).get.storage
 

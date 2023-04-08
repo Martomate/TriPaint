@@ -1,8 +1,7 @@
 package com.martomate.tripaint.model.effects
 
-import com.martomate.tripaint.model.Color
+import com.martomate.tripaint.model.{Color, ColorLookup}
 import com.martomate.tripaint.model.coords.GlobalPixCoords
-import com.martomate.tripaint.model.grid.ColorLookup
 
 class MotionBlurEffect(radius: Int) extends LocalEffect {
   def name: String = "Motion blur"

@@ -1,25 +1,31 @@
-package com.martomate.tripaint.model.image.pool
+package com.martomate.tripaint.model.image
 
 import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.Color
-import com.martomate.tripaint.model.image.{ImageStorage, RegularImage, SaveLocation, pool}
+import com.martomate.tripaint.model.coords.StorageCoords
 import com.martomate.tripaint.model.image.format.StorageFormat
-import com.martomate.tripaint.model.image.save.ImageSaverToFile
-import com.martomate.tripaint.util.{
-  EventDispatcher,
-  InjectiveHashMap,
-  InjectiveMap,
-  Listenable,
-  Tracker
-}
+import com.martomate.tripaint.model.image.{ImageStorage, ImageUtils}
+import com.martomate.tripaint.util.{EventDispatcher, InjectiveHashMap, InjectiveMap, Tracker}
 
+import java.io.File
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
+
+trait ImageSaveCollisionHandler {
+  def shouldReplaceImage(
+      currentImage: ImageStorage,
+      newImage: ImageStorage,
+      location: ImagePool.SaveLocation
+  ): Option[Boolean]
+}
 
 object ImagePool {
   enum Event:
     case ImageSaved(image: ImageStorage)
     case ImageReplaced(oldImage: ImageStorage, newImage: ImageStorage, location: SaveLocation)
+
+  case class SaveInfo(format: StorageFormat)
+  case class SaveLocation(file: File, offset: StorageCoords = StorageCoords(0, 0))
 }
 
 /** This class should keep track of Map[SaveLocation, ImageStorage] So if SaveAs then this class
@@ -28,6 +34,8 @@ object ImagePool {
   * share the same ImageStorage.
   */
 class ImagePool {
+  import ImagePool.{SaveLocation, SaveInfo}
+
   private val mapping: InjectiveMap[SaveLocation, ImageStorage] = new InjectiveHashMap
   private val saveInfo: mutable.Map[ImageStorage, SaveInfo] = mutable.Map.empty
 
@@ -40,7 +48,6 @@ class ImagePool {
     mapping.set(saveLocation, imageStorage)
 
   final def locationOf(image: ImageStorage): Option[SaveLocation] = mapping.getLeft(image)
-  final def saveInfoFor(image: ImageStorage): Option[SaveInfo] = saveInfo.get(image)
 
   def move(image: ImageStorage, to: SaveLocation, info: SaveInfo)(implicit
       handler: ImageSaveCollisionHandler
@@ -72,11 +79,11 @@ class ImagePool {
   }
 
   def save(image: ImageStorage, fileSystem: FileSystem): Boolean = {
-    val success = (locationOf(image), saveInfoFor(image)) match {
+    val success = (locationOf(image), saveInfo.get(image)) match {
       case (Some(loc), Some(info)) =>
         val oldImage = fileSystem.readImage(loc.file)
         val newImage =
-          ImageSaverToFile.overwritePartOfImage(image, info.format, loc.offset, oldImage)
+          ImageUtils.overwritePartOfImage(image, info.format, loc.offset, oldImage)
         fileSystem.writeImage(newImage, loc.file)
       case _ =>
         false
@@ -104,7 +111,7 @@ class ImagePool {
             ImageStorage.fromRegularImage(regularImage, location.offset, format, imageSize)
           image.foreach(im => {
             set(location, im)
-            saveInfo(im) = pool.SaveInfo(format)
+            saveInfo(im) = SaveInfo(format)
           })
           image
         case None =>

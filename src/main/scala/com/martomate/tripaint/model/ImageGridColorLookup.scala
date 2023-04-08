@@ -1,6 +1,5 @@
-package com.martomate.tripaint.model.grid
+package com.martomate.tripaint.model
 
-import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.{GlobalPixCoords, PixelCoords}
 
 class ImageGridColorLookup(grid: ImageGrid) extends ColorLookup {

@@ -1,15 +1,14 @@
 package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.coords.StorageCoords
-import com.martomate.tripaint.model.image.{ImageStorage, SaveLocation}
+import com.martomate.tripaint.model.image.{ImagePool, ImageStorage}
 import com.martomate.tripaint.model.image.content.ImageContent
-import com.martomate.tripaint.model.image.pool.ImagePool
 import scalafx.scene.control.Tooltip
 
 object TriImageTooltip:
   def fromImagePool(
       content: ImageContent,
-      locationOfImage: ImageStorage => Option[SaveLocation]
+      locationOfImage: ImageStorage => Option[ImagePool.SaveLocation]
   ): Tooltip =
     val tooltip = new Tooltip()
 
@@ -20,7 +19,7 @@ object TriImageTooltip:
 
   private def makeText(
       content: ImageContent,
-      locationOfImage: ImageStorage => Option[SaveLocation]
+      locationOfImage: ImageStorage => Option[ImagePool.SaveLocation]
   ) =
     val storage = content.storage
     val startText = locationOfImage(storage) match

@@ -2,7 +2,7 @@ package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.effects.{BlurEffect, MotionBlurEffect, RandomNoiseEffect}
-import com.martomate.tripaint.model.image.{ImageStorage, SaveLocation}
+import com.martomate.tripaint.model.image.{ImagePool, ImageStorage}
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.format.{RecursiveStorageFormat, SimpleStorageFormat}
 import com.martomate.tripaint.view.image.ImageGridPane
@@ -238,7 +238,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
   override def shouldReplaceImage(
       currentImage: ImageStorage,
       newImage: ImageStorage,
-      location: SaveLocation
+      location: ImagePool.SaveLocation
   ): Option[Boolean] = {
     val tri1 = model.imageGrid.images.find(_.storage == newImage).orNull
     val tri2 = model.imageGrid.images.find(_.storage == currentImage).orNull

@@ -1,11 +1,11 @@
 package com.martomate.tripaint.view
 
 import com.martomate.tripaint.model.coords.StorageCoords
+import com.martomate.tripaint.model.image.ImageSaveCollisionHandler
 
 import java.io.File
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.format.StorageFormat
-import com.martomate.tripaint.model.image.pool.ImageSaveCollisionHandler
 import scalafx.scene.paint.Color
 
 trait TriPaintView extends ImageSaveCollisionHandler {

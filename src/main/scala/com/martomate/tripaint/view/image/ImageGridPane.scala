@@ -1,7 +1,7 @@
 package com.martomate.tripaint.view.image
 
+import com.martomate.tripaint.model.{FloodFillSearcher, ImageGrid, ImageGridColorLookup}
 import com.martomate.tripaint.model.coords.{PixelCoords, TriImageCoords}
-import com.martomate.tripaint.model.grid.{ImageGrid, ImageGridColorLookup, ImageGridSearcher}
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.view.EditMode
 import javafx.scene.input.{MouseButton, MouseEvent}
@@ -29,7 +29,7 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane:
     val secondaryColor: ObjectProperty[paint.Color] = ObjectProperty(Color.White)
     def secondaryColor_=(col: Color): Unit = secondaryColor.value = col
 
-  private val gridSearcher: ImageGridSearcher = new ImageGridSearcher(
+  private val gridSearcher: FloodFillSearcher = new FloodFillSearcher(
     new ImageGridColorLookup(imageGrid)
   )
 

@@ -1,5 +1,6 @@
 package com.martomate.tripaint.model.grid
 
+import com.martomate.tripaint.model.ImageGrid
 import com.martomate.tripaint.model.coords.TriImageCoords
 import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.model.image.content.ImageContent
