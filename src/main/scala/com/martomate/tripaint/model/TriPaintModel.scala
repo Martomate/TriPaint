@@ -8,7 +8,7 @@ import com.martomate.tripaint.model.image.save.ImageSaverToFile
 class TriPaintModel(val fileSystem: FileSystem) {
   val imagePool: ImagePool = new ImagePool()
   val imageGrid: ImageGrid = new ImageGrid(-1)
-  imagePool.addListener(imageGrid)
+  imageGrid.listenToImagePool(imagePool)
 }
 
 object TriPaintModel {

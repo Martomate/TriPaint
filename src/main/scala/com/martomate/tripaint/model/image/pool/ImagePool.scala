@@ -6,19 +6,36 @@ import com.martomate.tripaint.model.image.{RegularImage, SaveLocation, pool}
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.model.image.save.ImageSaverToFile
 import com.martomate.tripaint.model.image.storage.ImageStorage
-import com.martomate.tripaint.util.{InjectiveHashMap, InjectiveMap, Listenable}
+import com.martomate.tripaint.util.{
+  EventDispatcher,
+  InjectiveHashMap,
+  InjectiveMap,
+  Listenable,
+  Tracker
+}
 
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
+
+object ImagePool {
+  enum Event:
+    case ImageSaved(image: ImageStorage)
+    case ImageReplaced(oldImage: ImageStorage, newImage: ImageStorage, location: SaveLocation)
+}
 
 /** This class should keep track of Map[SaveLocation, ImageStorage] So if SaveAs then this class
   * should be called so that collisions can be detected and dealt with, like e.g. when you save A
   * into the same place as B the user should be asked which image to keep, and after that they will
   * share the same ImageStorage.
   */
-class ImagePool extends Listenable[ImagePoolListener] {
+class ImagePool {
   private val mapping: InjectiveMap[SaveLocation, ImageStorage] = new InjectiveHashMap
   private val saveInfo: mutable.Map[ImageStorage, SaveInfo] = mutable.Map.empty
+
+  private val dispatcher = new EventDispatcher[ImagePool.Event]
+
+  /** @param tracker the tracker to notify when an event occurs */
+  def trackChanges(tracker: Tracker[ImagePool.Event]): Unit = dispatcher.track(tracker)
 
   private def contains(saveLocation: SaveLocation): Boolean = mapping.containsLeft(saveLocation)
   private def get(saveLocation: SaveLocation): ImageStorage = mapping.getRight(saveLocation).orNull
@@ -45,10 +62,10 @@ class ImagePool extends Listenable[ImagePoolListener] {
           if (replace) {
             mapping.removeRight(currentImage)
             set(newLocation, image)
-            notifyListeners(_.onImageReplaced(currentImage, image, newLocation))
+            dispatcher.notify(ImagePool.Event.ImageReplaced(currentImage, image, newLocation))
           } else {
             mapping.removeRight(image)
-            notifyListeners(_.onImageReplaced(image, currentImage, newLocation))
+            dispatcher.notify(ImagePool.Event.ImageReplaced(image, currentImage, newLocation))
           }
           true
         case None =>
@@ -68,7 +85,7 @@ class ImagePool extends Listenable[ImagePoolListener] {
         false
     }
 
-    if (success) notifyListeners(_.onImageSaved(image))
+    if (success) dispatcher.notify(ImagePool.Event.ImageSaved(image))
     success
   }
 

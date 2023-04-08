@@ -54,7 +54,7 @@ class ImageContentTest extends FunSuite {
     pool.move(image, location, info)(null)
 
     val grid = new ImageGrid(2)
-    pool.addListener(grid)
+    grid.listenToImagePool(pool)
 
     val f = new ImageContent(TriImageCoords(0, 0), image)
     grid.set(f)
