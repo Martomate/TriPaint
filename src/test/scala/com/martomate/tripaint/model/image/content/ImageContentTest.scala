@@ -3,11 +3,10 @@ package com.martomate.tripaint.model.image.content
 import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.coords.{TriImageCoords, TriangleCoords}
 import com.martomate.tripaint.model.grid.ImageGrid
-import com.martomate.tripaint.model.image.SaveLocation
+import com.martomate.tripaint.model.image.{ImageStorage, SaveLocation}
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
 import com.martomate.tripaint.model.image.pool.{ImagePool, SaveInfo}
 import com.martomate.tripaint.model.image.save.ImageSaverToFile
-import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.util.Tracker
 import munit.FunSuite
 import scalafx.scene.paint.Color

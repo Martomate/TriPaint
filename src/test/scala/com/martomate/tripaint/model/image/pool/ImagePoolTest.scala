@@ -5,8 +5,7 @@ import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.StorageCoords
 import com.martomate.tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
 import com.martomate.tripaint.model.image.save.ImageSaverToFile
-import com.martomate.tripaint.model.image.storage.ImageStorage
-import com.martomate.tripaint.model.image.{RegularImage, SaveLocation, pool}
+import com.martomate.tripaint.model.image.{ImageStorage, RegularImage, SaveLocation, pool}
 import com.martomate.tripaint.util.Tracker
 import munit.FunSuite
 import org.mockito.Mockito.{verify, when}

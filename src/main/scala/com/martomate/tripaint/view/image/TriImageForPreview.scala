@@ -2,8 +2,8 @@ package com.martomate.tripaint.view.image
 
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.TriangleCoords
+import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.model.image.content.ImageContent
-import com.martomate.tripaint.model.image.storage.ImageStorage
 import scalafx.scene.SnapshotParameters
 import scalafx.scene.image.Image
 import scalafx.scene.layout.Pane

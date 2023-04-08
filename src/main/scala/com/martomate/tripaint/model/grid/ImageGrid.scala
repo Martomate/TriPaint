@@ -1,10 +1,9 @@
 package com.martomate.tripaint.model.grid
 
 import com.martomate.tripaint.model.coords.TriImageCoords
-import com.martomate.tripaint.model.image.SaveLocation
+import com.martomate.tripaint.model.image.{ImageStorage, SaveLocation}
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.pool.ImagePool
-import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.util.{EventDispatcher, Listenable, Tracker}
 
 import scala.collection.mutable.ArrayBuffer

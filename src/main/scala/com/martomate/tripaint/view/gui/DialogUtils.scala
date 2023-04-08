@@ -2,11 +2,11 @@ package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.coords.{StorageCoords, TriImageCoords}
 import com.martomate.tripaint.model.grid.ImageGrid
+import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.model.image.pool.ImagePool
 import com.martomate.tripaint.model.image.save.ImageSaverToArray
-import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.util.Listenable
 import com.martomate.tripaint.view.gui.DialogUtils.{getValueFromCustomDialog, makeGridPane}
 import com.martomate.tripaint.view.image.TriImageForPreview

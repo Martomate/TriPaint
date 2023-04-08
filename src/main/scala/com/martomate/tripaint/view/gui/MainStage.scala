@@ -2,10 +2,9 @@ package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.effects.{BlurEffect, MotionBlurEffect, RandomNoiseEffect}
-import com.martomate.tripaint.model.image.SaveLocation
+import com.martomate.tripaint.model.image.{ImageStorage, SaveLocation}
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.format.{RecursiveStorageFormat, SimpleStorageFormat}
-import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.view.image.ImageGridPane
 import com.martomate.tripaint.view.*
 import scalafx.application.JFXApp3.PrimaryStage

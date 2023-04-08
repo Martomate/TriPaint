@@ -1,9 +1,9 @@
 package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.coords.StorageCoords
+import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.model.image.save.ImageSaverToArray
-import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.view.FileSaveSettings
 import com.martomate.tripaint.view.gui.DialogUtils.{getValueFromCustomDialog, makeGridPane}
 import scalafx.collections.ObservableBuffer

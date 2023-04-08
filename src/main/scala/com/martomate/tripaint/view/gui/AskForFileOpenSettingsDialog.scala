@@ -3,9 +3,9 @@ package com.martomate.tripaint.view.gui
 import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.{StorageCoords, TriImageCoords}
+import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
-import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.view.FileOpenSettings
 import com.martomate.tripaint.view.gui.DialogUtils.{getValueFromCustomDialog, makeGridPane}
 import com.martomate.tripaint.view.image.TriImageForPreview

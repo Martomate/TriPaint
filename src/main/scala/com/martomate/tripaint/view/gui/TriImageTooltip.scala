@@ -1,10 +1,9 @@
 package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.coords.StorageCoords
-import com.martomate.tripaint.model.image.SaveLocation
+import com.martomate.tripaint.model.image.{ImageStorage, SaveLocation}
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.pool.ImagePool
-import com.martomate.tripaint.model.image.storage.ImageStorage
 import scalafx.scene.control.Tooltip
 
 object TriImageTooltip:

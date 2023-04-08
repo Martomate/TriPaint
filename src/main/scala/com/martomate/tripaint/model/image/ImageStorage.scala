@@ -1,9 +1,8 @@
-package com.martomate.tripaint.model.image.storage
+package com.martomate.tripaint.model.image
 
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.{StorageCoords, TriangleCoords}
 import com.martomate.tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
-import com.martomate.tripaint.model.image.RegularImage
 import com.martomate.tripaint.util.{EventDispatcher, Listenable, Tracker}
 
 import scala.util.Try

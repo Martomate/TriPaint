@@ -1,7 +1,6 @@
 package com.martomate.tripaint.model.image.pool
 
-import com.martomate.tripaint.model.image.SaveLocation
-import com.martomate.tripaint.model.image.storage.ImageStorage
+import com.martomate.tripaint.model.image.{ImageStorage, SaveLocation}
 
 trait ImageSaveCollisionHandler {
   def shouldReplaceImage(

@@ -2,9 +2,8 @@ package com.martomate.tripaint.model.image.content
 
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.{TriImageCoords, TriangleCoords}
-import com.martomate.tripaint.model.image.SaveLocation
+import com.martomate.tripaint.model.image.{ImageStorage, SaveLocation}
 import com.martomate.tripaint.model.image.save.ImageSaverToFile
-import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.model.undo.UndoManager
 import com.martomate.tripaint.util.{EventDispatcher, Tracker}
 import scalafx.beans.property.{BooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanWrapper}

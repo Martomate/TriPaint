@@ -3,7 +3,7 @@ package com.martomate.tripaint.view.image
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.image.content.{CumulativeImageChange, ImageContent}
 import com.martomate.tripaint.model.coords.TriangleCoords
-import com.martomate.tripaint.model.image.storage.ImageStorage
+import com.martomate.tripaint.model.image.ImageStorage
 import javafx.scene.input.{MouseEvent, ScrollEvent}
 import scalafx.beans.property.ReadOnlyBooleanProperty
 import scalafx.scene.layout.Pane

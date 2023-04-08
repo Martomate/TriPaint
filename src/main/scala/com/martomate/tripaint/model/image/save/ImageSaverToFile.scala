@@ -1,9 +1,8 @@
 package com.martomate.tripaint.model.image.save
 
 import com.martomate.tripaint.model.coords.StorageCoords
-import com.martomate.tripaint.model.image.RegularImage
+import com.martomate.tripaint.model.image.{ImageStorage, RegularImage}
 import com.martomate.tripaint.model.image.format.StorageFormat
-import com.martomate.tripaint.model.image.storage.ImageStorage
 
 object ImageSaverToFile:
   def overwritePartOfImage(

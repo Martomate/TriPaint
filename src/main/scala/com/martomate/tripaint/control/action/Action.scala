@@ -2,10 +2,9 @@ package com.martomate.tripaint.control.action
 
 import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.coords.TriImageCoords
-import com.martomate.tripaint.model.image.SaveLocation
+import com.martomate.tripaint.model.image.{ImageStorage, SaveLocation}
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.pool.{ImageSaveCollisionHandler, SaveInfo}
-import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.view.{FileSaveSettings, TriPaintView}
 
 import java.io.File

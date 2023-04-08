@@ -1,8 +1,8 @@
 package com.martomate.tripaint.model.grid
 
 import com.martomate.tripaint.model.coords.TriImageCoords
+import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.model.image.content.ImageContent
-import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.util.Tracker
 import munit.FunSuite
 import scalafx.scene.paint.Color

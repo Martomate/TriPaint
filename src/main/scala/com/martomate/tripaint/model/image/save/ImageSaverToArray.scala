@@ -1,7 +1,7 @@
 package com.martomate.tripaint.model.image.save
 
+import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.model.image.format.StorageFormat
-import com.martomate.tripaint.model.image.storage.ImageStorage
 
 class ImageSaverToArray(val array: Array[Int]) {
   def save(image: ImageStorage, format: StorageFormat): Unit = {

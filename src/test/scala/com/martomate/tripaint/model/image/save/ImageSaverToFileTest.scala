@@ -3,8 +3,7 @@ package com.martomate.tripaint.model.image.save
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.StorageCoords
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
-import com.martomate.tripaint.model.image.storage.ImageStorage
-import com.martomate.tripaint.model.image.{RegularImage, SaveLocation}
+import com.martomate.tripaint.model.image.{ImageStorage, RegularImage, SaveLocation}
 import munit.FunSuite
 
 import java.io.File

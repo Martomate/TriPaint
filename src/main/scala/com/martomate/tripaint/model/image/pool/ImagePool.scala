@@ -2,10 +2,9 @@ package com.martomate.tripaint.model.image.pool
 
 import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.Color
-import com.martomate.tripaint.model.image.{RegularImage, SaveLocation, pool}
+import com.martomate.tripaint.model.image.{ImageStorage, RegularImage, SaveLocation, pool}
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.model.image.save.ImageSaverToFile
-import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.util.{
   EventDispatcher,
   InjectiveHashMap,
