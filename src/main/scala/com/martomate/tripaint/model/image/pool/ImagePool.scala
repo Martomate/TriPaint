@@ -33,8 +33,6 @@ class ImagePool {
   private val saveInfo: mutable.Map[ImageStorage, SaveInfo] = mutable.Map.empty
 
   private val dispatcher = new EventDispatcher[ImagePool.Event]
-
-  /** @param tracker the tracker to notify when an event occurs */
   def trackChanges(tracker: Tracker[ImagePool.Event]): Unit = dispatcher.track(tracker)
 
   private def contains(saveLocation: SaveLocation): Boolean = mapping.containsLeft(saveLocation)
