@@ -1,11 +1,9 @@
-package com.martomate.tripaint.model.image.save
+package com.martomate.tripaint.model.image
 
 import com.martomate.tripaint.model.coords.StorageCoords
-import com.martomate.tripaint.model.image.RegularImage
 import com.martomate.tripaint.model.image.format.StorageFormat
-import com.martomate.tripaint.model.image.storage.ImageStorage
 
-object ImageSaverToFile:
+object ImageUtils:
   def overwritePartOfImage(
       image: ImageStorage,
       format: StorageFormat,
@@ -34,3 +32,13 @@ object ImageSaverToFile:
       newImage.pasteImage(StorageCoords(0, 0), image)
       newImage
     else image
+
+  def convertImageToArray(image: ImageStorage, format: StorageFormat): Array[Int] =
+    val size = image.imageSize
+    val array = new Array[Int](size * size)
+
+    for triCoords <- image.allPixels do
+      val stCoords = format.transformToStorage(triCoords)
+      array(stCoords.x + stCoords.y * size) = image(triCoords).toInt
+
+    array

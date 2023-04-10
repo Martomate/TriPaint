@@ -2,7 +2,7 @@ package com.martomate.tripaint.control.action
 
 import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.coords.{StorageCoords, TriImageCoords}
-import com.martomate.tripaint.model.image.SaveLocation
+import com.martomate.tripaint.model.image.ImagePool
 import com.martomate.tripaint.view.{FileOpenSettings, TriPaintView}
 
 import java.io.File
@@ -22,7 +22,7 @@ class OpenHexagonAction(
       coords <- askForWhereToPutImage()
     } for (idx <- 0 until 6) {
       model.imagePool.fromFile(
-        SaveLocation(file, StorageCoords(offset.x + idx * imageSize, offset.y)),
+        ImagePool.SaveLocation(file, StorageCoords(offset.x + idx * imageSize, offset.y)),
         format,
         imageSize,
         model.fileSystem

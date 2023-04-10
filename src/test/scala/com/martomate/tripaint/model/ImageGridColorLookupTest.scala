@@ -1,9 +1,9 @@
-package com.martomate.tripaint.model.grid
+package com.martomate.tripaint.model
 
-import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.{GlobalPixCoords, TriImageCoords, TriangleCoords}
+import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.model.image.content.ImageContent
-import com.martomate.tripaint.model.image.storage.ImageStorage
+import com.martomate.tripaint.model.{Color, ImageGrid, ImageGridColorLookup}
 import munit.FunSuite
 
 class ImageGridColorLookupTest extends FunSuite {

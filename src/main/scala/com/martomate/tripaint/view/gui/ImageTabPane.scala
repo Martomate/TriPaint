@@ -1,8 +1,8 @@
 package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.TriPaintModel
+import com.martomate.tripaint.model.image.ImagePool
 import com.martomate.tripaint.model.image.content.ImageContent
-import com.martomate.tripaint.model.image.pool.ImagePool
 import com.martomate.tripaint.view.TriPaintViewListener
 import com.martomate.tripaint.view.image.TriImageForPreview
 import scalafx.geometry.Pos

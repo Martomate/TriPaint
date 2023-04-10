@@ -1,15 +1,14 @@
-package com.martomate.tripaint.model.grid
+package com.martomate.tripaint.model
 
+import com.martomate.tripaint.model.ImageGrid
 import com.martomate.tripaint.model.coords.TriImageCoords
+import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.model.image.content.ImageContent
-import com.martomate.tripaint.model.image.storage.ImageStorage
+import com.martomate.tripaint.util.Tracker
 import munit.FunSuite
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{never, verify}
-import org.scalatestplus.mockito.MockitoSugar
 import scalafx.scene.paint.Color
 
-class ImageGridTest extends FunSuite with MockitoSugar {
+class ImageGridTest extends FunSuite {
   def make(): ImageGrid = new ImageGrid(16)
 
   def makeImage(x: Int, y: Int): ImageContent = {
@@ -94,20 +93,26 @@ class ImageGridTest extends FunSuite with MockitoSugar {
     val image = makeImage(1, 0)
     val image2 = makeImage(1, 0)
 
-    val listener = mock[ImageGridListener]
-    f.addListener(listener)
+    val tracker = Tracker.withStorage[ImageGrid.Event]
+    f.trackChanges(tracker)
 
     f.set(image)
-    verify(listener).onAddImage(image)
+    assertEquals(tracker.events, Seq(ImageGrid.Event.ImageAdded(image)))
 
     f.set(image2)
-    verify(listener).onAddImage(image2)
-    verify(listener).onRemoveImage(image)
+    assertEquals(
+      tracker.events,
+      Seq(
+        ImageGrid.Event.ImageAdded(image),
+        ImageGrid.Event.ImageRemoved(image),
+        ImageGrid.Event.ImageAdded(image2)
+      )
+    )
   }
 
   test("-= should return null if there is no image there") {
     val f = make()
-    assertEquals((f -= tc(1, 2)), null)
+    assertEquals(f -= tc(1, 2), null)
   }
 
   test("-= should remove the image and return it if it exists") {
@@ -115,7 +120,7 @@ class ImageGridTest extends FunSuite with MockitoSugar {
     val image = makeImage(1, 0)
 
     f.set(image)
-    assertEquals((f -= tc(1, 0)), image)
+    assertEquals(f -= tc(1, 0), image)
     assertEquals(f(tc(1, 0)), None)
   }
 
@@ -125,14 +130,14 @@ class ImageGridTest extends FunSuite with MockitoSugar {
 
     f.set(image)
 
-    val listener = mock[ImageGridListener]
-    f.addListener(listener)
+    val tracker = Tracker.withStorage[ImageGrid.Event]
+    f.trackChanges(tracker)
 
     f -= tc(0, 0)
-    verify(listener, never()).onRemoveImage(any())
+    assertEquals(tracker.events, Seq())
 
     f -= tc(1, 0)
-    verify(listener).onRemoveImage(image)
+    assertEquals(tracker.events, Seq(ImageGrid.Event.ImageRemoved(image)))
   }
 
   test("selectedImages should return all images that are currently selected") {

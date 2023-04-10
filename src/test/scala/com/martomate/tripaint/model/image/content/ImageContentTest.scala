@@ -1,16 +1,12 @@
 package com.martomate.tripaint.model.image.content
 
 import com.martomate.tripaint.infrastructure.FileSystem
+import com.martomate.tripaint.model.ImageGrid
 import com.martomate.tripaint.model.coords.{TriImageCoords, TriangleCoords}
-import com.martomate.tripaint.model.grid.ImageGrid
-import com.martomate.tripaint.model.image.SaveLocation
+import com.martomate.tripaint.model.image.{ImagePool, ImageStorage}
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
-import com.martomate.tripaint.model.image.pool.{ImagePool, SaveInfo}
-import com.martomate.tripaint.model.image.save.ImageSaverToFile
-import com.martomate.tripaint.model.image.storage.ImageStorage
+import com.martomate.tripaint.util.Tracker
 import munit.FunSuite
-import org.mockito.Mockito.verify
-import org.scalatestplus.mockito.MockitoSugar.mock
 import scalafx.scene.paint.Color
 
 import java.io.File
@@ -20,13 +16,13 @@ class ImageContentTest extends FunSuite {
   test("tellListenersAboutBigChange should tell the listeners that a lot has changed") {
     val image = ImageStorage.fromBGColor(Color.Black, 2)
     val f = new ImageContent(TriImageCoords(0, 0), image)
-    val listener = mock[ImageContent.Event => Unit]
-    f.addListener(listener)
+
+    val tracker = Tracker.withStorage[ImageContent.Event]
+    f.trackChanges(tracker)
 
     f.tellListenersAboutBigChange()
 
-    import ImageContent.Event.*
-    verify(listener).apply(ImageChangedALot)
+    assertEquals(tracker.events, Seq(ImageContent.Event.ImageChangedALot))
   }
 
   test("changed should return false if nothing has happened") {
@@ -46,15 +42,15 @@ class ImageContentTest extends FunSuite {
 
   test("changed should return false if the image was just saved") {
     val image = ImageStorage.fromBGColor(Color.Black, 2)
-    val location = SaveLocation(new File("a.png"))
+    val location = ImagePool.SaveLocation(new File("a.png"))
     val format = new SimpleStorageFormat
-    val info = SaveInfo(format)
+    val info = ImagePool.SaveInfo(format)
 
     val pool = new ImagePool()
     pool.move(image, location, info)(null)
 
     val grid = new ImageGrid(2)
-    pool.addListener(grid)
+    grid.listenToImagePool(pool)
 
     val f = new ImageContent(TriImageCoords(0, 0), image)
     grid.set(f)

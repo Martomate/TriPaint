@@ -1,15 +1,14 @@
 package com.martomate.tripaint.model.effects
 
-import com.martomate.tripaint.model.Color
+import com.martomate.tripaint.model.{Color, ImageGrid, ImageGridColorLookup}
 import com.martomate.tripaint.model.coords.{
   GlobalPixCoords,
   PixelCoords,
   TriImageCoords,
   TriangleCoords
 }
-import com.martomate.tripaint.model.grid.{ImageGrid, ImageGridColorLookup}
+import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.model.image.content.ImageContent
-import com.martomate.tripaint.model.image.storage.ImageStorage
 import munit.FunSuite
 
 class BlurEffectTest extends FunSuite {

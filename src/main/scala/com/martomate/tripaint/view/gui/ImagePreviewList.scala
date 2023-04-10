@@ -1,12 +1,10 @@
 package com.martomate.tripaint.view.gui
 
+import com.martomate.tripaint.model.ImageGrid
 import com.martomate.tripaint.model.coords.{StorageCoords, TriImageCoords}
-import com.martomate.tripaint.model.grid.ImageGrid
-import com.martomate.tripaint.model.image.SaveLocation
+import com.martomate.tripaint.model.image.{ImagePool, ImageStorage}
 import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
-import com.martomate.tripaint.model.image.pool.ImagePool
-import com.martomate.tripaint.model.image.storage.ImageStorage
 import com.martomate.tripaint.util.Listenable
 import com.martomate.tripaint.view.image.TriImageForPreview
 import scalafx.beans.property.ObjectProperty
@@ -20,7 +18,7 @@ object ImagePreviewList:
   def fromImageContent(
       images: Seq[ImageContent],
       previewSize: Int,
-      locationOfImage: ImageStorage => Option[SaveLocation]
+      locationOfImage: ImageStorage => Option[ImagePool.SaveLocation]
   ): (ScrollPane, (ImageGrid => Unit) => Unit) =
     val imageSize = if images.nonEmpty then images.head.storage.imageSize else 8
 
@@ -57,7 +55,7 @@ object ImagePreview:
   def fromImageContent(
       content: ImageContent,
       previewSize: Int,
-      locationOfImage: ImageStorage => Option[SaveLocation]
+      locationOfImage: ImageStorage => Option[ImagePool.SaveLocation]
   ): ImageView =
     val preview = new TriImageForPreview(content, previewSize)
     val tooltip = TriImageTooltip.fromImagePool(content, locationOfImage)

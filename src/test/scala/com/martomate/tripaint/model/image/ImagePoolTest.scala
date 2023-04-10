@@ -1,12 +1,16 @@
-package com.martomate.tripaint.model.image.pool
+package com.martomate.tripaint.model.image
 
 import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.StorageCoords
+import com.martomate.tripaint.model.image.ImagePool.SaveLocation
 import com.martomate.tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
-import com.martomate.tripaint.model.image.save.ImageSaverToFile
-import com.martomate.tripaint.model.image.storage.ImageStorage
-import com.martomate.tripaint.model.image.{RegularImage, SaveLocation, pool}
+import com.martomate.tripaint.model.image.{
+  ImagePool,
+  ImageSaveCollisionHandler,
+  ImageStorage,
+  RegularImage
+}
 import com.martomate.tripaint.util.Tracker
 import munit.FunSuite
 import org.mockito.Mockito.{verify, when}
@@ -29,7 +33,7 @@ class ImagePoolTest extends FunSuite with MockitoSugar {
     val image = ImageStorage.fromBGColor(Color.Black, 2)
     val location = SaveLocation(new File("a.png"))
     val format = new SimpleStorageFormat
-    val info = pool.SaveInfo(format)
+    val info = ImagePool.SaveInfo(format)
 
     val f = new ImagePool()
     f.move(image, location, info)
@@ -39,18 +43,18 @@ class ImagePoolTest extends FunSuite with MockitoSugar {
   }
 
   test("save should notify listeners and return true if the saver reports success") {
-    val listener = mock[ImagePoolListener]
+    val tracker = Tracker.withStorage[ImagePool.Event]
     val image = ImageStorage.fromBGColor(Color.Black, 2)
     val location = SaveLocation(new File("a.png"))
     val format = new SimpleStorageFormat
-    val info = pool.SaveInfo(format)
+    val info = ImagePool.SaveInfo(format)
 
     val f = new ImagePool()
-    f.addListener(listener)
+    f.trackChanges(tracker)
     f.move(image, location, info)
 
     assertEquals(f.save(image, FileSystem.createNull()), true)
-    verify(listener).onImageSaved(image)
+    assertEquals(tracker.events, Seq(ImagePool.Event.ImageSaved(image)))
   }
 
   test("save should write image if it does not exist") {
@@ -58,7 +62,7 @@ class ImagePoolTest extends FunSuite with MockitoSugar {
     val path = "a.png"
     val location = SaveLocation(new File(path))
     val format = new SimpleStorageFormat
-    val info = pool.SaveInfo(format)
+    val info = ImagePool.SaveInfo(format)
 
     val imagePool = new ImagePool()
     imagePool.move(image, location, info)
@@ -82,7 +86,7 @@ class ImagePoolTest extends FunSuite with MockitoSugar {
     val path = "a.png"
     val location = SaveLocation(new File(path))
     val format = new SimpleStorageFormat
-    val info = pool.SaveInfo(format)
+    val info = ImagePool.SaveInfo(format)
 
     val imagePool = new ImagePool()
     imagePool.move(image, location, info)
@@ -110,7 +114,7 @@ class ImagePoolTest extends FunSuite with MockitoSugar {
     val offset = StorageCoords(1, 2)
     val location = SaveLocation(new File(path), offset)
     val format = new SimpleStorageFormat
-    val info = pool.SaveInfo(format)
+    val info = ImagePool.SaveInfo(format)
 
     val imagePool = new ImagePool()
     imagePool.move(image, location, info)
@@ -138,7 +142,7 @@ class ImagePoolTest extends FunSuite with MockitoSugar {
     val offset = StorageCoords(1, 2)
     val location = SaveLocation(new File(path), offset)
     val format = new SimpleStorageFormat
-    val info = pool.SaveInfo(format)
+    val info = ImagePool.SaveInfo(format)
 
     val imagePool = new ImagePool()
     imagePool.move(image, location, info)
@@ -167,7 +171,7 @@ class ImagePoolTest extends FunSuite with MockitoSugar {
   test("locationOf should return the location of the image if it exists") {
     val image = ImageStorage.fromBGColor(Color.Black, 2)
     val location = SaveLocation(null)
-    val info = pool.SaveInfo(null)
+    val info = ImagePool.SaveInfo(null)
 
     val f = new ImagePool()
     f.move(image, location, info)
@@ -178,7 +182,7 @@ class ImagePoolTest extends FunSuite with MockitoSugar {
   test("fromFile should return the image at that location if it exists") {
     val image = ImageStorage.fromBGColor(FXColor.Blue, 16)
     val location = SaveLocation(null)
-    val info = pool.SaveInfo(null)
+    val info = ImagePool.SaveInfo(null)
 
     val f = new ImagePool()
     f.move(image, location, info)
@@ -246,7 +250,7 @@ class ImagePoolTest extends FunSuite with MockitoSugar {
     val p = new ImagePool()
     val image = ImageStorage.fromBGColor(Color.Blue, 8)
     val location = SaveLocation(null)
-    val info = pool.SaveInfo(null)
+    val info = ImagePool.SaveInfo(null)
     assertEquals(p.move(image, location, info), true)
     assertEquals(p.locationOf(image), Some(location))
   }
@@ -255,7 +259,7 @@ class ImagePoolTest extends FunSuite with MockitoSugar {
     val p = new ImagePool()
     val image = ImageStorage.fromBGColor(Color.Blue, 8)
     val location = SaveLocation(null)
-    val info = pool.SaveInfo(null)
+    val info = ImagePool.SaveInfo(null)
     p.move(image, location, info)
     assertEquals(p.move(image, location, info), true)
     assertEquals(p.locationOf(image), Some(location))
@@ -267,7 +271,7 @@ class ImagePoolTest extends FunSuite with MockitoSugar {
     val currentImage = ImageStorage.fromBGColor(Color.Blue, 8)
     val newImage = ImageStorage.fromBGColor(Color.Yellow, 8)
     val location = SaveLocation(null)
-    val info = pool.SaveInfo(null)
+    val info = ImagePool.SaveInfo(null)
 
     when(handler.shouldReplaceImage(currentImage, newImage, location)).thenReturn(None)
 
@@ -279,14 +283,14 @@ class ImagePoolTest extends FunSuite with MockitoSugar {
     "move should replace the current image, notify listeners, and return true if the handler wants to replace it"
   ) {
     val handler = collisionHandler
-    val listener = mock[ImagePoolListener]
+    val tracker = Tracker.withStorage[ImagePool.Event]
 
     val p = new ImagePool()
-    p.addListener(listener)
+    p.trackChanges(tracker)
     val currentImage = ImageStorage.fromBGColor(Color.Blue, 8)
     val newImage = ImageStorage.fromBGColor(Color.Yellow, 8)
     val location = SaveLocation(null)
-    val info = pool.SaveInfo(null)
+    val info = ImagePool.SaveInfo(null)
 
     when(handler.shouldReplaceImage(currentImage, newImage, location)).thenReturn(Some(true))
 
@@ -295,21 +299,24 @@ class ImagePoolTest extends FunSuite with MockitoSugar {
     assertEquals(p.locationOf(currentImage), None)
     assertEquals(p.locationOf(newImage), Some(location))
 
-    verify(listener).onImageReplaced(currentImage, newImage, location)
+    assertEquals(
+      tracker.events,
+      Seq(ImagePool.Event.ImageReplaced(currentImage, newImage, location))
+    )
   }
 
   test(
     "move should keep the current image, notify listeners, and return true if the handler wants to keep it"
   ) {
     val handler = collisionHandler
-    val listener = mock[ImagePoolListener]
+    val tracker = Tracker.withStorage[ImagePool.Event]
 
     val p = new ImagePool()
-    p.addListener(listener)
+    p.trackChanges(tracker)
     val currentImage = ImageStorage.fromBGColor(Color.Blue, 8)
     val newImage = ImageStorage.fromBGColor(Color.Yellow, 8)
     val location = SaveLocation(null)
-    val info = pool.SaveInfo(null)
+    val info = ImagePool.SaveInfo(null)
 
     when(handler.shouldReplaceImage(currentImage, newImage, location)).thenReturn(Some(false))
 
@@ -318,6 +325,9 @@ class ImagePoolTest extends FunSuite with MockitoSugar {
     assertEquals(p.locationOf(currentImage), Some(location))
     assertEquals(p.locationOf(newImage), None)
 
-    verify(listener).onImageReplaced(newImage, currentImage, location)
+    assertEquals(
+      tracker.events,
+      Seq(ImagePool.Event.ImageReplaced(newImage, currentImage, location))
+    )
   }
 }

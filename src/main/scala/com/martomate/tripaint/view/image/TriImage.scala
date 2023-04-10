@@ -1,18 +1,14 @@
 package com.martomate.tripaint.view.image
 
 import com.martomate.tripaint.model.Color
-import com.martomate.tripaint.model.image.content.{
-  CumulativeImageChange,
-  ImageChangeListener,
-  ImageContent
-}
+import com.martomate.tripaint.model.image.content.{CumulativeImageChange, ImageContent}
 import com.martomate.tripaint.model.coords.TriangleCoords
-import com.martomate.tripaint.model.image.storage.ImageStorage
+import com.martomate.tripaint.model.image.ImageStorage
 import javafx.scene.input.{MouseEvent, ScrollEvent}
 import scalafx.beans.property.ReadOnlyBooleanProperty
 import scalafx.scene.layout.Pane
 
-class TriImage(val content: ImageContent, init_zoom: Double) extends ImageChangeListener:
+class TriImage(val content: ImageContent, init_zoom: Double):
   val pane: Pane = new Pane()
 
   private val indexMap = new IndexMap(storage.imageSize)
@@ -22,7 +18,7 @@ class TriImage(val content: ImageContent, init_zoom: Double) extends ImageChange
 
   private val cumulativeImageChange = new CumulativeImageChange
 
-  content.addListener(onImageChanged)
+  content.trackChanges(this.onImageChanged _)
   pane.children.add(canvas)
 
   if content.coords.x % 2 != 0 then canvas.rotate() += 180
@@ -69,7 +65,7 @@ class TriImage(val content: ImageContent, init_zoom: Double) extends ImageChange
     canvas.clearCanvas()
     canvas.redraw(storage)
 
-  override def onImageChanged(event: ImageContent.Event): Unit =
+  def onImageChanged(event: ImageContent.Event): Unit =
     import ImageContent.Event.*
     event match
       case PixelChanged(coords, _, _) =>

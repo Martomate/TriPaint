@@ -2,11 +2,9 @@ package com.martomate.tripaint.model.image.content
 
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.{TriImageCoords, TriangleCoords}
-import com.martomate.tripaint.model.image.SaveLocation
-import com.martomate.tripaint.model.image.save.ImageSaverToFile
-import com.martomate.tripaint.model.image.storage.{ImageStorage, ImageStorageListener}
+import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.model.undo.UndoManager
-import com.martomate.tripaint.util.Listenable
+import com.martomate.tripaint.util.{EventDispatcher, Tracker}
 import scalafx.beans.property.{BooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanWrapper}
 
 object ImageContent:
@@ -14,12 +12,13 @@ object ImageContent:
     case PixelChanged(coords: TriangleCoords, from: Color, to: Color)
     case ImageChangedALot
 
-class ImageContent(val coords: TriImageCoords, init_image: ImageStorage)
-    extends Listenable[ImageContent.Event => Unit]
-    with ImageStorageListener:
+class ImageContent(val coords: TriImageCoords, init_image: ImageStorage):
   private var _image: ImageStorage = init_image
 
-  _image.addListener(this)
+  private val dispatcher = new EventDispatcher[ImageContent.Event]
+  def trackChanges(tracker: Tracker[ImageContent.Event]): Unit = dispatcher.track(tracker)
+
+  _image.trackChanges(this.onStorageChanged _)
 
   def storage: ImageStorage = _image
 
@@ -35,21 +34,17 @@ class ImageContent(val coords: TriImageCoords, init_image: ImageStorage)
   def changedProperty: ReadOnlyBooleanProperty = _changed.readOnlyProperty
 
   def tellListenersAboutBigChange(): Unit =
-    import ImageContent.Event.*
-    notifyListeners(_.apply(ImageChangedALot))
+    dispatcher.notify(ImageContent.Event.ImageChangedALot)
 
   def setImageSaved(): Unit = _changed.value = false
 
   def replaceImage(newImage: ImageStorage): Unit =
-    import ImageContent.Event.*
-
-    _image.removeListener(this)
     _image = newImage
-    _image.addListener(this)
-    notifyListeners(_.apply(ImageChangedALot))
+    _image.trackChanges(this.onStorageChanged _)
+    dispatcher.notify(ImageContent.Event.ImageChangedALot)
 
-  def onPixelChanged(coords: TriangleCoords, from: Color, to: Color): Unit =
-    import ImageContent.Event.*
-
-    _changed.value = true
-    notifyListeners(_.apply(PixelChanged(coords, from, to)))
+  def onStorageChanged(event: ImageStorage.Event): Unit =
+    event match
+      case ImageStorage.Event.PixelChanged(coords, from, to) =>
+        _changed.value = true
+        dispatcher.notify(ImageContent.Event.PixelChanged(coords, from, to))

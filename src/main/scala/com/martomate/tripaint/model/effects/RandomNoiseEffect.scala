@@ -1,7 +1,7 @@
 package com.martomate.tripaint.model.effects
 
+import com.martomate.tripaint.model.ImageGrid
 import com.martomate.tripaint.model.coords.TriImageCoords
-import com.martomate.tripaint.model.grid.ImageGrid
 import scalafx.scene.paint.Color
 
 class RandomNoiseEffect(min: Color, max: Color) extends Effect {

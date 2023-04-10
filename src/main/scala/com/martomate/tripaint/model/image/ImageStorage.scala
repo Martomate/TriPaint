@@ -1,19 +1,20 @@
-package com.martomate.tripaint.model.image.storage
+package com.martomate.tripaint.model.image
 
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.{StorageCoords, TriangleCoords}
-import com.martomate.tripaint.model.image.RegularImage
 import com.martomate.tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
-import com.martomate.tripaint.util.Listenable
+import com.martomate.tripaint.util.{EventDispatcher, Listenable, Tracker}
 
 import scala.util.Try
 
-class ImageStorage private (val imageSize: Int, initialPixels: TriangleCoords => Color)
-    extends Listenable[ImageStorageListener] {
+class ImageStorage private (val imageSize: Int, initialPixels: TriangleCoords => Color) {
   private val coordsFormatter = new SimpleStorageFormat
   private val pixels = Array.tabulate(imageSize, imageSize)((x, y) =>
     initialPixels(coordsFormatter.transformFromStorage(StorageCoords(x, y)))
   )
+
+  private val dispatcher = new EventDispatcher[ImageStorage.Event]
+  def trackChanges(tracker: Tracker[ImageStorage.Event]): Unit = dispatcher.track(tracker)
 
   private def get(coords: TriangleCoords): Color = {
     val sc = coordsFormatter.transformToStorage(coords)
@@ -32,7 +33,7 @@ class ImageStorage private (val imageSize: Int, initialPixels: TriangleCoords =>
     val before = apply(coords)
     if (before != col) {
       set(coords, col)
-      notifyListeners(_.onPixelChanged(coords, before, col))
+      dispatcher.notify(ImageStorage.Event.PixelChanged(coords, before, col))
     }
   }
 
@@ -77,4 +78,7 @@ object ImageStorage {
 
     new ImageStorage(imageSize, coords => colorAt(coords))
   }
+
+  enum Event:
+    case PixelChanged(coords: TriangleCoords, from: Color, to: Color)
 }

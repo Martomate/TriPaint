@@ -2,7 +2,7 @@ package com.martomate.tripaint.control.action
 
 import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.coords.TriImageCoords
-import com.martomate.tripaint.model.image.SaveLocation
+import com.martomate.tripaint.model.image.ImagePool
 import com.martomate.tripaint.view.{FileOpenSettings, TriPaintView}
 
 import java.io.File
@@ -21,7 +21,7 @@ class OpenAction(
       FileOpenSettings(offset, format) <- askForFileOpenSettings(file, imageSize, 1, 1)
       coords <- askForWhereToPutImage()
     } model.imagePool.fromFile(
-      SaveLocation(file, offset),
+      ImagePool.SaveLocation(file, offset),
       format,
       imageSize,
       model.fileSystem
