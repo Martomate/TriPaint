@@ -3,49 +3,49 @@ package com.martomate.tripaint.view.gui
 import com.martomate.tripaint.view.{MenuBarAction, TriPaintViewListener}
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 
-class MainStageButtons(control: TriPaintViewListener) {
+object MainStageButtons {
   val New: MenuBarAction = MenuBarAction(
     "New",
     "new",
     new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown),
-    control.action_new
+    UIAction.New
   )
   val Open: MenuBarAction = MenuBarAction(
     "Open",
     "open",
     new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown),
-    control.action_open
+    UIAction.Open
   )
   val OpenHexagon: MenuBarAction = MenuBarAction(
     "Open hexagon",
     "open_hexagon",
     new KeyCodeCombination(KeyCode.H, KeyCombination.ControlDown),
-    control.action_openHexagon
+    UIAction.OpenHexagon
   )
   val Save: MenuBarAction = MenuBarAction(
     "Save",
     "save",
     new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown),
-    control.action_save
+    UIAction.Save
   )
   val SaveAs: MenuBarAction = MenuBarAction(
     "Save As",
     accelerator =
       new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown, KeyCombination.ShiftDown),
-    onAction = control.action_saveAs
+    UIAction.SaveAs
   )
-  val Exit: MenuBarAction = MenuBarAction("Exit", onAction = control.action_exit)
+  val Exit: MenuBarAction = MenuBarAction("Exit", action = UIAction.Exit)
   val Undo: MenuBarAction = MenuBarAction(
     "Undo",
     "undo",
     new KeyCodeCombination(KeyCode.Z, KeyCombination.ControlDown),
-    control.action_undo
+    UIAction.Undo
   )
   val Redo: MenuBarAction = MenuBarAction(
     "Redo",
     "redo",
     new KeyCodeCombination(KeyCode.Y, KeyCombination.ControlDown),
-    control.action_redo
+    UIAction.Redo
   )
   val Cut: MenuBarAction = MenuBarAction("Cut", "cut")
   val Copy: MenuBarAction = MenuBarAction("Copy", "copy")
@@ -53,10 +53,10 @@ class MainStageButtons(control: TriPaintViewListener) {
   val Move: MenuBarAction = MenuBarAction("Move", "move")
   val Scale: MenuBarAction = MenuBarAction("Scale", "scale")
   val Rotate: MenuBarAction = MenuBarAction("Rotate", "rotate")
-  val Blur: MenuBarAction = MenuBarAction("Blur", onAction = control.action_blur)
+  val Blur: MenuBarAction = MenuBarAction("Blur", action = UIAction.Blur)
   val MotionBlur: MenuBarAction =
-    MenuBarAction("Motion blur", onAction = control.action_motionBlur)
+    MenuBarAction("Motion blur", action = UIAction.MotionBlur)
   val RandomNoise: MenuBarAction =
-    MenuBarAction("Random noise", onAction = control.action_randomNoise)
-  val Scramble: MenuBarAction = MenuBarAction("Scramble", onAction = control.action_scramble)
+    MenuBarAction("Random noise", action = UIAction.RandomNoise)
+  val Scramble: MenuBarAction = MenuBarAction("Scramble", action = UIAction.Scramble)
 }

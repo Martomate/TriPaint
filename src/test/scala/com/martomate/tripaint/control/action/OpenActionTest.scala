@@ -1,5 +1,6 @@
 package com.martomate.tripaint.control.action
 
+import com.martomate.tripaint.control.Actions
 import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.{Color, TriPaintModel}
 import com.martomate.tripaint.model.coords.{StorageCoords, TriImageCoords}
@@ -20,12 +21,12 @@ class OpenActionTest extends FunSuite {
       TriPaintModel.createNull(new FileSystem.NullArgs(initialImages = Map(file -> image)))
     model.imageGrid.setImageSizeIfEmpty(8)
 
-    new OpenAction(
+    Actions.openImage(
       model,
-      () => Some(file),
-      (_, _, _, _) => Some(FileOpenSettings(StorageCoords(0, 0), new SimpleStorageFormat)),
-      () => Some((3, 4))
-    ).perform()
+      file,
+      FileOpenSettings(StorageCoords(0, 0), new SimpleStorageFormat),
+      TriImageCoords(3, 4)
+    )
 
     val actualImage = model
       .imageGrid(TriImageCoords(3, 4))
@@ -50,12 +51,12 @@ class OpenActionTest extends FunSuite {
     )
     model.imageGrid.setImageSizeIfEmpty(8)
 
-    new OpenAction(
+    Actions.openImage(
       model,
-      () => Some(file),
-      (_, _, _, _) => Some(FileOpenSettings(offset, new SimpleStorageFormat)),
-      () => Some((3, 4))
-    ).perform()
+      file,
+      FileOpenSettings(offset, new SimpleStorageFormat),
+      TriImageCoords(3, 4)
+    )
 
     val actualImage = model
       .imageGrid(TriImageCoords(3, 4))

@@ -1,5 +1,6 @@
 package com.martomate.tripaint.control.action
 
+import com.martomate.tripaint.control.Actions
 import com.martomate.tripaint.model.coords.TriImageCoords
 import com.martomate.tripaint.model.image.RegularImage
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
@@ -15,7 +16,7 @@ class NewActionTest extends FunSuite {
     val imageSize = model.imageGrid.imageSize
     val backgroundColor = Color.Cyan
 
-    new NewAction(model, backgroundColor, () => Some((3, 4))).perform()
+    Actions.createNewImage(model.imageGrid, backgroundColor, TriImageCoords(3, 4))
 
     val expectedImage = RegularImage.fill(imageSize, imageSize, backgroundColor)
 
@@ -28,21 +29,6 @@ class NewActionTest extends FunSuite {
     assertEquals(actualImage, expectedImage)
   }
 
-  test("NewAction should do nothing if no image location is provided") {
-    val model = TriPaintModel.createNull()
-    model.imageGrid.setImageSizeIfEmpty(8)
-
-    new NewAction(model, null, () => None).perform()
-
-    val actualImage = model
-      .imageGrid(TriImageCoords(3, 4))
-      .map(_.storage)
-      .map(_.toRegularImage(new SimpleStorageFormat))
-      .orNull
-
-    assertEquals(actualImage, null)
-  }
-
   // TODO: Is this really how it should work?
   test("NewAction should replace any existing image at the location") {
     val model = TriPaintModel.createNull()
@@ -51,8 +37,8 @@ class NewActionTest extends FunSuite {
     val imageSize = model.imageGrid.imageSize
     val backgroundColor = Color.Cyan
 
-    new NewAction(model, backgroundColor, () => Some((3, 4))).perform()
-    new NewAction(model, backgroundColor, () => Some((3, 4))).perform()
+    Actions.createNewImage(model.imageGrid, backgroundColor, TriImageCoords(3, 4))
+    Actions.createNewImage(model.imageGrid, backgroundColor, TriImageCoords(3, 4))
 
     val expectedImage = RegularImage.fill(imageSize, imageSize, backgroundColor)
 

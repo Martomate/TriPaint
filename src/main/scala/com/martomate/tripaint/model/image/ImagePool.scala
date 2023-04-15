@@ -93,9 +93,6 @@ class ImagePool {
     success
   }
 
-  def fromBGColor(bgColor: Color, imageSize: Int): ImageStorage =
-    ImageStorage.fromBGColor(bgColor, imageSize)
-
   // TODO: This pool system will not work since you can change SaveInfo for an image without telling the pool! Some planning has to be done.
   def fromFile(
       location: SaveLocation,

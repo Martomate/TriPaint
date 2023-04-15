@@ -25,10 +25,8 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     with TriPaintView {
   private val imageDisplay: ImageGridPane = new ImageGridPane(model.imageGrid)
 
-  private val buttons = new MainStageButtons(controls)
-
-  private val menuBar: MenuBar = TheMenuBar.create(buttons)
-  private val toolBar: ToolBar = TheToolBar.create(buttons)
+  private val menuBar: MenuBar = TheMenuBar.create(controls)
+  private val toolBar: ToolBar = TheToolBar.create(controls)
   private val toolBox: TilePane = ToolBox.create(EditMode.modes)
   private val imageTabs: TilePane =
     ImageTabs.fromImagePool(model.imageGrid, model.imagePool, controls.requestImageRemoval)
