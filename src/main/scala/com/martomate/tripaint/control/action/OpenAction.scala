@@ -14,8 +14,8 @@ class OpenAction(
     file: File,
     fileOpenSettings: FileOpenSettings,
     whereToPutImage: TriImageCoords
-) extends Action {
-  override def perform(): Unit = {
+) {
+  def perform(): Unit = {
     val FileOpenSettings(offset, format) = fileOpenSettings
     val location = ImagePool.SaveLocation(file, offset)
     val imageSize = model.imageGrid.imageSize

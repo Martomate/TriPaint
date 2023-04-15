@@ -12,9 +12,13 @@ class SaveAction(
     askForSaveFile: ImageContent => Option[File],
     askForFileSaveSettings: (File, ImageContent) => Option[FileSaveSettings],
     imageSaveCollisionHandler: ImageSaveCollisionHandler
-) extends Action {
-  override def perform(): Unit = {
-    save(model.imagePool, model.imageGrid.selectedImages.filter(_.changed), model.fileSystem)(
+) {
+  def perform(): Unit = {
+    Action.save(
+      model.imagePool,
+      model.imageGrid.selectedImages.filter(_.changed),
+      model.fileSystem
+    )(
       askForSaveFile,
       askForFileSaveSettings,
       imageSaveCollisionHandler

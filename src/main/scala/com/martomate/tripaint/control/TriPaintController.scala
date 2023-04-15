@@ -19,13 +19,11 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
 
   override def perform(action: UIAction): Unit = action match
     case UIAction.New =>
-      for where <- view.askForWhereToPutImage()
-      do
-        new NewAction(
-          model.imageGrid,
-          Color.fromFXColor(view.backgroundColor),
-          TriImageCoords(where._1, where._2)
-        ).perform()
+      for
+        where <- view.askForWhereToPutImage()
+        backgroundColor = Color.fromFXColor(view.backgroundColor)
+        coords = TriImageCoords(where._1, where._2)
+      do new NewAction(model.imageGrid, backgroundColor, coords).perform()
     case UIAction.Open =>
       for
         file <- view.askForFileToOpen()
@@ -45,14 +43,7 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
     case UIAction.SaveAs =>
       new SaveAsAction(model, view.askForSaveFile, view.askForFileSaveSettings, view).perform()
     case UIAction.Exit =>
-      new ExitAction(
-        model,
-        view.askForSaveFile,
-        view.askForFileSaveSettings,
-        view,
-        view.askSaveBeforeClosing,
-        view.close
-      ).perform()
+      if (do_exit()) view.close()
     case UIAction.Undo => model.imageGrid.images.foreach(_.undo())
     case UIAction.Redo => model.imageGrid.images.foreach(_.redo())
     case UIAction.Blur =>
@@ -67,14 +58,8 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
     case UIAction.Scramble => new EffectAction(model, ScrambleEffect).perform()
     case _                 =>
 
-  override def requestExit(): Boolean = new ExitAction(
-    model,
-    view.askForSaveFile,
-    view.askForFileSaveSettings,
-    view,
-    view.askSaveBeforeClosing,
-    view.close
-  ).do_exit()
+  override def requestExit(): Boolean = do_exit()
+
   override def requestImageRemoval(image: ImageContent): Unit =
     new RemoveImageAction(
       image,
@@ -84,6 +69,24 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
       view,
       view.askSaveBeforeClosing
     ).perform()
+
+  private def do_exit(): Boolean = {
+    model.imageGrid.images.filter(_.changed) match {
+      case Seq() => true
+      case images =>
+        view.askSaveBeforeClosing(images) match {
+          case Some(shouldSave) =>
+            if (shouldSave)
+              Action.save(model.imagePool, images, model.fileSystem)(
+                view.askForSaveFile,
+                view.askForFileSaveSettings,
+                view
+              )
+            else true
+          case None => false
+        }
+    }
+  }
 }
 // dispatcher, store, view, action, ...
 // model, view, intent

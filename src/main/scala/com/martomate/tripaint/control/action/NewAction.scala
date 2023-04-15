@@ -5,9 +5,8 @@ import com.martomate.tripaint.model.coords.TriImageCoords
 import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.model.image.content.ImageContent
 
-class NewAction(imageGrid: ImageGrid, backgroundColor: Color, whereToPutImage: TriImageCoords)
-    extends Action {
-  override def perform(): Unit = {
+class NewAction(imageGrid: ImageGrid, backgroundColor: Color, whereToPutImage: TriImageCoords) {
+  def perform(): Unit = {
     imageGrid.set(
       new ImageContent(
         whereToPutImage,

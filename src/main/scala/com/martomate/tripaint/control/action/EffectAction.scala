@@ -1,13 +1,12 @@
 package com.martomate.tripaint.control.action
 
-import com.martomate.tripaint.control.action.Action
 import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.effects.Effect
 import com.martomate.tripaint.model.image.content.{ImageChange, PixelChange}
 import com.martomate.tripaint.view.TriPaintView
 
-class EffectAction(model: TriPaintModel, effect: Effect) extends Action {
-  override def perform(): Unit = {
+class EffectAction(model: TriPaintModel, effect: Effect) {
+  def perform(): Unit = {
     applyEffect(model, effect)
   }
 
@@ -19,7 +18,7 @@ class EffectAction(model: TriPaintModel, effect: Effect) extends Action {
     val allPixels = storages.map(_.allPixels)
     val before = allPixels.zip(storages).map(a => a._1.map(a._2(_)))
 
-    effect.action(im.map(_.coords).toSeq, grid)
+    effect.action(im.map(_.coords), grid)
 
     val after = allPixels.zip(storages).map(a => a._1.map(a._2(_)))
 

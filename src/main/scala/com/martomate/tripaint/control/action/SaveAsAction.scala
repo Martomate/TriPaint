@@ -12,10 +12,10 @@ class SaveAsAction(
     askForSaveFile: ImageContent => Option[File],
     askForFileSaveSettings: (File, ImageContent) => Option[FileSaveSettings],
     imageSaveCollisionHandler: ImageSaveCollisionHandler
-) extends Action {
-  override def perform(): Unit = {
+) {
+  def perform(): Unit = {
     model.imageGrid.selectedImages.foreach(im =>
-      saveAs(model.imagePool, im, model.fileSystem)(
+      Action.saveAs(model.imagePool, im, model.fileSystem)(
         askForSaveFile,
         askForFileSaveSettings,
         imageSaveCollisionHandler

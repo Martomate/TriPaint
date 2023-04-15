@@ -14,8 +14,8 @@ class OpenHexagonAction(
     file: File,
     fileOpenSettings: FileOpenSettings,
     coords: TriImageCoords
-) extends Action {
-  override def perform(): Unit = {
+) {
+  def perform(): Unit = {
     val imageSize = model.imageGrid.imageSize
     val FileOpenSettings(offset, format) = fileOpenSettings
 

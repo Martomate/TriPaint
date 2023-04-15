@@ -8,10 +8,8 @@ import com.martomate.tripaint.view.{FileSaveSettings, TriPaintView}
 
 import java.io.File
 
-abstract class Action {
-  def perform(): Unit
-
-  protected def save(imagePool: ImagePool, images: Seq[ImageContent], fileSystem: FileSystem)(
+object Action {
+  def save(imagePool: ImagePool, images: Seq[ImageContent], fileSystem: FileSystem)(
       askForSaveFile: ImageContent => Option[File],
       askForFileSaveSettings: (File, ImageContent) => Option[FileSaveSettings],
       imageSaveCollisionHandler: ImageSaveCollisionHandler
@@ -28,7 +26,7 @@ abstract class Action {
       )
   }
 
-  protected def saveAs(imagePool: ImagePool, image: ImageContent, fileSystem: FileSystem)(
+  def saveAs(imagePool: ImagePool, image: ImageContent, fileSystem: FileSystem)(
       askForSaveFile: ImageContent => Option[File],
       askForFileSaveSettings: (File, ImageContent) => Option[FileSaveSettings],
       imageSaveCollisionHandler: ImageSaveCollisionHandler
