@@ -1,11 +1,12 @@
 package com.martomate.tripaint.control
 
 import com.martomate.tripaint.control.action.*
-import com.martomate.tripaint.control.action.effect.{
-  BlurAction,
-  MotionBlurAction,
-  RandomNoiseAction,
-  ScrambleAction
+import com.martomate.tripaint.model.coords.TriImageCoords
+import com.martomate.tripaint.model.effects.{
+  BlurEffect,
+  MotionBlurEffect,
+  RandomNoiseEffect,
+  ScrambleEffect
 }
 import com.martomate.tripaint.model.{Color, TriPaintModel}
 import com.martomate.tripaint.model.image.content.ImageContent
@@ -18,61 +19,53 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
 
   override def perform(action: UIAction): Unit = action match
     case UIAction.New =>
-      perform(
-        new NewAction(model, Color.fromFXColor(view.backgroundColor), view.askForWhereToPutImage)
-      )
+      for where <- view.askForWhereToPutImage()
+      do
+        new NewAction(
+          model.imageGrid,
+          Color.fromFXColor(view.backgroundColor),
+          TriImageCoords(where._1, where._2)
+        ).perform()
     case UIAction.Open =>
-      perform(
-        new OpenAction(
-          model,
-          view.askForFileToOpen,
-          view.askForFileOpenSettings,
-          view.askForWhereToPutImage
-        )
-      )
+      for
+        file <- view.askForFileToOpen()
+        fileOpenSettings <- view.askForFileOpenSettings(file, model.imageGrid.imageSize, 1, 1)
+        where <- view.askForWhereToPutImage()
+        coords = TriImageCoords(where._1, where._2)
+      do new OpenAction(model, file, fileOpenSettings, coords).perform()
     case UIAction.OpenHexagon =>
-      perform(
-        new OpenHexagonAction(
-          model,
-          view.askForFileToOpen,
-          view.askForFileOpenSettings,
-          view.askForWhereToPutImage
-        )
-      )
+      for
+        file <- view.askForFileToOpen()
+        fileOpenSettings <- view.askForFileOpenSettings(file, model.imageGrid.imageSize, 6, 1)
+        where <- view.askForWhereToPutImage()
+        coords = TriImageCoords(where._1, where._2)
+      do new OpenHexagonAction(model, file, fileOpenSettings, coords).perform()
     case UIAction.Save =>
-      perform(
-        new SaveAction(model, view.askForSaveFile, view.askForFileSaveSettings, view)
-      )
+      new SaveAction(model, view.askForSaveFile, view.askForFileSaveSettings, view).perform()
     case UIAction.SaveAs =>
-      perform(
-        new SaveAsAction(model, view.askForSaveFile, view.askForFileSaveSettings, view)
-      )
+      new SaveAsAction(model, view.askForSaveFile, view.askForFileSaveSettings, view).perform()
     case UIAction.Exit =>
-      perform(
-        new ExitAction(
-          model,
-          view.askForSaveFile,
-          view.askForFileSaveSettings,
-          view,
-          view.askSaveBeforeClosing,
-          view.close
-        )
-      )
-    case UIAction.Undo => perform(new UndoAction(model))
-    case UIAction.Redo => perform(new RedoAction(model))
-    case UIAction.Blur => perform(new BlurAction(model, view.askForBlurRadius))
+      new ExitAction(
+        model,
+        view.askForSaveFile,
+        view.askForFileSaveSettings,
+        view,
+        view.askSaveBeforeClosing,
+        view.close
+      ).perform()
+    case UIAction.Undo => model.imageGrid.images.foreach(_.undo())
+    case UIAction.Redo => model.imageGrid.images.foreach(_.redo())
+    case UIAction.Blur =>
+      for radius <- view.askForBlurRadius()
+      do new EffectAction(model, new BlurEffect(radius)).perform()
     case UIAction.MotionBlur =>
-      perform(
-        new MotionBlurAction(model, view.askForMotionBlurRadius)
-      )
+      for radius <- view.askForMotionBlurRadius()
+      do new EffectAction(model, new MotionBlurEffect(radius)).perform()
     case UIAction.RandomNoise =>
-      perform(
-        new RandomNoiseAction(model, view.askForRandomNoiseColors)
-      )
-    case UIAction.Scramble => perform(new ScrambleAction(model))
+      for (lo, hi) <- view.askForRandomNoiseColors()
+      do new EffectAction(model, new RandomNoiseEffect(lo, hi)).perform()
+    case UIAction.Scramble => new EffectAction(model, ScrambleEffect).perform()
     case _                 =>
-
-  private def perform(action: Action): Unit = action.perform()
 
   override def requestExit(): Boolean = new ExitAction(
     model,
@@ -82,7 +75,7 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
     view.askSaveBeforeClosing,
     view.close
   ).do_exit()
-  override def requestImageRemoval(image: ImageContent): Unit = perform(
+  override def requestImageRemoval(image: ImageContent): Unit =
     new RemoveImageAction(
       image,
       model,
@@ -90,8 +83,7 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
       view.askForFileSaveSettings,
       view,
       view.askSaveBeforeClosing
-    )
-  )
+    ).perform()
 }
 // dispatcher, store, view, action, ...
 // model, view, intent

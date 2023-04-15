@@ -22,9 +22,9 @@ class OpenActionTest extends FunSuite {
 
     new OpenAction(
       model,
-      () => Some(file),
-      (_, _, _, _) => Some(FileOpenSettings(StorageCoords(0, 0), new SimpleStorageFormat)),
-      () => Some((3, 4))
+      file,
+      FileOpenSettings(StorageCoords(0, 0), new SimpleStorageFormat),
+      TriImageCoords(3, 4)
     ).perform()
 
     val actualImage = model
@@ -52,9 +52,9 @@ class OpenActionTest extends FunSuite {
 
     new OpenAction(
       model,
-      () => Some(file),
-      (_, _, _, _) => Some(FileOpenSettings(offset, new SimpleStorageFormat)),
-      () => Some((3, 4))
+      file,
+      FileOpenSettings(offset, new SimpleStorageFormat),
+      TriImageCoords(3, 4)
     ).perform()
 
     val actualImage = model
