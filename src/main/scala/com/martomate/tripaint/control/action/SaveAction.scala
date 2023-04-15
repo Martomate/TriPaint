@@ -14,7 +14,7 @@ class SaveAction(
     imageSaveCollisionHandler: ImageSaveCollisionHandler
 ) extends Action {
   override def perform(): Unit = {
-    save(model, allSelectedImages(model).filter(_.changed): _*)(
+    save(model.imagePool, model.imageGrid.selectedImages.filter(_.changed), model.fileSystem)(
       askForSaveFile,
       askForFileSaveSettings,
       imageSaveCollisionHandler

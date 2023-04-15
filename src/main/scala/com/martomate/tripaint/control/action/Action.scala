@@ -1,6 +1,6 @@
 package com.martomate.tripaint.control.action
 
-import com.martomate.tripaint.model.TriPaintModel
+import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.coords.TriImageCoords
 import com.martomate.tripaint.model.image.{ImagePool, ImageSaveCollisionHandler, ImageStorage}
 import com.martomate.tripaint.model.image.content.ImageContent
@@ -11,71 +11,42 @@ import java.io.File
 abstract class Action {
   def perform(): Unit
 
-  protected def addImage(model: TriPaintModel, newImage: ImageContent): Unit = {
-    if (newImage != null) {
-      model.imageGrid.set(newImage)
-    }
-  }
-
-  protected def makeImageContent(
-      model: TriPaintModel,
-      coords: TriImageCoords,
-      storage: ImageStorage
-  ): ImageContent = new ImageContent(coords, storage)
-
-  protected def allImages(model: TriPaintModel): Seq[ImageContent] = {
-    model.imageGrid.images
-  }
-
-  protected def allSelectedImages(model: TriPaintModel): Seq[ImageContent] = {
-    model.imageGrid.selectedImages
-  }
-
-  protected def save(model: TriPaintModel, images: ImageContent*)(
+  protected def save(imagePool: ImagePool, images: Seq[ImageContent], fileSystem: FileSystem)(
       askForSaveFile: ImageContent => Option[File],
       askForFileSaveSettings: (File, ImageContent) => Option[FileSaveSettings],
       imageSaveCollisionHandler: ImageSaveCollisionHandler
   ): Boolean = {
     images
-      .filter(im => !model.imagePool.save(im.storage, model.fileSystem))
+      .filter(im => !imagePool.save(im.storage, fileSystem))
       .forall(im =>
-        model.imagePool.save(im.storage, model.fileSystem) ||
-          saveAs(model, im)(askForSaveFile, askForFileSaveSettings, imageSaveCollisionHandler)
+        imagePool.save(im.storage, fileSystem) ||
+          saveAs(imagePool, im, fileSystem)(
+            askForSaveFile,
+            askForFileSaveSettings,
+            imageSaveCollisionHandler
+          )
       )
   }
 
-  protected def saveAs(model: TriPaintModel, image: ImageContent)(
+  protected def saveAs(imagePool: ImagePool, image: ImageContent, fileSystem: FileSystem)(
       askForSaveFile: ImageContent => Option[File],
       askForFileSaveSettings: (File, ImageContent) => Option[FileSaveSettings],
       imageSaveCollisionHandler: ImageSaveCollisionHandler
   ): Boolean = {
     askForSaveFile(image) flatMap { file =>
       askForFileSaveSettings(file, image) map { settings =>
-        saveImageAs(model, image, file, settings)(imageSaveCollisionHandler)
+        if (
+          imagePool.move(
+            image.storage,
+            ImagePool.SaveLocation(file, settings.offset),
+            ImagePool.SaveInfo(settings.format)
+          )(imageSaveCollisionHandler)
+        ) {
+          val saved = imagePool.save(image.storage, fileSystem)
+          if (!saved) println("Image could not be saved!!")
+          saved
+        } else false
       }
     } getOrElse false
-  }
-
-  private def saveImageAs(
-      model: TriPaintModel,
-      image: ImageContent,
-      file: File,
-      settings: FileSaveSettings
-  )(imageSaveCollisionHandler: ImageSaveCollisionHandler) = {
-    val location = ImagePool.SaveLocation(file, settings.offset)
-    val info = ImagePool.SaveInfo(settings.format)
-
-    if (model.imagePool.move(image.storage, location, info)(imageSaveCollisionHandler)) {
-      val saved = model.imagePool.save(image.storage, model.fileSystem)
-      if (!saved) println("Image could not be saved!!")
-      saved
-    } else false
-  }
-
-  protected def saveBeforeClosing(
-      askSaveBeforeClosing: Seq[ImageContent] => Option[Boolean],
-      images: ImageContent*
-  ): Option[Boolean] = {
-    askSaveBeforeClosing(images)
   }
 }

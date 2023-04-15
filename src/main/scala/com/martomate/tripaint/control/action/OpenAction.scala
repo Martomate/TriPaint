@@ -3,6 +3,7 @@ package com.martomate.tripaint.control.action
 import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.coords.TriImageCoords
 import com.martomate.tripaint.model.image.ImagePool
+import com.martomate.tripaint.model.image.content.ImageContent
 import com.martomate.tripaint.view.{FileOpenSettings, TriPaintView}
 
 import java.io.File
@@ -28,8 +29,8 @@ class OpenAction(
     ) match {
       case Success(storage) =>
         val imageCoords = TriImageCoords(coords._1, coords._2)
-        val image = makeImageContent(model, imageCoords, storage)
-        addImage(model, image)
+        val image = new ImageContent(imageCoords, storage)
+        model.imageGrid.set(image)
       case Failure(exc) =>
         exc.printStackTrace()
     }

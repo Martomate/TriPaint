@@ -19,10 +19,10 @@ class RemoveImageAction(
   override def perform(): Unit = {
     var abortRemoval = false
     if (image.changed) {
-      saveBeforeClosing(askSaveBeforeClosing, image) match {
+      askSaveBeforeClosing(Seq(image)) match {
         case Some(shouldSave) =>
           if (
-            shouldSave && !save(model, image)(
+            shouldSave && !save(model.imagePool, Seq(image), model.fileSystem)(
               askForSaveFile,
               askForFileSaveSettings,
               imageSaveCollisionHandler

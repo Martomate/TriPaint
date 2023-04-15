@@ -20,13 +20,13 @@ class ExitAction(
   }
 
   def do_exit(): Boolean = {
-    allImages(model).filter(_.changed) match {
+    model.imageGrid.images.filter(_.changed) match {
       case Seq() => true
       case images =>
-        saveBeforeClosing(askSaveBeforeClosing, images: _*) match {
+        askSaveBeforeClosing(images) match {
           case Some(shouldSave) =>
             if (shouldSave)
-              save(model, images: _*)(
+              save(model.imagePool, images, model.fileSystem)(
                 askForSaveFile,
                 askForFileSaveSettings,
                 imageSaveCollisionHandler
