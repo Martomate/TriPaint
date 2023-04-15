@@ -1,15 +1,10 @@
 package com.martomate.tripaint.control
 
-import com.martomate.tripaint.control.action.*
 import com.martomate.tripaint.model.coords.TriImageCoords
-import com.martomate.tripaint.model.effects.{
-  BlurEffect,
-  MotionBlurEffect,
-  RandomNoiseEffect,
-  ScrambleEffect
-}
-import com.martomate.tripaint.model.{Color, TriPaintModel}
+import com.martomate.tripaint.model.effects.*
+import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.{Color, TriPaintModel}
 import com.martomate.tripaint.view.gui.UIAction
 import com.martomate.tripaint.view.{TriPaintView, TriPaintViewFactory, TriPaintViewListener}
 
@@ -23,52 +18,80 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
         where <- view.askForWhereToPutImage()
         backgroundColor = Color.fromFXColor(view.backgroundColor)
         coords = TriImageCoords(where._1, where._2)
-      do new NewAction(model.imageGrid, backgroundColor, coords).perform()
+      do Actions.createNewImage(model.imageGrid, backgroundColor, coords)
+
     case UIAction.Open =>
       for
         file <- view.askForFileToOpen()
         fileOpenSettings <- view.askForFileOpenSettings(file, model.imageGrid.imageSize, 1, 1)
         where <- view.askForWhereToPutImage()
         coords = TriImageCoords(where._1, where._2)
-      do new OpenAction(model, file, fileOpenSettings, coords).perform()
+      do Actions.openImage(model, file, fileOpenSettings, coords)
+
     case UIAction.OpenHexagon =>
       for
         file <- view.askForFileToOpen()
         fileOpenSettings <- view.askForFileOpenSettings(file, model.imageGrid.imageSize, 6, 1)
         where <- view.askForWhereToPutImage()
         coords = TriImageCoords(where._1, where._2)
-      do new OpenHexagonAction(model, file, fileOpenSettings, coords).perform()
+      do Actions.openHexagon(model, file, fileOpenSettings, coords)
+
     case UIAction.Save =>
-      new SaveAction(model, view.askForSaveFile, view.askForFileSaveSettings, view).perform()
+      Actions.save(
+        model.imagePool,
+        model.imageGrid.selectedImages.filter(_.changed),
+        model.fileSystem
+      )(view.askForSaveFile, view.askForFileSaveSettings, view)
+
     case UIAction.SaveAs =>
-      new SaveAsAction(model, view.askForSaveFile, view.askForFileSaveSettings, view).perform()
-    case UIAction.Exit =>
-      if (do_exit()) view.close()
+      model.imageGrid.selectedImages.foreach(im =>
+        Actions.saveAs(model.imagePool, im, model.fileSystem)(
+          view.askForSaveFile,
+          view.askForFileSaveSettings,
+          view
+        )
+      )
+
+    case UIAction.Exit => if do_exit() then view.close()
+
     case UIAction.Undo => model.imageGrid.images.foreach(_.undo())
+
     case UIAction.Redo => model.imageGrid.images.foreach(_.redo())
+
     case UIAction.Blur =>
       for radius <- view.askForBlurRadius()
-      do new EffectAction(model, new BlurEffect(radius)).perform()
+      do Actions.applyEffect(model, new BlurEffect(radius))
+
     case UIAction.MotionBlur =>
       for radius <- view.askForMotionBlurRadius()
-      do new EffectAction(model, new MotionBlurEffect(radius)).perform()
+      do Actions.applyEffect(model, new MotionBlurEffect(radius))
+
     case UIAction.RandomNoise =>
       for (lo, hi) <- view.askForRandomNoiseColors()
-      do new EffectAction(model, new RandomNoiseEffect(lo, hi)).perform()
-    case UIAction.Scramble => new EffectAction(model, ScrambleEffect).perform()
-    case _                 =>
+      do Actions.applyEffect(model, new RandomNoiseEffect(lo, hi))
+
+    case UIAction.Scramble => Actions.applyEffect(model, ScrambleEffect)
+
+    case _ =>
 
   override def requestExit(): Boolean = do_exit()
 
   override def requestImageRemoval(image: ImageContent): Unit =
-    new RemoveImageAction(
-      image,
-      model,
-      view.askForSaveFile,
-      view.askForFileSaveSettings,
-      view,
-      view.askSaveBeforeClosing
-    ).perform()
+    var abortRemoval = false
+    if (image.changed) {
+      view.askSaveBeforeClosing(Seq(image)) match {
+        case Some(shouldSave) =>
+          if (
+            shouldSave && !Actions.save(model.imagePool, Seq(image), model.fileSystem)(
+              view.askForSaveFile,
+              view.askForFileSaveSettings,
+              view
+            )
+          ) abortRemoval = true
+        case None => abortRemoval = true
+      }
+    }
+    if (!abortRemoval) model.imageGrid -= image.coords
 
   private def do_exit(): Boolean = {
     model.imageGrid.images.filter(_.changed) match {
@@ -77,7 +100,7 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
         view.askSaveBeforeClosing(images) match {
           case Some(shouldSave) =>
             if (shouldSave)
-              Action.save(model.imagePool, images, model.fileSystem)(
+              Actions.save(model.imagePool, images, model.fileSystem)(
                 view.askForSaveFile,
                 view.askForFileSaveSettings,
                 view
