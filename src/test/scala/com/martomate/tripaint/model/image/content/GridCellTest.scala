@@ -2,7 +2,7 @@ package com.martomate.tripaint.model.image.content
 
 import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.ImageGrid
-import com.martomate.tripaint.model.coords.{TriImageCoords, TriangleCoords}
+import com.martomate.tripaint.model.coords.{GridCoords, TriangleCoords}
 import com.martomate.tripaint.model.image.{ImagePool, ImageStorage}
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
 import com.martomate.tripaint.util.Tracker
@@ -11,51 +11,51 @@ import scalafx.scene.paint.Color
 
 import java.io.File
 
-class ImageContentTest extends FunSuite {
+class GridCellTest extends FunSuite {
 
-  test("tellListenersAboutBigChange should tell the listeners that a lot has changed") {
-    val image = ImageStorage.fromBGColor(Color.Black, 2)
-    val f = new ImageContent(TriImageCoords(0, 0), image)
+  test("appendChange should tell the listeners that a lot has changed") {
+    val image = ImageStorage.fill(2, Color.Black)
+    val f = new GridCell(GridCoords(0, 0), image)
 
-    val tracker = Tracker.withStorage[ImageContent.Event]
+    val tracker = Tracker.withStorage[GridCell.Event]
     f.trackChanges(tracker)
 
-    f.tellListenersAboutBigChange()
+    f.appendChange(new ImageChange("", image, Seq()))
 
-    assertEquals(tracker.events, Seq(ImageContent.Event.ImageChangedALot))
+    assertEquals(tracker.events, Seq(GridCell.Event.ImageChangedALot))
   }
 
   test("changed should return false if nothing has happened") {
-    val image = ImageStorage.fromBGColor(Color.Black, 2)
-    val f = new ImageContent(TriImageCoords(0, 0), image)
+    val image = ImageStorage.fill(2, Color.Black)
+    val f = new GridCell(GridCoords(0, 0), image)
     assert(!f.changed)
   }
 
   test("changed should return true if the image has been modified since the last save") {
-    val image = ImageStorage.fromBGColor(Color.Black, 2)
-    val f = new ImageContent(TriImageCoords(0, 0), image)
+    val image = ImageStorage.fill(2, Color.Black)
+    val f = new GridCell(GridCoords(0, 0), image)
 
-    image.update(TriangleCoords(0, 0), Color.Blue)
+    image.setColor(TriangleCoords(0, 0), Color.Blue)
 
     assert(f.changed)
   }
 
   test("changed should return false if the image was just saved") {
-    val image = ImageStorage.fromBGColor(Color.Black, 2)
+    val image = ImageStorage.fill(2, Color.Black)
     val location = ImagePool.SaveLocation(new File("a.png"))
-    val format = new SimpleStorageFormat
+    val format = SimpleStorageFormat
     val info = ImagePool.SaveInfo(format)
 
     val pool = new ImagePool()
-    pool.move(image, location, info)(null)
+    pool.move(image, location, info)(using null)
 
     val grid = new ImageGrid(2)
     grid.listenToImagePool(pool)
 
-    val f = new ImageContent(TriImageCoords(0, 0), image)
+    val f = new GridCell(GridCoords(0, 0), image)
     grid.set(f)
 
-    image.update(TriangleCoords(0, 0), Color.Blue)
+    image.setColor(TriangleCoords(0, 0), Color.Blue)
     pool.save(image, FileSystem.createNull())
 
     assert(!f.changed)

@@ -1,31 +1,31 @@
 package com.martomate.tripaint.model
 
-import com.martomate.tripaint.model.coords.TriImageCoords
+import com.martomate.tripaint.model.coords.GridCoords
 import com.martomate.tripaint.model.image.ImagePool
-import com.martomate.tripaint.model.image.content.ImageContent
-import com.martomate.tripaint.util.{EventDispatcher, Listenable, Tracker}
+import com.martomate.tripaint.model.image.content.GridCell
+import com.martomate.tripaint.util.{EventDispatcher, Tracker}
 
 import scala.collection.mutable.ArrayBuffer
 
 object ImageGrid {
   enum Event:
-    case ImageAdded(image: ImageContent)
-    case ImageRemoved(image: ImageContent)
+    case ImageAdded(image: GridCell)
+    case ImageRemoved(image: GridCell)
 }
 
 class ImageGrid(init_imageSize: Int) {
   private var _imageSize: Int = init_imageSize
   def imageSize: Int = _imageSize
 
-  private val _images: ArrayBuffer[ImageContent] = ArrayBuffer.empty
-  def images: Seq[ImageContent] = _images.toSeq
+  private val _images: ArrayBuffer[GridCell] = ArrayBuffer.empty
+  def images: Seq[GridCell] = _images.toSeq
 
   private val dispatcher = new EventDispatcher[ImageGrid.Event]
   def trackChanges(tracker: Tracker[ImageGrid.Event]): Unit = dispatcher.track(tracker)
 
-  def apply(coords: TriImageCoords): Option[ImageContent] = _images.find(_.coords == coords)
+  def apply(coords: GridCoords): Option[GridCell] = _images.find(_.coords == coords)
 
-  def set(image: ImageContent): Unit = {
+  def set(image: GridCell): Unit = {
     val idx = _images.indexWhere(_.coords == image.coords)
     if (idx != -1) {
       val prev = _images(idx)
@@ -35,7 +35,7 @@ class ImageGrid(init_imageSize: Int) {
     dispatcher.notify(ImageGrid.Event.ImageAdded(image))
   }
 
-  def -=(coords: TriImageCoords): ImageContent = {
+  def -=(coords: GridCoords): GridCell = {
     val idx = _images.indexWhere(_.coords == coords)
     if (idx != -1) {
       val ret = _images.remove(idx)
@@ -65,5 +65,5 @@ class ImageGrid(init_imageSize: Int) {
         do im.replaceImage(newImage)
     }
 
-  final def selectedImages: Seq[ImageContent] = images.filter(_.editable)
+  final def selectedImages: Seq[GridCell] = images.filter(_.editable)
 }

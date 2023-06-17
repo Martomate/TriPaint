@@ -4,11 +4,11 @@ import com.martomate.tripaint.model.{Color, ImageGrid, ImageGridColorLookup}
 import com.martomate.tripaint.model.coords.{
   GlobalPixCoords,
   PixelCoords,
-  TriImageCoords,
+  GridCoords,
   TriangleCoords
 }
 import com.martomate.tripaint.model.image.ImageStorage
-import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.content.GridCell
 import munit.FunSuite
 
 class BlurEffectTest extends FunSuite {
@@ -31,21 +31,21 @@ class BlurEffectTest extends FunSuite {
       dotLocation: TriangleCoords
   ): Unit = {
     val effect = new BlurEffect(radius)
-    val thisImage = TriImageCoords(0, 0)
+    val thisImage = GridCoords(0, 0)
 
-    val storage = ImageStorage.fromBGColor(Color.Black, imageSize)
-    storage(dotLocation) = Color.White
+    val storage = ImageStorage.fill(imageSize, Color.Black)
+    storage.setColor(dotLocation, Color.White)
 
     val grid = new ImageGrid(imageSize)
-    grid.set(new ImageContent(thisImage, storage))
+    grid.set(new GridCell(thisImage, storage))
 
     effect.action(Seq(thisImage), grid)
 
     for (dx <- 0 to radius) {
       val look1 = TriangleCoords(dotLocation.x - dx, dotLocation.y)
       val look2 = TriangleCoords(dotLocation.x + dx, dotLocation.y)
-      val col1 = storage(look1)
-      val col2 = storage(look2)
+      val col1 = storage.getColor(look1)
+      val col2 = storage.getColor(look2)
       try {
         assertEquals(col1, col2)
       } catch {
@@ -59,18 +59,18 @@ class BlurEffectTest extends FunSuite {
   test("the effect should be symmetric on the border between images") {
     val radius = 2
     val imageSize = 16 // has to be high enough to not limit the search
-    checkSymmetryBorder(radius, imageSize, TriangleCoords(0, imageSize / 2), TriImageCoords(-1, 0))
+    checkSymmetryBorder(radius, imageSize, TriangleCoords(0, imageSize / 2), GridCoords(-1, 0))
     checkSymmetryBorder(
       radius,
       imageSize,
       TriangleCoords(imageSize, imageSize / 2),
-      TriImageCoords(1, 0)
+      GridCoords(1, 0)
     )
     checkSymmetryBorder(
       radius,
       imageSize,
       TriangleCoords(imageSize, imageSize - 1),
-      TriImageCoords(1, -1)
+      GridCoords(1, -1)
     )
   }
 
@@ -78,18 +78,18 @@ class BlurEffectTest extends FunSuite {
       radius: Int,
       imageSize: Int,
       dotLocation: TriangleCoords,
-      borderingImage: TriImageCoords
+      borderingImage: GridCoords
   ): Unit = {
     val effect = new BlurEffect(radius)
-    val thisImage = TriImageCoords(0, 0)
+    val thisImage = GridCoords(0, 0)
 
-    val storage = ImageStorage.fromBGColor(Color.Black, imageSize)
-    val storage2 = ImageStorage.fromBGColor(Color.Black, imageSize)
-    storage(dotLocation) = Color.White
+    val storage = ImageStorage.fill(imageSize, Color.Black)
+    val storage2 = ImageStorage.fill(imageSize, Color.Black)
+    storage.setColor(dotLocation, Color.White)
 
     val grid = new ImageGrid(imageSize)
-    grid.set(new ImageContent(thisImage, storage))
-    grid.set(new ImageContent(borderingImage, storage2))
+    grid.set(new GridCell(thisImage, storage))
+    grid.set(new GridCell(borderingImage, storage2))
 
     effect.action(Seq(thisImage, borderingImage), grid)
 

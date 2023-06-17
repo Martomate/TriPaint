@@ -32,47 +32,39 @@ import com.martomate.tripaint.model.coords.{StorageCoords, TriangleCoords}
   *    Fb (Fc)*
   * }}}
   */
-class RecursiveStorageFormat extends StorageFormat {
-  override def transformToStorage(coords: TriangleCoords): StorageCoords = {
-    if (coords.y == 0) {
-      StorageCoords(0, 0)
-    } else {
+object RecursiveStorageFormat extends StorageFormat {
+  override def transform(coords: TriangleCoords): StorageCoords =
+    if coords.y == 0
+    then StorageCoords(0, 0)
+    else
       val floor = Integer.highestOneBit(coords.y)
       val rest = coords.y - floor
 
-      if (coords.x <= 2 * rest) { // left
-        val subCoords = transformToStorage(TriangleCoords(coords.x, rest))
+      if coords.x <= 2 * rest then // left
+        val subCoords = transform(TriangleCoords(coords.x, rest))
         StorageCoords(subCoords.x, floor + subCoords.y)
-      } else if (coords.x >= 2 * floor) { // right
-        val subCoords = transformToStorage(TriangleCoords(coords.x - 2 * floor, rest))
+      else if coords.x >= 2 * floor then // right
+        val subCoords = transform(TriangleCoords(coords.x - 2 * floor, rest))
         StorageCoords(floor + subCoords.x, subCoords.y)
-      } else { // center
-        val subCoords = transformToStorage(
-          TriangleCoords(2 * floor - 1 - coords.x, floor - 1 - rest)
-        )
+      else // center
+        val subCoords = transform(TriangleCoords(2 * floor - 1 - coords.x, floor - 1 - rest))
         StorageCoords(2 * floor - 1 - subCoords.x, 2 * floor - 1 - subCoords.y)
-      }
-    }
-  }
 
-  override def transformFromStorage(coords: StorageCoords): TriangleCoords = {
-    if (coords.x == 0 && coords.y == 0) {
-      TriangleCoords(0, 0)
-    } else {
+  override def reverse(coords: StorageCoords): TriangleCoords =
+    if coords.x == 0 && coords.y == 0
+    then TriangleCoords(0, 0)
+    else
       val floor = math.max(Integer.highestOneBit(coords.x), Integer.highestOneBit(coords.y))
       val restX = coords.x - floor
       val restY = coords.y - floor
 
-      if (coords.x >= floor && coords.y >= floor) { // center
-        val subCoords = transformFromStorage(StorageCoords(floor - 1 - restX, floor - 1 - restY))
+      if coords.x >= floor && coords.y >= floor then // center
+        val subCoords = reverse(StorageCoords(floor - 1 - restX, floor - 1 - restY))
         TriangleCoords(2 * floor - 1 - subCoords.x, 2 * floor - 1 - subCoords.y)
-      } else if (coords.x >= floor) { // right
-        val subCoords = transformFromStorage(StorageCoords(restX, coords.y))
+      else if coords.x >= floor then // right
+        val subCoords = reverse(StorageCoords(restX, coords.y))
         TriangleCoords(2 * floor + subCoords.x, floor + subCoords.y)
-      } else { // left
-        val subCoords = transformFromStorage(StorageCoords(coords.x, restY))
+      else // left
+        val subCoords = reverse(StorageCoords(coords.x, restY))
         TriangleCoords(subCoords.x, floor + subCoords.y)
-      }
-    }
-  }
 }

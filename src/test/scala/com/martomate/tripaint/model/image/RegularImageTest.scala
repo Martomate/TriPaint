@@ -2,9 +2,11 @@ package com.martomate.tripaint.model.image
 
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.StorageCoords
+import com.martomate.tripaint.model.image.format.SimpleStorageFormat
 import munit.FunSuite
 
 import java.awt.image.BufferedImage
+import java.io.File
 
 class RegularImageTest extends FunSuite {
   test("ofDim should produce an image of correct size") {
@@ -228,5 +230,44 @@ class RegularImageTest extends FunSuite {
     val image2 = RegularImage.ofSize(3, 2)
     image2.setColor(2, 1, Color.Red)
     assertEquals(image1 == image2, false)
+  }
+
+  test("overwritePartOfImage should write image if it doesn't exist") {
+    val file = new File("file.png")
+    val location = ImagePool.SaveLocation(file)
+    val format = SimpleStorageFormat
+
+    val storage = ImageStorage.fill(16, Color.Blue)
+    storage.setColor(format.reverse(StorageCoords(2, 3)), Color.Cyan)
+    storage.setColor(format.reverse(StorageCoords(15, 0)), Color.Magenta)
+    storage.setColor(format.reverse(StorageCoords(15, 15)), Color.Yellow)
+
+    val expectedImage = RegularImage.fill(storage.imageSize, storage.imageSize, Color.Blue)
+    expectedImage.pasteImage(StorageCoords(0, 0), storage.toRegularImage(format))
+
+    val storedImage =
+      RegularImage.fromBaseAndOverlay(None, storage.toRegularImage(format), location.offset)
+
+    assertEquals(storedImage, expectedImage)
+  }
+
+  test("overwritePartOfImage should overwrite part of image if it already exists") {
+    val offset = StorageCoords(2, 3)
+    val format = SimpleStorageFormat
+
+    val existingStorage = ImageStorage.fill(8, Color.Yellow)
+
+    val existingImage = RegularImage.ofSize(8, 8) // ???
+    existingImage.pasteImage(StorageCoords(0, 0), existingStorage.toRegularImage(format))
+
+    val image = ImageStorage.fill(4, Color.Cyan)
+
+    val storedImage =
+      RegularImage.fromBaseAndOverlay(Some(existingImage), image.toRegularImage(format), offset)
+
+    val expectedImage = RegularImage.fill(8, 8, Color.Yellow)
+    expectedImage.pasteImage(offset, RegularImage.fill(4, 4, Color.Cyan))
+
+    assertEquals(storedImage, expectedImage)
   }
 }

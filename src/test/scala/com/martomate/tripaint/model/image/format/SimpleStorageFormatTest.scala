@@ -16,12 +16,12 @@ class SimpleStorageFormatTest extends StorageFormatTest {
   }
 
   def triToStorage(from: (Int, Int))(to: (Int, Int)): Unit = {
-    assertEquals(make.transformToStorage(trCoords(from)), stCoords(to))
+    assertEquals(make.transform(trCoords(from)), stCoords(to))
   }
 
   def storageToTri(from: (Int, Int))(to: (Int, Int)): Unit = {
-    assertEquals(make.transformFromStorage(stCoords(from)), trCoords(to))
+    assertEquals(make.reverse(stCoords(from)), trCoords(to))
   }
 
-  def make: StorageFormat = new SimpleStorageFormat
+  def make: StorageFormat = SimpleStorageFormat
 }

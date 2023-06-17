@@ -4,7 +4,7 @@ import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.StorageCoords
 import com.martomate.tripaint.model.image.format.StorageFormat
-import com.martomate.tripaint.model.image.{ImageStorage, ImageUtils}
+import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.util.{EventDispatcher, InjectiveHashMap, InjectiveMap, Tracker}
 
 import java.io.File
@@ -42,56 +42,47 @@ class ImagePool {
   private val dispatcher = new EventDispatcher[ImagePool.Event]
   def trackChanges(tracker: Tracker[ImagePool.Event]): Unit = dispatcher.track(tracker)
 
-  private def contains(saveLocation: SaveLocation): Boolean = mapping.containsLeft(saveLocation)
-  private def get(saveLocation: SaveLocation): ImageStorage = mapping.getRight(saveLocation).orNull
-  private def set(saveLocation: SaveLocation, imageStorage: ImageStorage): Unit =
-    mapping.set(saveLocation, imageStorage)
-
   final def locationOf(image: ImageStorage): Option[SaveLocation] = mapping.getLeft(image)
 
-  def move(image: ImageStorage, to: SaveLocation, info: SaveInfo)(implicit
+  def move(image: ImageStorage, to: SaveLocation, info: SaveInfo)(using
       handler: ImageSaveCollisionHandler
-  ): Boolean = {
+  ): Boolean =
     val newLocation = to
-    val currentImage = get(newLocation)
+    val currentImage = mapping.getRight(newLocation).orNull
 
     saveInfo(image) = info
 
-    if (currentImage == null) {
+    if currentImage == null then
       mapping.set(to, image)
       true
-    } else if (currentImage != image) {
-      handler.shouldReplaceImage(currentImage, image, newLocation) match {
-        case Some(replace) =>
-          if (replace) {
-            mapping.removeRight(currentImage)
-            set(newLocation, image)
-            dispatcher.notify(ImagePool.Event.ImageReplaced(currentImage, image, newLocation))
-          } else {
-            mapping.removeRight(image)
-            dispatcher.notify(ImagePool.Event.ImageReplaced(image, currentImage, newLocation))
-          }
-          true
+    else if currentImage != image then
+      val choice = handler.shouldReplaceImage(currentImage, image, newLocation)
+      choice match
+        case Some(true) =>
+          mapping.removeRight(currentImage)
+          mapping.set(newLocation, image)
+          dispatcher.notify(ImagePool.Event.ImageReplaced(currentImage, image, newLocation))
+        case Some(false) =>
+          mapping.removeRight(image)
+          dispatcher.notify(ImagePool.Event.ImageReplaced(image, currentImage, newLocation))
         case None =>
-          false
-      }
-    } else true
-  }
+      choice.isDefined
+    else true
 
-  def save(image: ImageStorage, fileSystem: FileSystem): Boolean = {
-    val success = (locationOf(image), saveInfo.get(image)) match {
+  def save(image: ImageStorage, fileSystem: FileSystem): Boolean =
+    (locationOf(image), saveInfo.get(image)) match
       case (Some(loc), Some(info)) =>
         val oldImage = fileSystem.readImage(loc.file)
-        val newImage =
-          ImageUtils.overwritePartOfImage(image, info.format, loc.offset, oldImage)
-        fileSystem.writeImage(newImage, loc.file)
+
+        val imageToSave = image.toRegularImage(info.format)
+        val newImage = RegularImage.fromBaseAndOverlay(oldImage, imageToSave, loc.offset)
+
+        val didWrite = fileSystem.writeImage(newImage, loc.file)
+
+        if didWrite then dispatcher.notify(ImagePool.Event.ImageSaved(image))
+        didWrite
       case _ =>
         false
-    }
-
-    if (success) dispatcher.notify(ImagePool.Event.ImageSaved(image))
-    success
-  }
 
   // TODO: This pool system will not work since you can change SaveInfo for an image without telling the pool! Some planning has to be done.
   def fromFile(
@@ -99,21 +90,23 @@ class ImagePool {
       format: StorageFormat,
       imageSize: Int,
       fileSystem: FileSystem
-  ): Try[ImageStorage] = {
-    if (contains(location)) Success(get(location))
-    else {
-      fileSystem.readImage(location.file) match {
+  ): Try[ImageStorage] =
+    if mapping.containsLeft(location)
+    then Success(mapping.getRight(location).orNull)
+    else
+      fileSystem.readImage(location.file) match
         case Some(regularImage) =>
           val image =
             ImageStorage.fromRegularImage(regularImage, location.offset, format, imageSize)
-          image.foreach(im => {
-            set(location, im)
-            saveInfo(im) = SaveInfo(format)
-          })
+
+          image match
+            case Success(im) =>
+              mapping.set(location, im)
+              saveInfo(im) = SaveInfo(format)
+            case _ =>
+
           image
         case None =>
           Failure(new RuntimeException("no such image"))
-      }
-    }
-  }
+
 }

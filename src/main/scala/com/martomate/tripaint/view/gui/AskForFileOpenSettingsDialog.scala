@@ -2,10 +2,10 @@ package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.Color
-import com.martomate.tripaint.model.coords.{StorageCoords, TriImageCoords}
+import com.martomate.tripaint.model.coords.{StorageCoords, GridCoords}
 import com.martomate.tripaint.model.image.ImageStorage
-import com.martomate.tripaint.model.image.content.ImageContent
-import com.martomate.tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
+import com.martomate.tripaint.model.image.content.GridCell
+import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.view.FileOpenSettings
 import com.martomate.tripaint.view.gui.DialogUtils.{getValueFromCustomDialog, makeGridPane}
 import com.martomate.tripaint.view.image.TriImageForPreview
@@ -76,9 +76,9 @@ object AskForFileOpenSettingsDialog:
     val previewStack = new Pane
     previewStack.delegate.getChildren.addAll(wholeImage, previewPane)
 
-    val blankImage = ImageStorage.fromBGColor(Color.White, imageSize)
+    val blankImage = ImageStorage.fill(imageSize, Color.White)
     val triPreviewImages =
-      Seq.tabulate(xCount)(_ => new ImageContent(TriImageCoords(0, 0), blankImage))
+      Seq.tabulate(xCount)(_ => new GridCell(GridCoords(0, 0), blankImage))
 
     val (triPreviewPane, updateTriPreview) = ImagePreviewList.fromImageContent(
       triPreviewImages,

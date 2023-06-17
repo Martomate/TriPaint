@@ -1,9 +1,9 @@
 package com.martomate.tripaint.model
 
 import com.martomate.tripaint.model.ImageGrid
-import com.martomate.tripaint.model.coords.TriImageCoords
+import com.martomate.tripaint.model.coords.GridCoords
 import com.martomate.tripaint.model.image.ImageStorage
-import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.content.GridCell
 import com.martomate.tripaint.util.Tracker
 import munit.FunSuite
 import scalafx.scene.paint.Color
@@ -11,12 +11,12 @@ import scalafx.scene.paint.Color
 class ImageGridTest extends FunSuite {
   def make(): ImageGrid = new ImageGrid(16)
 
-  def makeImage(x: Int, y: Int): ImageContent = {
-    val storage = ImageStorage.fromBGColor(Color.Black, 4)
-    new ImageContent(tc(x, y), storage)
+  def makeImage(x: Int, y: Int): GridCell = {
+    val storage = ImageStorage.fill(4, Color.Black)
+    new GridCell(tc(x, y), storage)
   }
 
-  private def tc(x: Int, y: Int): TriImageCoords = TriImageCoords(x, y)
+  private def tc(x: Int, y: Int): GridCoords = GridCoords(x, y)
 
   test("setImageSizeIfEmpty should set the image size and return true if the grid is new") {
     val f = make()

@@ -1,6 +1,6 @@
 package com.martomate.tripaint.view
 
-import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.content.GridCell
 import com.martomate.tripaint.view.gui.UIAction
 
 trait TriPaintViewListener {
@@ -8,5 +8,5 @@ trait TriPaintViewListener {
 
   /** Returns whether to exit or not */
   def requestExit(): Boolean
-  def requestImageRemoval(image: ImageContent): Unit
+  def requestImageRemoval(image: GridCell): Unit
 }

@@ -1,6 +1,6 @@
 package com.martomate.tripaint.model.coords
 
-case class TriImageCoords(x: Int, y: Int):
+case class GridCoords(x: Int, y: Int):
   private val vertices: Seq[(Double, Double)] =
     val xDiv2 = (x.toDouble / 2).floor
     val pts =

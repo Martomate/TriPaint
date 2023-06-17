@@ -1,19 +1,14 @@
 package com.martomate.tripaint.model.coords
 
+import com.martomate.tripaint.ExtraAsserts
 import munit.FunSuite
 
 class PixelCoordsTest extends FunSuite {
   private def tc(x: Int, y: Int): TriangleCoords = TriangleCoords(x, y)
-  private def ic(x: Int, y: Int): TriImageCoords = TriImageCoords(x, y)
-
-  extension [T](s: Seq[T]) private def occurrences = s.groupMapReduce(identity)(_ => 1)(_ + _)
-
-  private def assertSameElementsIgnoringOrder[T](left: Seq[T], right: Seq[T])(using
-      munit.Location
-  ): Unit = assertEquals(left.occurrences, right.occurrences)
+  private def ic(x: Int, y: Int): GridCoords = GridCoords(x, y)
 
   private def testNeighbours(sz: Int, pc: PixelCoords)(result: PixelCoords*): Unit =
-    assertSameElementsIgnoringOrder(pc.neighbours(sz), result)
+    ExtraAsserts.assertSameElementsIgnoringOrder(pc.neighbours(sz), result)
 
   test("neighbours should work for upside up") {
     val pc = PixelCoords(tc(2, 3), ic(0, 0))
@@ -117,7 +112,7 @@ class PixelCoordsTest extends FunSuite {
     makeP(i)(t).toGlobal(sz)
 
   def makeP(i: (Int, Int))(t: (Int, Int)): PixelCoords =
-    PixelCoords(TriangleCoords(t._1, t._2), TriImageCoords(i._1, i._2))
+    PixelCoords(TriangleCoords(t._1, t._2), GridCoords(i._1, i._2))
 
   test("toGlobal should scale even triangles simply") {
     val sz = 8

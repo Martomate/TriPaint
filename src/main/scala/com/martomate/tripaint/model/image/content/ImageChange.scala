@@ -1,20 +1,17 @@
 package com.martomate.tripaint.model.image.content
 
+import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.model.undo.Change
 
-class ImageChange(val description: String, val image: ImageContent, pixelsChanged: Seq[PixelChange])
+class ImageChange(val description: String, image: ImageStorage, pixelsChanged: Seq[PixelChange])
     extends Change {
   def redo(): Boolean = {
-    val draw = image.storage
-    for (ch <- pixelsChanged) draw(ch.coords) = ch.after
-    image.tellListenersAboutBigChange()
+    for (ch <- pixelsChanged) image.setColor(ch.coords, ch.after)
     true
   }
 
   def undo(): Boolean = {
-    val draw = image.storage
-    for (ch <- pixelsChanged) draw(ch.coords) = ch.before
-    image.tellListenersAboutBigChange()
+    for (ch <- pixelsChanged) image.setColor(ch.coords, ch.before)
     true
   }
 }

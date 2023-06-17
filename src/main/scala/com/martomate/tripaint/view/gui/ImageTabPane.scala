@@ -2,7 +2,7 @@ package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.image.ImagePool
-import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.content.GridCell
 import com.martomate.tripaint.view.TriPaintViewListener
 import com.martomate.tripaint.view.image.TriImageForPreview
 import scalafx.geometry.Pos
@@ -12,9 +12,9 @@ import scalafx.scene.layout.StackPane
 
 object ImageTabPane:
   def apply(
-      image: ImageContent,
-      requestImageRemoval: ImageContent => Unit,
-      imagePool: ImagePool
+             image: GridCell,
+             requestImageRemoval: GridCell => Unit,
+             imagePool: ImagePool
   ): StackPane =
     val preview = new TriImageForPreview(image, TriImageForPreview.previewSize)
 
@@ -43,7 +43,7 @@ object ImageTabPane:
 
     stackPane
 
-  private def makeStarView(image: ImageContent): ImageView =
+  private def makeStarView(image: GridCell): ImageView =
     val star: ImageView = new ImageView
     star.image = new Image("/icons/star.png")
     star.alignmentInParent = Pos.TopLeft

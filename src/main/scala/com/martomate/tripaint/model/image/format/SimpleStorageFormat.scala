@@ -2,17 +2,16 @@ package com.martomate.tripaint.model.image.format
 
 import com.martomate.tripaint.model.coords.{StorageCoords, TriangleCoords}
 
-// current format
-class SimpleStorageFormat extends StorageFormat {
-  override def transformToStorage(coords: TriangleCoords): StorageCoords = {
+object SimpleStorageFormat extends StorageFormat {
+  override def transform(coords: TriangleCoords): StorageCoords =
     val TriangleCoords(x, y) = coords
-    if (y < x) StorageCoords(y, y + y - x)
+    if y < x
+    then StorageCoords(y, y + y - x)
     else StorageCoords(x, y)
-  }
 
-  override def transformFromStorage(coords: StorageCoords): TriangleCoords = {
+  override def reverse(coords: StorageCoords): TriangleCoords =
     val StorageCoords(x, y) = coords
-    if (y < x) TriangleCoords(x + x - y, x)
+    if y < x
+    then TriangleCoords(x + x - y, x)
     else TriangleCoords(x, y)
-  }
 }

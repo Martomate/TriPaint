@@ -1,7 +1,7 @@
 package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.coords.StorageCoords
-import com.martomate.tripaint.model.image.{ImageStorage, ImageUtils}
+import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.view.FileSaveSettings
 import com.martomate.tripaint.view.gui.DialogUtils.{getValueFromCustomDialog, makeGridPane}
@@ -89,7 +89,7 @@ object AskForFileSaveSettingsDialog:
           previewPane.setLayoutX(x)
           previewPane.setLayoutY(y)
 
-          val array = ImageUtils.convertImageToArray(storage, format)
+          val array = storage.toRegularImage(format).toIntArray
 
           previewImage.pixelWriter.setPixels(
             0,

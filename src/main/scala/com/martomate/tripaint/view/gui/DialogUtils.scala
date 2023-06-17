@@ -1,11 +1,10 @@
 package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.ImageGrid
-import com.martomate.tripaint.model.coords.{StorageCoords, TriImageCoords}
+import com.martomate.tripaint.model.coords.{StorageCoords, GridCoords}
 import com.martomate.tripaint.model.image.{ImagePool, ImageStorage}
-import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.content.GridCell
 import com.martomate.tripaint.model.image.format.StorageFormat
-import com.martomate.tripaint.util.Listenable
 import com.martomate.tripaint.view.gui.DialogUtils.{getValueFromCustomDialog, makeGridPane}
 import com.martomate.tripaint.view.image.TriImageForPreview
 import com.martomate.tripaint.view.{FileOpenSettings, FileSaveSettings}
@@ -85,14 +84,14 @@ object DialogUtils:
     if result.isPresent then Some(result.get) else None
 
   def getValueFromDialog[T](
-      imagePool: ImagePool,
-      images: Seq[ImageContent],
-      title: String,
-      headerText: String,
-      contentText: String,
-      restriction: String => Boolean,
-      stringToValue: String => T,
-      refreshPreviewFn: Option[(T, ImageGrid) => Unit] = None
+                             imagePool: ImagePool,
+                             images: Seq[GridCell],
+                             title: String,
+                             headerText: String,
+                             contentText: String,
+                             restriction: String => Boolean,
+                             stringToValue: String => T,
+                             refreshPreviewFn: Option[(T, ImageGrid) => Unit] = None
   ): Option[T] =
     val (previewPane, updatePreview) = makeImagePreviewList(images, imagePool)
 
@@ -121,7 +120,7 @@ object DialogUtils:
         None
 
   def makeImagePreviewList(
-      images: Seq[ImageContent],
-      imagePool: ImagePool
+                            images: Seq[GridCell],
+                            imagePool: ImagePool
   ): (ScrollPane, (ImageGrid => Unit) => Unit) =
     ImagePreviewList.fromImageContent(images, TriImageForPreview.previewSize, imagePool.locationOf)

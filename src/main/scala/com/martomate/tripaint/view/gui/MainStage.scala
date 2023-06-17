@@ -3,7 +3,7 @@ package com.martomate.tripaint.view.gui
 import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.effects.{BlurEffect, MotionBlurEffect, RandomNoiseEffect}
 import com.martomate.tripaint.model.image.{ImagePool, ImageStorage}
-import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.content.GridCell
 import com.martomate.tripaint.model.image.format.{RecursiveStorageFormat, SimpleStorageFormat}
 import com.martomate.tripaint.view.image.ImageGridPane
 import com.martomate.tripaint.view.*
@@ -82,7 +82,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
 
   override def backgroundColor: Color = new Color(imageDisplay.colors.secondaryColor())
 
-  override def askForSaveFile(image: ImageContent): Option[File] = {
+  override def askForSaveFile(image: GridCell): Option[File] = {
     val chooser = new FileChooser
     currentFolder.foreach(chooser.initialDirectory = _)
     chooser.title = "Save file"
@@ -92,13 +92,13 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     result
   }
 
-  override def askForFileSaveSettings(file: File, image: ImageContent): Option[FileSaveSettings] = {
+  override def askForFileSaveSettings(file: File, image: GridCell): Option[FileSaveSettings] = {
     AskForFileSaveSettingsDialog.askForFileSaveSettings(
       image.storage,
       file,
       Seq(
-        new SimpleStorageFormat -> "Simple format (old)",
-        new RecursiveStorageFormat -> "Recursive format (new)"
+        SimpleStorageFormat -> "Simple format (old)",
+        RecursiveStorageFormat -> "Recursive format (new)"
       ),
       1
     )
@@ -191,7 +191,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     )
   }
 
-  override def askSaveBeforeClosing(images: Seq[ImageContent]): Option[Boolean] = {
+  override def askSaveBeforeClosing(images: Seq[GridCell]): Option[Boolean] = {
     saveBeforeClosingAlert(images).showAndWait().map(_.buttonData) flatMap {
       case ButtonData.Yes => Some(true)
       case ButtonData.No  => Some(false)
@@ -199,7 +199,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     }
   }
 
-  private def saveBeforeClosingAlert(images: Seq[ImageContent]): Alert = {
+  private def saveBeforeClosingAlert(images: Seq[GridCell]): Alert = {
     val (previewPane, _) = DialogUtils.makeImagePreviewList(images, model.imagePool)
 
     val alert = new Alert(AlertType.Confirmation)
@@ -225,8 +225,8 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     AskForFileOpenSettingsDialog.askForFileOpenSettings(
       imagePreview = (file, imageSize, xCount, yCount),
       Seq(
-        new SimpleStorageFormat -> "Simple format (old)",
-        new RecursiveStorageFormat -> "Recursive format (new)"
+        SimpleStorageFormat -> "Simple format (old)",
+        RecursiveStorageFormat -> "Recursive format (new)"
       ),
       1,
       model.fileSystem

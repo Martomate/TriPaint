@@ -3,7 +3,7 @@ package com.martomate.tripaint.control.action
 import com.martomate.tripaint.control.Actions
 import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.{Color, TriPaintModel}
-import com.martomate.tripaint.model.coords.{StorageCoords, TriImageCoords}
+import com.martomate.tripaint.model.coords.{StorageCoords, GridCoords}
 import com.martomate.tripaint.model.image.RegularImage
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
 import com.martomate.tripaint.view.FileOpenSettings
@@ -24,14 +24,14 @@ class OpenActionTest extends FunSuite {
     Actions.openImage(
       model,
       file,
-      FileOpenSettings(StorageCoords(0, 0), new SimpleStorageFormat),
-      TriImageCoords(3, 4)
+      FileOpenSettings(StorageCoords(0, 0), SimpleStorageFormat),
+      GridCoords(3, 4)
     )
 
     val actualImage = model
-      .imageGrid(TriImageCoords(3, 4))
+      .imageGrid(GridCoords(3, 4))
       .map(_.storage)
-      .map(_.toRegularImage(new SimpleStorageFormat))
+      .map(_.toRegularImage(SimpleStorageFormat))
       .orNull
 
     assertEquals(actualImage, image)
@@ -54,14 +54,14 @@ class OpenActionTest extends FunSuite {
     Actions.openImage(
       model,
       file,
-      FileOpenSettings(offset, new SimpleStorageFormat),
-      TriImageCoords(3, 4)
+      FileOpenSettings(offset, SimpleStorageFormat),
+      GridCoords(3, 4)
     )
 
     val actualImage = model
-      .imageGrid(TriImageCoords(3, 4))
+      .imageGrid(GridCoords(3, 4))
       .map(_.storage)
-      .map(_.toRegularImage(new SimpleStorageFormat))
+      .map(_.toRegularImage(SimpleStorageFormat))
       .orNull
 
     assertEquals(actualImage, image)

@@ -1,14 +1,14 @@
 package com.martomate.tripaint.view.image
 
 import com.martomate.tripaint.model.Color
-import com.martomate.tripaint.model.image.content.{CumulativeImageChange, ImageContent}
+import com.martomate.tripaint.model.image.content.{CumulativeImageChange, GridCell}
 import com.martomate.tripaint.model.coords.TriangleCoords
 import com.martomate.tripaint.model.image.ImageStorage
 import javafx.scene.input.{MouseEvent, ScrollEvent}
 import scalafx.beans.property.ReadOnlyBooleanProperty
 import scalafx.scene.layout.Pane
 
-class TriImage(val content: ImageContent, init_zoom: Double):
+class TriImage(val content: GridCell, init_zoom: Double):
   val pane: Pane = new Pane()
 
   private val indexMap = new IndexMap(storage.imageSize)
@@ -32,7 +32,7 @@ class TriImage(val content: ImageContent, init_zoom: Double):
   private def panY(zoom: Double) = content.coords.centerY * (storage.imageSize * 2 + 1) * zoom
 
   def onStoppedDrawing(): Unit =
-    content.undoManager.append(cumulativeImageChange.done("draw", content))
+    content.appendChange(cumulativeImageChange.done("draw", content.storage))
 
   def onZoom(zoom: Double): Unit =
     updateCanvasSize(zoom)
@@ -40,8 +40,8 @@ class TriImage(val content: ImageContent, init_zoom: Double):
 
   def drawAt(coords: TriangleCoords, color: Color): Unit =
     if storage.contains(coords) then
-      cumulativeImageChange.addChange(coords, storage(coords), color)
-      storage(coords) = color
+      cumulativeImageChange.addChange(coords, storage.getColor(coords), color)
+      storage.setColor(coords, color)
 
   /** @param x
     *   the x coordinate in scene space
@@ -59,14 +59,14 @@ class TriImage(val content: ImageContent, init_zoom: Double):
     canvas.setCanvasLocationUsingCenter(panX(zoom), panY(zoom))
 
   private def drawTriangle(coords: TriangleCoords): Unit =
-    canvas.drawTriangle(coords, storage(coords), storage)
+    canvas.drawTriangle(coords, storage.getColor(coords), storage)
 
   private def redraw(): Unit =
     canvas.clearCanvas()
     canvas.redraw(storage)
 
-  def onImageChanged(event: ImageContent.Event): Unit =
-    import ImageContent.Event.*
+  def onImageChanged(event: GridCell.Event): Unit =
+    import GridCell.Event.*
     event match
       case PixelChanged(coords, _, _) =>
         drawTriangle(coords)

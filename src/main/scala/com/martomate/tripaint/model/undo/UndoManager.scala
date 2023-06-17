@@ -6,39 +6,24 @@ class UndoManager {
   private val changes = ArrayBuffer.empty[Change]
   private var redoIndex = 0
 
-  def canUndo: Boolean = redoIndex > 0
+  private def canUndo: Boolean = redoIndex > 0
 
-  def undo(): Boolean = {
-    if (canUndo) {
+  def undo(): Boolean =
+    if canUndo then
       redoIndex -= 1
-
       changes(redoIndex).undo()
-    } else false
-  }
+    else false
 
-  def canRedo: Boolean = redoIndex <= changes.size - 1
+  private def canRedo: Boolean = redoIndex <= changes.size - 1
 
-  def redo(): Boolean = {
-    if (canRedo) {
+  def redo(): Boolean =
+    if canRedo then
       redoIndex += 1
-
       changes(redoIndex - 1).redo()
-    } else false
-  }
+    else false
 
-  def append(change: Change): Unit = {
+  def append(change: Change): Unit =
     if (canRedo) changes.remove(redoIndex, changes.size - redoIndex)
     changes.append(change)
     redoIndex += 1
-  }
-
-  def goTo(index: Int): Boolean = {
-    val newRedoIndex = index + 1
-    if (newRedoIndex > redoIndex) {
-      while (newRedoIndex > redoIndex && redo()) {}
-    } else {
-      while (newRedoIndex < redoIndex && undo()) {}
-    }
-    newRedoIndex == redoIndex
-  }
 }

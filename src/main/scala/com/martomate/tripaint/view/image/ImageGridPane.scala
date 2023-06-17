@@ -1,8 +1,8 @@
 package com.martomate.tripaint.view.image
 
 import com.martomate.tripaint.model.{FloodFillSearcher, ImageGrid, ImageGridColorLookup}
-import com.martomate.tripaint.model.coords.{PixelCoords, TriImageCoords}
-import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.coords.{PixelCoords, GridCoords}
+import com.martomate.tripaint.model.image.content.GridCell
 import com.martomate.tripaint.view.EditMode
 import javafx.scene.input.{MouseButton, MouseEvent}
 import javafx.scene.paint
@@ -33,7 +33,7 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane:
     new ImageGridColorLookup(imageGrid)
   )
 
-  private val imageMap: mutable.Map[TriImageCoords, TriImage] = mutable.Map.empty
+  private val imageMap: mutable.Map[GridCoords, TriImage] = mutable.Map.empty
 
   imageGrid.trackChanges(this.onImageGridEvent _)
 
@@ -117,12 +117,12 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane:
         case EditMode.Fill =>
           fill(coords, new Color(color()))
         case EditMode.PickColor =>
-          color() = image.storage(coords.pix).toFXColor
+          color() = image.storage.getColor(coords.pix).toFXColor
         case _ =>
 
   private def fill(coords: PixelCoords, color: Color): Unit =
     for image <- imageGrid(coords.image) do
-      val referenceColor = imageMap(image.coords).content.storage(coords.pix)
+      val referenceColor = imageMap(image.coords).content.storage.getColor(coords.pix)
       val places = gridSearcher
         .search(coords.toGlobal(imageGrid.imageSize), (_, col) => col == referenceColor)
         .map(p => PixelCoords(p, imageGrid.imageSize))
@@ -142,7 +142,7 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane:
   private def relocateChildren(): Unit =
     for im <- imageGrid.images do relocateImage(im)
 
-  private def relocateImage(image: ImageContent): Unit =
+  private def relocateImage(image: GridCell): Unit =
     imageMap(image.coords).pane.relocate(width() / 2 + xScroll, height() / 2 + yScroll)
 
   private def onImageGridEvent(event: ImageGrid.Event): Unit =

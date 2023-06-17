@@ -1,7 +1,7 @@
 package com.martomate.tripaint.control.action
 
 import com.martomate.tripaint.control.Actions
-import com.martomate.tripaint.model.coords.TriImageCoords
+import com.martomate.tripaint.model.coords.GridCoords
 import com.martomate.tripaint.model.image.RegularImage
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
 import com.martomate.tripaint.model.{Color, TriPaintModel}
@@ -16,14 +16,14 @@ class NewActionTest extends FunSuite {
     val imageSize = model.imageGrid.imageSize
     val backgroundColor = Color.Cyan
 
-    Actions.createNewImage(model.imageGrid, backgroundColor, TriImageCoords(3, 4))
+    Actions.createNewImage(model.imageGrid, backgroundColor, GridCoords(3, 4))
 
     val expectedImage = RegularImage.fill(imageSize, imageSize, backgroundColor)
 
     val actualImage = model
-      .imageGrid(TriImageCoords(3, 4))
+      .imageGrid(GridCoords(3, 4))
       .map(_.storage)
-      .map(_.toRegularImage(new SimpleStorageFormat))
+      .map(_.toRegularImage(SimpleStorageFormat))
       .orNull
 
     assertEquals(actualImage, expectedImage)
@@ -37,15 +37,15 @@ class NewActionTest extends FunSuite {
     val imageSize = model.imageGrid.imageSize
     val backgroundColor = Color.Cyan
 
-    Actions.createNewImage(model.imageGrid, backgroundColor, TriImageCoords(3, 4))
-    Actions.createNewImage(model.imageGrid, backgroundColor, TriImageCoords(3, 4))
+    Actions.createNewImage(model.imageGrid, backgroundColor, GridCoords(3, 4))
+    Actions.createNewImage(model.imageGrid, backgroundColor, GridCoords(3, 4))
 
     val expectedImage = RegularImage.fill(imageSize, imageSize, backgroundColor)
 
     val actualImage = model
-      .imageGrid(TriImageCoords(3, 4))
+      .imageGrid(GridCoords(3, 4))
       .map(_.storage)
-      .map(_.toRegularImage(new SimpleStorageFormat))
+      .map(_.toRegularImage(SimpleStorageFormat))
       .orNull
 
     assertEquals(actualImage, expectedImage)

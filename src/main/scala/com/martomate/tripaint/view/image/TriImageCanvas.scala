@@ -37,7 +37,7 @@ class TriImageCanvas(init_width: Double, imageSize: Int)
         if c != null then
           if c == coords
           then gc.pixelWriter.setColor(x, y, color.toFXColor)
-          else gc.pixelWriter.setColor(x, y, pixels(c).toFXColor)
+          else gc.pixelWriter.setColor(x, y, pixels.getColor(c).toFXColor)
 
   def redraw(pixels: ImageStorage): Unit =
     val gc = graphicsContext2D
@@ -62,7 +62,7 @@ class TriImageCanvas(init_width: Double, imageSize: Int)
 
             val coords = indexMap.coordsAt(x.toDouble / widthInt, y.toDouble / heightInt)
             if coords != null
-            then image(dx + dy * 16) = pixels(coords).withAlpha(1).toInt
+            then image(dx + dy * 16) = pixels.getColor(coords).withAlpha(1).toInt
             else image(dx + dy * 16) = 0
             dx += 1
           dy += 1

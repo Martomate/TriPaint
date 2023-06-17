@@ -4,7 +4,7 @@ import com.martomate.tripaint.model.coords.StorageCoords
 import com.martomate.tripaint.model.image.ImageSaveCollisionHandler
 
 import java.io.File
-import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.content.GridCell
 import com.martomate.tripaint.model.image.format.StorageFormat
 import scalafx.scene.paint.Color
 
@@ -12,11 +12,11 @@ trait TriPaintView extends ImageSaveCollisionHandler {
   def backgroundColor: Color
 
   def askForImageSize(): Option[Int]
-  def askSaveBeforeClosing(images: Seq[ImageContent]): Option[Boolean]
+  def askSaveBeforeClosing(images: Seq[GridCell]): Option[Boolean]
   def askForWhereToPutImage(): Option[(Int, Int)]
 
-  def askForSaveFile(image: ImageContent): Option[File]
-  def askForFileSaveSettings(file: File, image: ImageContent): Option[FileSaveSettings]
+  def askForSaveFile(image: GridCell): Option[File]
+  def askForFileSaveSettings(file: File, image: GridCell): Option[FileSaveSettings]
 
   def askForFileToOpen(): Option[File]
   def askForFileOpenSettings(

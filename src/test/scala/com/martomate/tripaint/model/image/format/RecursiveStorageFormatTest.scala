@@ -39,8 +39,8 @@ class RecursiveStorageFormatTest extends StorageFormatTest {
   }
 
   def triToStorage(from: (Int, Int))(to: (Int, Int)): Unit = {
-    assertEquals(make.transformToStorage(trCoords(from)), stCoords(to))
+    assertEquals(make.transform(trCoords(from)), stCoords(to))
   }
 
-  override def make: StorageFormat = new RecursiveStorageFormat
+  override def make: StorageFormat = RecursiveStorageFormat
 }

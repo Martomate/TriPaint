@@ -1,6 +1,6 @@
 package com.martomate.tripaint.model.coords
 
-case class PixelCoords(image: TriImageCoords, pix: TriangleCoords) {
+case class PixelCoords(image: GridCoords, pix: TriangleCoords) {
   def neighbours(imageSize: Int): Seq[PixelCoords] = {
     toGlobal(imageSize).neighbours map (c => PixelCoords(c, imageSize))
     /*    val dyForTop = if (image.x % 2 == 0) 1 else -1
@@ -46,7 +46,7 @@ case class PixelCoords(image: TriImageCoords, pix: TriangleCoords) {
 }
 
 object PixelCoords {
-  def apply(coords: TriangleCoords, coords1: TriImageCoords): PixelCoords =
+  def apply(coords: TriangleCoords, coords1: GridCoords): PixelCoords =
     PixelCoords(coords1, coords)
 
   def apply(coords: GlobalPixCoords, imageSize: Int): PixelCoords = {
@@ -57,7 +57,7 @@ object PixelCoords {
     val upsideDown = px1 > 2 * py1
     val py = if (upsideDown) imageSize - 1 - py1 else py1
     val px = if (upsideDown) 2 * imageSize - 1 - px1 else px1
-    val image = TriImageCoords(if (upsideDown) ix + 1 else ix, iy)
+    val image = GridCoords(if (upsideDown) ix + 1 else ix, iy)
     val pix = TriangleCoords(px, py)
     PixelCoords(pix, image)
   }

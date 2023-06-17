@@ -1,9 +1,9 @@
 package com.martomate.tripaint.control
 
-import com.martomate.tripaint.model.coords.TriImageCoords
+import com.martomate.tripaint.model.coords.GridCoords
 import com.martomate.tripaint.model.effects.*
 import com.martomate.tripaint.model.image.ImageStorage
-import com.martomate.tripaint.model.image.content.ImageContent
+import com.martomate.tripaint.model.image.content.GridCell
 import com.martomate.tripaint.model.{Color, TriPaintModel}
 import com.martomate.tripaint.view.gui.UIAction
 import com.martomate.tripaint.view.{TriPaintView, TriPaintViewFactory, TriPaintViewListener}
@@ -15,25 +15,25 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
   override def perform(action: UIAction): Unit = action match
     case UIAction.New =>
       for
-        where <- view.askForWhereToPutImage()
+        (x, y) <- view.askForWhereToPutImage()
         backgroundColor = Color.fromFXColor(view.backgroundColor)
-        coords = TriImageCoords(where._1, where._2)
+        coords = GridCoords(x, y)
       do Actions.createNewImage(model.imageGrid, backgroundColor, coords)
 
     case UIAction.Open =>
       for
         file <- view.askForFileToOpen()
         fileOpenSettings <- view.askForFileOpenSettings(file, model.imageGrid.imageSize, 1, 1)
-        where <- view.askForWhereToPutImage()
-        coords = TriImageCoords(where._1, where._2)
+        (x, y) <- view.askForWhereToPutImage()
+        coords = GridCoords(x, y)
       do Actions.openImage(model, file, fileOpenSettings, coords)
 
     case UIAction.OpenHexagon =>
       for
         file <- view.askForFileToOpen()
         fileOpenSettings <- view.askForFileOpenSettings(file, model.imageGrid.imageSize, 6, 1)
-        where <- view.askForWhereToPutImage()
-        coords = TriImageCoords(where._1, where._2)
+        (x, y) <- view.askForWhereToPutImage()
+        coords = GridCoords(x, y)
       do Actions.openHexagon(model, file, fileOpenSettings, coords)
 
     case UIAction.Save =>
@@ -76,10 +76,10 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
 
   override def requestExit(): Boolean = do_exit()
 
-  override def requestImageRemoval(image: ImageContent): Unit =
+  override def requestImageRemoval(image: GridCell): Unit =
     var abortRemoval = false
-    if (image.changed) {
-      view.askSaveBeforeClosing(Seq(image)) match {
+    if image.changed then
+      view.askSaveBeforeClosing(Seq(image)) match
         case Some(shouldSave) =>
           if (
             shouldSave && !Actions.save(model.imagePool, Seq(image), model.fileSystem)(
@@ -89,17 +89,16 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
             )
           ) abortRemoval = true
         case None => abortRemoval = true
-      }
-    }
+
     if (!abortRemoval) model.imageGrid -= image.coords
 
-  private def do_exit(): Boolean = {
-    model.imageGrid.images.filter(_.changed) match {
+  private def do_exit(): Boolean =
+    model.imageGrid.images.filter(_.changed) match
       case Seq() => true
       case images =>
-        view.askSaveBeforeClosing(images) match {
+        view.askSaveBeforeClosing(images) match
           case Some(shouldSave) =>
-            if (shouldSave)
+            if shouldSave then
               Actions.save(model.imagePool, images, model.fileSystem)(
                 view.askForSaveFile,
                 view.askForFileSaveSettings,
@@ -107,9 +106,4 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
               )
             else true
           case None => false
-        }
-    }
-  }
 }
-// dispatcher, store, view, action, ...
-// model, view, intent

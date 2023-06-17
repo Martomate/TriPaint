@@ -22,7 +22,7 @@ abstract class StorageFormatTest extends FunSuite {
     }
 
     def comp(c: (Int, Int)): Unit =
-      assertEquals(f.transformToStorage(f.transformFromStorage(stCoords(c))), stCoords(c))
+      assertEquals(f.transform(f.reverse(stCoords(c))), stCoords(c))
   }
   test("transformFromStorage should be the inverse of transformToStorage") {
     val f = make
@@ -39,7 +39,7 @@ abstract class StorageFormatTest extends FunSuite {
     }
 
     def comp(c: (Int, Int)): Unit =
-      assertEquals(f.transformFromStorage(f.transformToStorage(trCoords(c))), trCoords(c))
+      assertEquals(f.reverse(f.transform(trCoords(c))), trCoords(c))
   }
 
   def stCoords(c: (Int, Int)): StorageCoords = StorageCoords(c._1, c._2)
