@@ -2,8 +2,7 @@ package com.martomate.tripaint.control
 
 import com.martomate.tripaint.model.coords.GridCoords
 import com.martomate.tripaint.model.effects.*
-import com.martomate.tripaint.model.image.ImageStorage
-import com.martomate.tripaint.model.image.content.GridCell
+import com.martomate.tripaint.model.image.{GridCell, ImageStorage}
 import com.martomate.tripaint.model.{Color, TriPaintModel}
 import com.martomate.tripaint.view.gui.UIAction
 import com.martomate.tripaint.view.{TriPaintView, TriPaintViewFactory, TriPaintViewListener}
@@ -54,9 +53,9 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
 
     case UIAction.Exit => if do_exit() then view.close()
 
-    case UIAction.Undo => model.imageGrid.images.foreach(_.undo())
+    case UIAction.Undo => model.imageGrid.undo()
 
-    case UIAction.Redo => model.imageGrid.images.foreach(_.redo())
+    case UIAction.Redo => model.imageGrid.redo()
 
     case UIAction.Blur =>
       for radius <- view.askForBlurRadius()
@@ -93,7 +92,7 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
     if (!abortRemoval) model.imageGrid -= image.coords
 
   private def do_exit(): Boolean =
-    model.imageGrid.images.filter(_.changed) match
+    model.imageGrid.changedImages match
       case Seq() => true
       case images =>
         view.askSaveBeforeClosing(images) match

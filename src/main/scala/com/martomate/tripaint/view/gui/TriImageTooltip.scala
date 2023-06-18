@@ -1,8 +1,7 @@
 package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.coords.StorageCoords
-import com.martomate.tripaint.model.image.{ImagePool, ImageStorage}
-import com.martomate.tripaint.model.image.content.GridCell
+import com.martomate.tripaint.model.image.{GridCell, ImagePool, ImageStorage}
 import scalafx.scene.control.Tooltip
 
 object TriImageTooltip:

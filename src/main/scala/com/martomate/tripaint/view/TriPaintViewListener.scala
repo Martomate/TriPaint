@@ -1,6 +1,6 @@
 package com.martomate.tripaint.view
 
-import com.martomate.tripaint.model.image.content.GridCell
+import com.martomate.tripaint.model.image.GridCell
 import com.martomate.tripaint.view.gui.UIAction
 
 trait TriPaintViewListener {

@@ -49,12 +49,13 @@ object ImageStorage {
       offset: StorageCoords,
       format: StorageFormat,
       imageSize: Int
-  ): Try[ImageStorage] =
+  ): Try[ImageStorage] = Try {
     val regularImage = RegularImage.tabulate(imageSize, imageSize)((x, y) =>
       val stCoords = format.transform(SimpleStorageFormat.reverse(StorageCoords(x, y)))
       image.getColor(offset.x + stCoords.x, offset.y + stCoords.y)
     )
-    Try(new ImageStorage(imageSize, regularImage))
+    new ImageStorage(imageSize, regularImage)
+  }
 
   enum Event:
     case PixelChanged(coords: TriangleCoords, from: Color, to: Color)

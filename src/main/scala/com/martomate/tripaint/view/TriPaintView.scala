@@ -1,10 +1,9 @@
 package com.martomate.tripaint.view
 
 import com.martomate.tripaint.model.coords.StorageCoords
-import com.martomate.tripaint.model.image.ImageSaveCollisionHandler
+import com.martomate.tripaint.model.image.{GridCell, ImageSaveCollisionHandler}
 
 import java.io.File
-import com.martomate.tripaint.model.image.content.GridCell
 import com.martomate.tripaint.model.image.format.StorageFormat
 import scalafx.scene.paint.Color
 

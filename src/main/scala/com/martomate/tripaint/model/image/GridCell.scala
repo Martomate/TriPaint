@@ -1,9 +1,8 @@
-package com.martomate.tripaint.model.image.content
+package com.martomate.tripaint.model.image
 
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.{GridCoords, TriangleCoords}
 import com.martomate.tripaint.model.image.ImageStorage
-import com.martomate.tripaint.model.undo.UndoManager
 import com.martomate.tripaint.util.{EventDispatcher, Tracker}
 import scalafx.beans.property.{BooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanWrapper}
 
@@ -25,20 +24,8 @@ class GridCell(val coords: GridCoords, init_image: ImageStorage):
   val editableProperty: BooleanProperty = BooleanProperty(true)
   def editable: Boolean = editableProperty.value
 
-  // TODO: use a single UndoManager for the entire grid instead of one for each cell
-  private val undoManager = new UndoManager
-
-  def appendChange(change: ImageChange): Unit =
-    undoManager.append(change)
+  def onImageChangedALot(): Unit =
     dispatcher.notify(GridCell.Event.ImageChangedALot)
-
-  def undo(): Unit =
-    val didUndo = undoManager.undo()
-    if didUndo then dispatcher.notify(GridCell.Event.ImageChangedALot)
-
-  def redo(): Unit =
-    val didRedo = undoManager.redo()
-    if didRedo then dispatcher.notify(GridCell.Event.ImageChangedALot)
 
   private val _changed: ReadOnlyBooleanWrapper = ReadOnlyBooleanWrapper(false)
   def changed: Boolean = _changed.value

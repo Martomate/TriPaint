@@ -1,8 +1,13 @@
 package com.martomate.tripaint.view.image
 
-import com.martomate.tripaint.model.{FloodFillSearcher, ImageGrid, ImageGridColorLookup}
-import com.martomate.tripaint.model.coords.{PixelCoords, GridCoords}
-import com.martomate.tripaint.model.image.content.GridCell
+import com.martomate.tripaint.model.{
+  FloodFillSearcher,
+  ImageGrid,
+  ImageGridChange,
+  ImageGridColorLookup
+}
+import com.martomate.tripaint.model.coords.{GridCoords, PixelCoords}
+import com.martomate.tripaint.model.image.{GridCell, ImageChange}
 import com.martomate.tripaint.view.EditMode
 import javafx.scene.input.{MouseButton, MouseEvent}
 import javafx.scene.paint
@@ -83,7 +88,15 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane:
 
   onMouseReleased = e =>
     if !e.isConsumed
-    then for im <- triImages.reverse do im.onStoppedDrawing()
+    then
+      val changes = mutable.Map.empty[GridCoords, ImageChange]
+      for im <- triImages.reverse
+      do
+        val change = im.stopDrawing()
+        change.undo()
+        changes(im.content.coords) = change
+
+      imageGrid.performChange(new ImageGridChange(changes.toMap))
 
   onScroll = e =>
     val (dx, dy) = (e.getDeltaX, e.getDeltaY)
@@ -140,10 +153,10 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane:
     relocateChildren()
 
   private def relocateChildren(): Unit =
-    for im <- imageGrid.images do relocateImage(im)
+    for im <- imageGrid.images do relocateImage(im.coords)
 
-  private def relocateImage(image: GridCell): Unit =
-    imageMap(image.coords).pane.relocate(width() / 2 + xScroll, height() / 2 + yScroll)
+  private def relocateImage(coords: GridCoords): Unit =
+    imageMap(coords).pane.relocate(width() / 2 + xScroll, height() / 2 + yScroll)
 
   private def onImageGridEvent(event: ImageGrid.Event): Unit =
     event match
@@ -151,7 +164,7 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane:
         val triImage = new TriImage(image, zoom)
         children.add(triImage.pane.delegate)
         imageMap(image.coords) = triImage
-        relocateImage(image)
+        relocateImage(image.coords)
       case ImageGrid.Event.ImageRemoved(image) =>
         val index = children.indexOf(imageMap(image.coords).pane.delegate, 0)
         if index != -1 then children.remove(index)

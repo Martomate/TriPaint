@@ -7,8 +7,7 @@ import com.martomate.tripaint.model.coords.{
   GridCoords,
   TriangleCoords
 }
-import com.martomate.tripaint.model.image.ImageStorage
-import com.martomate.tripaint.model.image.content.GridCell
+import com.martomate.tripaint.model.image.{GridCell, ImageStorage}
 import munit.FunSuite
 
 class BlurEffectTest extends FunSuite {

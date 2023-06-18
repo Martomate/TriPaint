@@ -2,8 +2,7 @@ package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.effects.{BlurEffect, MotionBlurEffect, RandomNoiseEffect}
-import com.martomate.tripaint.model.image.{ImagePool, ImageStorage}
-import com.martomate.tripaint.model.image.content.GridCell
+import com.martomate.tripaint.model.image.{GridCell, ImagePool, ImageStorage}
 import com.martomate.tripaint.model.image.format.{RecursiveStorageFormat, SimpleStorageFormat}
 import com.martomate.tripaint.view.image.ImageGridPane
 import com.martomate.tripaint.view.*
@@ -238,8 +237,8 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
       newImage: ImageStorage,
       location: ImagePool.SaveLocation
   ): Option[Boolean] = {
-    val tri1 = model.imageGrid.images.find(_.storage == newImage).orNull
-    val tri2 = model.imageGrid.images.find(_.storage == currentImage).orNull
+    val tri1 = model.imageGrid.findByStorage(newImage).orNull
+    val tri2 = model.imageGrid.findByStorage(currentImage).orNull
     val (previewPane, _) = DialogUtils.makeImagePreviewList(Seq(tri1, tri2), model.imagePool)
 
     val alert = new Alert(AlertType.Confirmation)

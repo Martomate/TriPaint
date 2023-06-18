@@ -1,8 +1,7 @@
 package com.martomate.tripaint.model
 
 import com.martomate.tripaint.model.coords.GridCoords
-import com.martomate.tripaint.model.image.ImagePool
-import com.martomate.tripaint.model.image.content.GridCell
+import com.martomate.tripaint.model.image.{GridCell, ImageChange, ImagePool, ImageStorage}
 import com.martomate.tripaint.util.{EventDispatcher, Tracker}
 
 import scala.collection.mutable.ArrayBuffer
@@ -11,6 +10,11 @@ object ImageGrid {
   enum Event:
     case ImageAdded(image: GridCell)
     case ImageRemoved(image: GridCell)
+
+  def fromCells(imageSize: Int, cells: Seq[GridCell]): ImageGrid =
+    val grid = new ImageGrid(imageSize)
+    for c <- cells do grid.set(c)
+    grid
 }
 
 class ImageGrid(init_imageSize: Int) {
@@ -24,6 +28,8 @@ class ImageGrid(init_imageSize: Int) {
   def trackChanges(tracker: Tracker[ImageGrid.Event]): Unit = dispatcher.track(tracker)
 
   def apply(coords: GridCoords): Option[GridCell] = _images.find(_.coords == coords)
+
+  def findByStorage(storage: ImageStorage): Option[GridCell] = images.find(_.storage == storage)
 
   def set(image: GridCell): Unit = {
     val idx = _images.indexWhere(_.coords == image.coords)
@@ -43,6 +49,21 @@ class ImageGrid(init_imageSize: Int) {
       ret
     } else null
   }
+
+  private val undoManager = new UndoManager
+
+  def performChange(change: ImageGridChange): Unit =
+    change.redo()
+    undoManager.append(change)
+    for im <- images do im.onImageChangedALot()
+
+  def undo(): Unit =
+    undoManager.undo()
+    for im <- images do im.onImageChangedALot()
+
+  def redo(): Unit =
+    undoManager.redo()
+    for im <- images do im.onImageChangedALot()
 
   def setImageSizeIfEmpty(size: Int): Boolean = {
     if (_images.isEmpty) {
@@ -65,5 +86,10 @@ class ImageGrid(init_imageSize: Int) {
         do im.replaceImage(newImage)
     }
 
+  def replaceImage(coords: GridCoords, newImage: ImageStorage): Unit =
+    apply(coords).foreach(_.replaceImage(newImage))
+
   final def selectedImages: Seq[GridCell] = images.filter(_.editable)
+
+  final def changedImages: Seq[GridCell] = images.filter(_.changed)
 }

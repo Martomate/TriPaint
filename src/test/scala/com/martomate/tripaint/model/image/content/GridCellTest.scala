@@ -3,7 +3,7 @@ package com.martomate.tripaint.model.image.content
 import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.ImageGrid
 import com.martomate.tripaint.model.coords.{GridCoords, TriangleCoords}
-import com.martomate.tripaint.model.image.{ImagePool, ImageStorage}
+import com.martomate.tripaint.model.image.{GridCell, ImageChange, ImagePool, ImageStorage}
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
 import com.martomate.tripaint.util.Tracker
 import munit.FunSuite
@@ -13,14 +13,14 @@ import java.io.File
 
 class GridCellTest extends FunSuite {
 
-  test("appendChange should tell the listeners that a lot has changed") {
+  test("onImageChangedALot should tell the listeners that a lot has changed") {
     val image = ImageStorage.fill(2, Color.Black)
     val f = new GridCell(GridCoords(0, 0), image)
 
     val tracker = Tracker.withStorage[GridCell.Event]
     f.trackChanges(tracker)
 
-    f.appendChange(new ImageChange("", image, Seq()))
+    f.onImageChangedALot()
 
     assertEquals(tracker.events, Seq(GridCell.Event.ImageChangedALot))
   }

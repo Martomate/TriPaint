@@ -1,9 +1,8 @@
 package com.martomate.tripaint.view.image
 
 import com.martomate.tripaint.model.Color
-import com.martomate.tripaint.model.image.content.{CumulativeImageChange, GridCell}
 import com.martomate.tripaint.model.coords.TriangleCoords
-import com.martomate.tripaint.model.image.ImageStorage
+import com.martomate.tripaint.model.image.{GridCell, ImageChange, ImageStorage}
 import javafx.scene.input.{MouseEvent, ScrollEvent}
 import scalafx.beans.property.ReadOnlyBooleanProperty
 import scalafx.scene.layout.Pane
@@ -16,7 +15,7 @@ class TriImage(val content: GridCell, init_zoom: Double):
   private val canvas: TriImageCanvas =
     new TriImageCanvas((storage.imageSize * 2 + 1) * init_zoom, storage.imageSize)
 
-  private val cumulativeImageChange = new CumulativeImageChange
+  private val cumulativeImageChange = new ImageChange.Builder
 
   content.trackChanges(this.onImageChanged _)
   pane.children.add(canvas)
@@ -31,8 +30,7 @@ class TriImage(val content: GridCell, init_zoom: Double):
   private def panX(zoom: Double) = content.coords.centerX * (storage.imageSize * 2 + 1) * zoom
   private def panY(zoom: Double) = content.coords.centerY * (storage.imageSize * 2 + 1) * zoom
 
-  def onStoppedDrawing(): Unit =
-    content.appendChange(cumulativeImageChange.done("draw", content.storage))
+  def stopDrawing(): ImageChange = cumulativeImageChange.done(content.storage)
 
   def onZoom(zoom: Double): Unit =
     updateCanvasSize(zoom)

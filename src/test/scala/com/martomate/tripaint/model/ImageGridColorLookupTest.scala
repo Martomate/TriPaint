@@ -1,8 +1,7 @@
 package com.martomate.tripaint.model
 
 import com.martomate.tripaint.model.coords.{GlobalPixCoords, GridCoords, TriangleCoords}
-import com.martomate.tripaint.model.image.ImageStorage
-import com.martomate.tripaint.model.image.content.GridCell
+import com.martomate.tripaint.model.image.{GridCell, ImageStorage}
 import com.martomate.tripaint.model.{Color, ImageGrid, ImageGridColorLookup}
 import munit.FunSuite
 

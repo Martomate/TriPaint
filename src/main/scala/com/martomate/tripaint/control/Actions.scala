@@ -1,14 +1,21 @@
 package com.martomate.tripaint.control
 
 import com.martomate.tripaint.infrastructure.FileSystem
-import com.martomate.tripaint.model.{Color, ImageGrid, TriPaintModel}
-import com.martomate.tripaint.model.coords.{StorageCoords, GridCoords}
+import com.martomate.tripaint.model.{Color, ImageGrid, ImageGridChange, TriPaintModel}
+import com.martomate.tripaint.model.coords.{GridCoords, StorageCoords}
 import com.martomate.tripaint.model.effects.Effect
-import com.martomate.tripaint.model.image.{ImagePool, ImageSaveCollisionHandler, ImageStorage}
-import com.martomate.tripaint.model.image.content.{ImageChange, GridCell, PixelChange}
+import com.martomate.tripaint.model.image.{
+  GridCell,
+  ImageChange,
+  ImagePool,
+  ImageSaveCollisionHandler,
+  ImageStorage
+}
+import com.martomate.tripaint.util.Tracker
 import com.martomate.tripaint.view.{FileOpenSettings, FileSaveSettings}
 
 import java.io.File
+import scala.collection.mutable
 import scala.util.{Failure, Success}
 
 object Actions {
@@ -100,27 +107,28 @@ object Actions {
 
   def applyEffect(model: TriPaintModel, effect: Effect): Unit =
     val grid = model.imageGrid
-    val im = grid.selectedImages
+    val images = grid.selectedImages
 
-    val storages = im.map(_.storage)
-    val allPixels = storages.map(_.allPixels)
-    val before = allPixels.zip(storages).map((px, st) => px.map(st.getColor))
+    val before = for im <- images yield im.storage.allPixels.map(im.storage.getColor)
 
-    effect.action(im.map(_.coords), grid)
+    effect.action(images.map(_.coords), grid)
 
-    val after = allPixels.zip(storages).map((px, st) => px.map(st.getColor))
+    val after = for im <- images yield im.storage.allPixels.map(im.storage.getColor)
 
-    for here <- storages.indices do
-      val changed =
-        for
-          neigh <- allPixels(here).indices
-          if before(here)(neigh) != after(here)(neigh)
-        yield PixelChange(
-          allPixels(here)(neigh),
-          before(here)(neigh),
-          after(here)(neigh)
-        )
+    val changes = mutable.Map.empty[GridCoords, ImageChange]
+    for here <- images.indices do
+      val image = images(here)
+      val allPixels = image.storage.allPixels
 
-      if changed.nonEmpty then
-        im(here).appendChange(new ImageChange(effect.name, im(here).storage, changed))
+      val changeBuilder = new ImageChange.Builder
+      for
+        neigh <- allPixels.indices
+        if before(here)(neigh) != after(here)(neigh)
+      yield changeBuilder.addChange(allPixels(neigh), before(here)(neigh), after(here)(neigh))
+
+      if changeBuilder.nonEmpty then changes(image.coords) = changeBuilder.done(image.storage)
+
+    for (coords, change) <- changes do change.undo()
+
+    grid.performChange(new ImageGridChange(changes.toMap))
 }

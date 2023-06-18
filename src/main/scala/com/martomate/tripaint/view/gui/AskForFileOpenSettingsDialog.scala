@@ -1,10 +1,9 @@
 package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.infrastructure.FileSystem
-import com.martomate.tripaint.model.Color
-import com.martomate.tripaint.model.coords.{StorageCoords, GridCoords}
-import com.martomate.tripaint.model.image.ImageStorage
-import com.martomate.tripaint.model.image.content.GridCell
+import com.martomate.tripaint.model.{Color, ImageGrid}
+import com.martomate.tripaint.model.coords.{GridCoords, StorageCoords}
+import com.martomate.tripaint.model.image.{GridCell, ImageStorage}
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.view.FileOpenSettings
 import com.martomate.tripaint.view.gui.DialogUtils.{getValueFromCustomDialog, makeGridPane}
@@ -77,11 +76,12 @@ object AskForFileOpenSettingsDialog:
     previewStack.delegate.getChildren.addAll(wholeImage, previewPane)
 
     val blankImage = ImageStorage.fill(imageSize, Color.White)
-    val triPreviewImages =
-      Seq.tabulate(xCount)(_ => new GridCell(GridCoords(0, 0), blankImage))
-
+    val imageGrid = ImageGrid.fromCells(
+      imageSize,
+      Seq.tabulate(xCount)(x => new GridCell(GridCoords(x, 0), blankImage))
+    )
     val (triPreviewPane, updateTriPreview) = ImagePreviewList.fromImageContent(
-      triPreviewImages,
+      imageGrid.images,
       TriImageForPreview.previewSize,
       _ => None
     )
@@ -93,18 +93,14 @@ object AskForFileOpenSettingsDialog:
           previewPane.setLayoutY(sy)
 
           for x <- 0 until xCount do
-            ImageStorage.fromRegularImage(
-              underlyingImage,
-              StorageCoords(sx + x * imageSize, sy),
-              format,
-              imageSize
-            ) match
-              case Success(imageStorage) =>
-                triPreviewImages(x).replaceImage(imageStorage)
-              case _ =>
-                triPreviewImages(x).replaceImage(blankImage)
+            val offset = StorageCoords(sx + x * imageSize, sy)
+            val newPreviewImage = ImageStorage
+              .fromRegularImage(underlyingImage, offset, format, imageSize)
+              .getOrElse(blankImage)
 
-          updateTriPreview(_ => ())
+            imageGrid.replaceImage(GridCoords(x, 0), newPreviewImage)
+
+            updateTriPreview(_ => ())
         case _ =>
 
     updatePreviewAction()
