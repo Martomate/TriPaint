@@ -1,19 +1,14 @@
 package com.martomate.tripaint.model.image
 
 import com.martomate.tripaint.infrastructure.FileSystem
+import com.martomate.tripaint.model
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.StorageCoords
 import com.martomate.tripaint.model.image.ImagePool.SaveLocation
 import com.martomate.tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
-import com.martomate.tripaint.model.image.{
-  ImagePool,
-  ImageSaveCollisionHandler,
-  ImageStorage,
-  RegularImage
-}
 import com.martomate.tripaint.util.Tracker
 import munit.FunSuite
-import org.mockito.Mockito.{verify, when}
+import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import scalafx.scene.paint.Color as FXColor
 
@@ -23,145 +18,6 @@ import scala.util.{Failure, Success}
 class ImagePoolTest extends FunSuite with MockitoSugar {
   implicit val collisionHandler: ImageSaveCollisionHandler = mock[ImageSaveCollisionHandler]
   val storageFormat: StorageFormat = SimpleStorageFormat
-
-  test("save should return false if the image doesn't exist") {
-    val image = ImageStorage.fill(2, Color.Black)
-    assertEquals(new ImagePool().save(image, null), false)
-  }
-
-  test("save should return false if the saver reports failure") {
-    val image = ImageStorage.fill(2, Color.Black)
-    val location = SaveLocation(new File("a.png"))
-    val format = SimpleStorageFormat
-    val info = ImagePool.SaveInfo(format)
-
-    val f = new ImagePool()
-    f.move(image, location, info)
-
-    val fs = FileSystem.createNull(new FileSystem.NullArgs(supportedImageFormats = Set()))
-    assertEquals(f.save(image, fs), false)
-  }
-
-  test("save should notify listeners and return true if the saver reports success") {
-    val tracker = Tracker.withStorage[ImagePool.Event]
-    val image = ImageStorage.fill(2, Color.Black)
-    val location = SaveLocation(new File("a.png"))
-    val format = SimpleStorageFormat
-    val info = ImagePool.SaveInfo(format)
-
-    val f = new ImagePool()
-    f.trackChanges(tracker)
-    f.move(image, location, info)
-
-    assertEquals(f.save(image, FileSystem.createNull()), true)
-    assertEquals(tracker.events, Seq(ImagePool.Event.ImageSaved(image)))
-  }
-
-  test("save should write image if it does not exist") {
-    val image = ImageStorage.fill(2, Color.Blue)
-    val path = "a.png"
-    val location = SaveLocation(new File(path))
-    val format = SimpleStorageFormat
-    val info = ImagePool.SaveInfo(format)
-
-    val imagePool = new ImagePool()
-    imagePool.move(image, location, info)
-
-    val fs = FileSystem.createNull()
-    val tracker = Tracker.withStorage[FileSystem.Event]
-    fs.trackChanges(tracker)
-
-    imagePool.save(image, fs)
-
-    assertEquals(
-      tracker.events,
-      Seq(
-        FileSystem.Event.ImageWritten(image.toRegularImage(format), new File(path))
-      )
-    )
-  }
-
-  test("save should overwrite image if it exists and has the same size") {
-    val image = ImageStorage.fill(2, Color.Blue)
-    val path = "a.png"
-    val location = SaveLocation(new File(path))
-    val format = SimpleStorageFormat
-    val info = ImagePool.SaveInfo(format)
-
-    val imagePool = new ImagePool()
-    imagePool.move(image, location, info)
-
-    val existingImage = RegularImage.fill(2, 2, Color.Red)
-    val fs = FileSystem.createNull(
-      new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage))
-    )
-    val tracker = Tracker.withStorage[FileSystem.Event]
-    fs.trackChanges(tracker)
-
-    imagePool.save(image, fs)
-
-    assertEquals(
-      tracker.events,
-      Seq(
-        FileSystem.Event.ImageWritten(image.toRegularImage(format), new File(path))
-      )
-    )
-  }
-
-  test("save should overwrite part of image if there already exists a bigger image") {
-    val image = ImageStorage.fill(2, Color.Blue)
-    val path = "a.png"
-    val offset = StorageCoords(1, 2)
-    val location = SaveLocation(new File(path), offset)
-    val format = SimpleStorageFormat
-    val info = ImagePool.SaveInfo(format)
-
-    val imagePool = new ImagePool()
-    imagePool.move(image, location, info)
-
-    val existingImage = RegularImage.fill(3, 5, Color.Red)
-    val fs = FileSystem.createNull(
-      new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage))
-    )
-    val tracker = Tracker.withStorage[FileSystem.Event]
-    fs.trackChanges(tracker)
-
-    imagePool.save(image, fs)
-
-    val expectedImage = RegularImage.fill(3, 5, Color.Red)
-    expectedImage.pasteImage(offset, RegularImage.fill(2, 2, Color.Blue))
-
-    assertEquals(tracker.events, Seq(FileSystem.Event.ImageWritten(expectedImage, new File(path))))
-  }
-
-  test(
-    "save should overwrite part of image if there already exists an image even if it is too small"
-  ) {
-    val image = ImageStorage.fill(2, Color.Blue)
-    val path = "a.png"
-    val offset = StorageCoords(1, 2)
-    val location = SaveLocation(new File(path), offset)
-    val format = SimpleStorageFormat
-    val info = ImagePool.SaveInfo(format)
-
-    val imagePool = new ImagePool()
-    imagePool.move(image, location, info)
-
-    val existingImage = RegularImage.fill(3, 2, Color.Red)
-    val fs = FileSystem.createNull(
-      new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage))
-    )
-    val tracker = Tracker.withStorage[FileSystem.Event]
-    fs.trackChanges(tracker)
-
-    imagePool.save(image, fs)
-
-    val expectedImage = RegularImage.ofSize(3, 4)
-    expectedImage.pasteImage(StorageCoords(0, 0), RegularImage.fill(3, 2, Color.Red))
-    expectedImage.pasteImage(offset, RegularImage.fill(2, 2, Color.Blue))
-
-    assertEquals(tracker.events, Seq(FileSystem.Event.ImageWritten(expectedImage, new File(path))))
-  }
 
   test("locationOf should return None if the image doesn't exist") {
     val image = ImageStorage.fill(2, Color.Black)

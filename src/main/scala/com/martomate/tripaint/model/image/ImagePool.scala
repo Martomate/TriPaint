@@ -1,10 +1,8 @@
 package com.martomate.tripaint.model.image
 
 import com.martomate.tripaint.infrastructure.FileSystem
-import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.StorageCoords
 import com.martomate.tripaint.model.image.format.StorageFormat
-import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.util.{EventDispatcher, InjectiveHashMap, InjectiveMap, Tracker}
 
 import java.io.File
@@ -21,7 +19,6 @@ trait ImageSaveCollisionHandler {
 
 object ImagePool {
   enum Event:
-    case ImageSaved(image: ImageStorage)
     case ImageReplaced(oldImage: ImageStorage, newImage: ImageStorage, location: SaveLocation)
 
   case class SaveInfo(format: StorageFormat)
@@ -34,7 +31,7 @@ object ImagePool {
   * share the same ImageStorage.
   */
 class ImagePool {
-  import ImagePool.{SaveLocation, SaveInfo}
+  import ImagePool.{SaveInfo, SaveLocation}
 
   private val mapping: InjectiveMap[SaveLocation, ImageStorage] = new InjectiveHashMap
   private val saveInfo: mutable.Map[ImageStorage, SaveInfo] = mutable.Map.empty
@@ -43,6 +40,9 @@ class ImagePool {
   def trackChanges(tracker: Tracker[ImagePool.Event]): Unit = dispatcher.track(tracker)
 
   final def locationOf(image: ImageStorage): Option[SaveLocation] = mapping.getLeft(image)
+
+  def getSaveLocationAndInfo(image: ImageStorage): (Option[SaveLocation], Option[SaveInfo]) =
+    (locationOf(image), saveInfo.get(image))
 
   def move(image: ImageStorage, to: SaveLocation, info: SaveInfo)(using
       handler: ImageSaveCollisionHandler
@@ -68,21 +68,6 @@ class ImagePool {
         case None =>
       choice.isDefined
     else true
-
-  def save(image: ImageStorage, fileSystem: FileSystem): Boolean =
-    (locationOf(image), saveInfo.get(image)) match
-      case (Some(loc), Some(info)) =>
-        val oldImage = fileSystem.readImage(loc.file)
-
-        val imageToSave = image.toRegularImage(info.format)
-        val newImage = RegularImage.fromBaseAndOverlay(oldImage, imageToSave, loc.offset)
-
-        val didWrite = fileSystem.writeImage(newImage, loc.file)
-
-        if didWrite then dispatcher.notify(ImagePool.Event.ImageSaved(image))
-        didWrite
-      case _ =>
-        false
 
   // TODO: This pool system will not work since you can change SaveInfo for an image without telling the pool! Some planning has to be done.
   def fromFile(

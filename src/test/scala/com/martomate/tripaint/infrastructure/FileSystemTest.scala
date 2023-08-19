@@ -5,7 +5,6 @@ import com.martomate.tripaint.model.image.RegularImage
 import com.martomate.tripaint.util.Tracker
 import munit.FunSuite
 
-import java.awt.image.BufferedImage
 import java.io.File
 
 class FileSystemTest extends FunSuite {

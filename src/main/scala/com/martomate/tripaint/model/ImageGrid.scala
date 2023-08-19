@@ -1,7 +1,9 @@
 package com.martomate.tripaint.model
 
+import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.coords.GridCoords
-import com.martomate.tripaint.model.image.{GridCell, ImageChange, ImagePool, ImageStorage}
+import com.martomate.tripaint.model.image.{GridCell, ImagePool, ImageStorage, RegularImage}
+import com.martomate.tripaint.model.image.ImagePool.{SaveInfo, SaveLocation}
 import com.martomate.tripaint.util.{EventDispatcher, Tracker}
 
 import scala.collection.mutable.ArrayBuffer
@@ -72,19 +74,31 @@ class ImageGrid(init_imageSize: Int) {
     } else false
   }
 
-  def listenToImagePool(pool: ImagePool): Unit =
-    pool.trackChanges {
-      case ImagePool.Event.ImageSaved(image) =>
+  def save(image: ImageStorage, fileSystem: FileSystem, loc: SaveLocation, info: SaveInfo): Boolean =
+      val didWrite = doSave(image, fileSystem, loc, info)
+
+      if didWrite then
         for
           im <- this._images
           if im.storage == image
         do im.setImageSaved()
+      didWrite
+
+  private def doSave(image: ImageStorage, fileSystem: FileSystem, loc: SaveLocation, info: SaveInfo): Boolean =
+    val oldImage = fileSystem.readImage(loc.file)
+
+    val imageToSave = image.toRegularImage(info.format)
+    val newImage = RegularImage.fromBaseAndOverlay(oldImage, imageToSave, loc.offset)
+
+    fileSystem.writeImage(newImage, loc.file)
+
+  def listenToImagePool(pool: ImagePool): Unit =
+    pool.trackChanges:
       case ImagePool.Event.ImageReplaced(oldImage, newImage, _) =>
         for
           im <- this._images
           if im.storage == oldImage
         do im.replaceImage(newImage)
-    }
 
   def replaceImage(coords: GridCoords, newImage: ImageStorage): Unit =
     apply(coords).foreach(_.replaceImage(newImage))

@@ -37,6 +37,7 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
 
     case UIAction.Save =>
       Actions.save(
+        model.imageGrid,
         model.imagePool,
         model.imageGrid.selectedImages.filter(_.changed),
         model.fileSystem
@@ -44,7 +45,7 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
 
     case UIAction.SaveAs =>
       model.imageGrid.selectedImages.foreach(im =>
-        Actions.saveAs(model.imagePool, im, model.fileSystem)(
+        Actions.saveAs(model.imageGrid, model.imagePool, im, model.fileSystem)(
           view.askForSaveFile,
           view.askForFileSaveSettings,
           view
@@ -81,7 +82,12 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
       view.askSaveBeforeClosing(Seq(image)) match
         case Some(shouldSave) =>
           if (
-            shouldSave && !Actions.save(model.imagePool, Seq(image), model.fileSystem)(
+            shouldSave && !Actions.save(
+              model.imageGrid,
+              model.imagePool,
+              Seq(image),
+              model.fileSystem
+            )(
               view.askForSaveFile,
               view.askForFileSaveSettings,
               view
@@ -98,7 +104,7 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
         view.askSaveBeforeClosing(images) match
           case Some(shouldSave) =>
             if shouldSave then
-              Actions.save(model.imagePool, images, model.fileSystem)(
+              Actions.save(model.imageGrid, model.imagePool, images, model.fileSystem)(
                 view.askForSaveFile,
                 view.askForFileSaveSettings,
                 view

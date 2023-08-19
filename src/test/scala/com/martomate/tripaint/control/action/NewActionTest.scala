@@ -1,11 +1,10 @@
 package com.martomate.tripaint.control.action
 
 import com.martomate.tripaint.control.Actions
+import com.martomate.tripaint.model.{Color, TriPaintModel}
 import com.martomate.tripaint.model.coords.GridCoords
 import com.martomate.tripaint.model.image.RegularImage
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
-import com.martomate.tripaint.model.{Color, TriPaintModel}
-import com.martomate.tripaint.view.TriPaintView
 import munit.FunSuite
 
 class NewActionTest extends FunSuite {

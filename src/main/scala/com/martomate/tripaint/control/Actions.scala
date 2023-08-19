@@ -11,7 +11,6 @@ import com.martomate.tripaint.model.image.{
   ImageSaveCollisionHandler,
   ImageStorage
 }
-import com.martomate.tripaint.util.Tracker
 import com.martomate.tripaint.view.{FileOpenSettings, FileSaveSettings}
 
 import java.io.File
@@ -19,16 +18,21 @@ import scala.collection.mutable
 import scala.util.{Failure, Success}
 
 object Actions {
-  def save(imagePool: ImagePool, images: Seq[GridCell], fileSystem: FileSystem)(
+  def save(
+      imageGrid: ImageGrid,
+      imagePool: ImagePool,
+      images: Seq[GridCell],
+      fileSystem: FileSystem
+  )(
       askForSaveFile: GridCell => Option[File],
       askForFileSaveSettings: (File, GridCell) => Option[FileSaveSettings],
       imageSaveCollisionHandler: ImageSaveCollisionHandler
   ): Boolean = {
     images
-      .filter(im => !imagePool.save(im.storage, fileSystem))
+      .filter(im => !trySaveImage(imageGrid, imagePool, im.storage, fileSystem))
       .forall(im =>
-        imagePool.save(im.storage, fileSystem) ||
-          saveAs(imagePool, im, fileSystem)(
+        trySaveImage(imageGrid, imagePool, im.storage, fileSystem) ||
+          saveAs(imageGrid, imagePool, im, fileSystem)(
             askForSaveFile,
             askForFileSaveSettings,
             imageSaveCollisionHandler
@@ -36,7 +40,17 @@ object Actions {
       )
   }
 
-  def saveAs(imagePool: ImagePool, image: GridCell, fileSystem: FileSystem)(
+  private def trySaveImage(
+      imageGrid: ImageGrid,
+      imagePool: ImagePool,
+      image: ImageStorage,
+      fileSystem: FileSystem
+  ): Boolean =
+    imagePool.getSaveLocationAndInfo(image) match
+      case (Some(loc), Some(info)) => imageGrid.save(image, fileSystem, loc, info)
+      case _                       => false
+
+  def saveAs(imageGrid: ImageGrid, imagePool: ImagePool, image: GridCell, fileSystem: FileSystem)(
       askForSaveFile: GridCell => Option[File],
       askForFileSaveSettings: (File, GridCell) => Option[FileSaveSettings],
       imageSaveCollisionHandler: ImageSaveCollisionHandler
@@ -52,7 +66,7 @@ object Actions {
     val didMove = didMoveOpt.getOrElse(false)
 
     if didMove then
-      val saved = imagePool.save(image.storage, fileSystem)
+      val saved = trySaveImage(imageGrid, imagePool, image.storage, fileSystem)
       if (!saved) println("Image could not be saved!!")
       saved
     else false

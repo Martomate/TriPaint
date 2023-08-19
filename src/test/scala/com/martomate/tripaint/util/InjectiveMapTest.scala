@@ -1,6 +1,5 @@
 package com.martomate.tripaint.util
 
-import com.martomate.tripaint.util.InjectiveMap
 import munit.FunSuite
 
 abstract class InjectiveMapTest extends FunSuite {

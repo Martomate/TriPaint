@@ -46,17 +46,13 @@ class GridCellTest extends FunSuite {
     val format = SimpleStorageFormat
     val info = ImagePool.SaveInfo(format)
 
-    val pool = new ImagePool()
-    pool.move(image, location, info)(using null)
-
     val grid = new ImageGrid(2)
-    grid.listenToImagePool(pool)
 
     val f = new GridCell(GridCoords(0, 0), image)
     grid.set(f)
 
     image.setColor(TriangleCoords(0, 0), Color.Blue)
-    pool.save(image, FileSystem.createNull())
+    grid.save(image, FileSystem.createNull(), location, info)
 
     assert(!f.changed)
   }
