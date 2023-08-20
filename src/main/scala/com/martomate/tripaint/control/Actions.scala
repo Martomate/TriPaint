@@ -13,6 +13,7 @@ import com.martomate.tripaint.model.image.{
 }
 import com.martomate.tripaint.model.image.ImagePool.{SaveInfo, SaveLocation}
 import com.martomate.tripaint.model.image.format.StorageFormat
+import com.martomate.tripaint.util.CachedLoader
 import com.martomate.tripaint.view.{FileOpenSettings, FileSaveSettings}
 
 import java.io.File
@@ -90,23 +91,14 @@ object Actions {
     val location = ImagePool.SaveLocation(file, offset)
     val imageSize = model.imageGrid.imageSize
 
-    loadFromFileIntoPool(model.imagePool, location, format, imageSize, model.fileSystem) match
-      case Success(storage) => model.imageGrid.set(new GridCell(whereToPutImage, storage))
-      case Failure(exc)     => exc.printStackTrace()
-
-  def loadFromFileIntoPool(
-      imagePool: ImagePool,
-      location: SaveLocation,
-      format: StorageFormat,
-      imageSize: Int,
-      fileSystem: FileSystem
-  ): Try[ImageStorage] =
-    imagePool.imageAt(location) match
-      case Some(image) => Success(image)
-      case None =>
-        val loadResult = loadImageFromFile(location, format, imageSize, fileSystem)
-        for image <- loadResult do imagePool.set(image, location, SaveInfo(format))
-        loadResult
+    CachedLoader(
+      cached = model.imagePool.imageAt(location),
+      load = loadImageFromFile(location, format, imageSize, model.fileSystem)
+    ) match
+      case Success((image, found)) =>
+        if !found then model.imagePool.set(image, location, SaveInfo(format))
+        model.imageGrid.set(new GridCell(whereToPutImage, image))
+      case Failure(exc) => exc.printStackTrace()
 
   private def loadImageFromFile(
       location: SaveLocation,
@@ -141,15 +133,11 @@ object Actions {
 
     for idx <- 0 until 6 do
       val imageOffset = StorageCoords(offset.x + idx * imageSize, offset.y)
-      val location = ImagePool.SaveLocation(file, imageOffset)
 
-      loadFromFileIntoPool(model.imagePool, location, format, imageSize, model.fileSystem) match
-        case Success(storage) =>
-          val off = coordOffset(idx)
-          val imageCoords = GridCoords(coords.x + off._1, coords.y + off._2)
-          model.imageGrid.set(new GridCell(imageCoords, storage))
-        case Failure(exc) =>
-          exc.printStackTrace()
+      val off = coordOffset(idx)
+      val whereToPutImage = GridCoords(coords.x + off._1, coords.y + off._2)
+
+      openImage(model, file, FileOpenSettings(imageOffset, format), whereToPutImage)
 
   def applyEffect(model: TriPaintModel, effect: Effect): Unit =
     val grid = model.imageGrid

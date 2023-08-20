@@ -3,6 +3,7 @@ package com.martomate.tripaint.infrastructure
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.image.RegularImage
 import com.martomate.tripaint.util.Tracker
+
 import munit.FunSuite
 
 import java.io.File
@@ -109,7 +110,7 @@ class FileSystemNullTest extends FunSuite {
   test("readImage returns the pre-configured image if set") {
     val image = RegularImage.fill(3, 4, Color.Cyan)
     val fs = FileSystem.createNull(
-      new FileSystem.NullArgs(
+      FileSystem.NullArgs(
         initialImages = Map(
           new File("image.png") -> image
         )
@@ -149,7 +150,7 @@ class FileSystemNullTest extends FunSuite {
   test("writeImage returns false if the image could not be written") {
     val image = RegularImage.fill(3, 4, Color.Cyan)
 
-    val config = new FileSystem.NullArgs(supportedImageFormats = Set("jpg", "gif"))
+    val config = FileSystem.NullArgs(supportedImageFormats = Set("jpg", "gif"))
     val fs = FileSystem.createNull(config)
 
     assert(!fs.writeImage(image, new File("a.png")))
@@ -158,7 +159,7 @@ class FileSystemNullTest extends FunSuite {
   test("writeImage does not notify trackers if the image could not be written") {
     val image = RegularImage.fill(3, 4, Color.Cyan)
 
-    val config = new FileSystem.NullArgs(supportedImageFormats = Set("jpg", "gif"))
+    val config = FileSystem.NullArgs(supportedImageFormats = Set("jpg", "gif"))
     val fs = FileSystem.createNull(config)
     val tracker = Tracker.withStorage[FileSystem.Event]
     fs.trackChanges(tracker)
@@ -172,7 +173,7 @@ class FileSystemNullTest extends FunSuite {
     val existingImage = RegularImage.fill(3, 4, Color.Yellow)
     val newImage = RegularImage.fill(3, 4, Color.Cyan)
 
-    val config = new FileSystem.NullArgs(initialImages = Map(new File("a.png") -> existingImage))
+    val config = FileSystem.NullArgs(initialImages = Map(new File("a.png") -> existingImage))
     val fs = FileSystem.createNull(config)
     val tracker = Tracker.withStorage[FileSystem.Event]
     fs.trackChanges(tracker)

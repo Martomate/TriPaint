@@ -3,16 +3,16 @@ package com.martomate.tripaint.model.image
 import com.martomate.tripaint.control.Actions
 import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model
-import com.martomate.tripaint.model.Color
-import com.martomate.tripaint.model.coords.StorageCoords
+import com.martomate.tripaint.model.{Color, TriPaintModel}
+import com.martomate.tripaint.model.coords.{GridCoords, StorageCoords}
 import com.martomate.tripaint.model.image.ImagePool.SaveLocation
 import com.martomate.tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
+import com.martomate.tripaint.view.FileOpenSettings
 
 import munit.FunSuite
 import scalafx.scene.paint.Color as FXColor
 
 import java.io.File
-import scala.util.{Failure, Success}
 
 class ImagePoolTest extends FunSuite {
   val storageFormat: StorageFormat = SimpleStorageFormat
@@ -33,45 +33,49 @@ class ImagePoolTest extends FunSuite {
     assertEquals(f.locationOf(image), Some(location))
   }
 
-  test(
-    "Actions.loadFromFileIntoPool should return Failure if there is no image there and the loading failed"
-  ) {
+  test("Actions.openImage should do nothing if loading failed") {
     val location = SaveLocation(null)
     val imageSize = 16
-    val fs = FileSystem.createNull(new FileSystem.NullArgs(initialImages = Map.empty))
 
-    val pool = new ImagePool()
+    val model = TriPaintModel.createNull(imageSize, FileSystem.NullArgs(initialImages = Map.empty))
+    val pool = model.imagePool
 
-    assertEquals(
-      Actions.loadFromFileIntoPool(pool, location, storageFormat, imageSize, fs).isFailure,
-      true
+    Actions.openImage(
+      model,
+      location.file,
+      FileOpenSettings(location.offset, storageFormat),
+      GridCoords(0, 0)
     )
+
+    assertEquals(pool.imageAt(location), None)
   }
 
-  test(
-    "Actions.loadFromFileIntoPool should save and return the newly loaded image if there was none already"
-  ) {
+  test("Actions.openImage should store the loaded image in the image pool") {
     val file = new File("path/to/image.png")
     val location = SaveLocation(file)
     val imageSize = 16
 
     val image = ImageStorage.fill(imageSize, FXColor.Orange)
     val regularImage = image.toRegularImage(storageFormat)
-    val fs = FileSystem.createNull(
-      new FileSystem.NullArgs(initialImages = Map(file -> regularImage))
+
+    val model =
+      TriPaintModel.createNull(
+        imageSize,
+        FileSystem.NullArgs(initialImages = Map(file -> regularImage))
+      )
+
+    Actions.openImage(
+      model,
+      location.file,
+      FileOpenSettings(location.offset, storageFormat),
+      GridCoords(0, 0)
     )
+    val loadedImage = model.imagePool.imageAt(location).get
 
-    val pool = new ImagePool()
-
-    Actions.loadFromFileIntoPool(pool, location, storageFormat, imageSize, fs) match {
-      case Success(actualImage) =>
-        assertEquals(actualImage.toRegularImage(storageFormat), regularImage)
-        assertEquals(pool.locationOf(actualImage), Some(location))
-      case Failure(_) => fail("The image pool failed to load the image from file")
-    }
+    assertEquals(loadedImage.toRegularImage(storageFormat), regularImage)
   }
 
-  test("Actions.loadFromFileIntoPool should load image with offset") {
+  test("Actions.openImage should load image with offset") {
     val file = new File("path/to/image.png")
     val offset = StorageCoords(2, 3)
     val location = SaveLocation(file, offset)
@@ -82,17 +86,21 @@ class ImagePoolTest extends FunSuite {
 
     val storedImage = RegularImage.ofSize(imageSize + offset.x, imageSize + offset.y)
     storedImage.pasteImage(offset, regularImage)
-    val fs = FileSystem.createNull(
-      new FileSystem.NullArgs(initialImages = Map(file -> storedImage))
+
+    val model = TriPaintModel.createNull(
+      imageSize,
+      FileSystem.NullArgs(initialImages = Map(file -> storedImage))
     )
+    val pool = model.imagePool
 
-    val pool = new ImagePool()
+    Actions.openImage(
+      model,
+      location.file,
+      FileOpenSettings(location.offset, storageFormat),
+      GridCoords(0, 0)
+    )
+    val loadedImage = pool.imageAt(location).get
 
-    Actions.loadFromFileIntoPool(pool, location, storageFormat, imageSize, fs) match {
-      case Success(actualImage) =>
-        assertEquals(actualImage.toRegularImage(storageFormat), regularImage)
-        assertEquals(pool.locationOf(actualImage), Some(location))
-      case Failure(_) => fail("The image pool failed to load the image from file")
-    }
+    assertEquals(loadedImage.toRegularImage(storageFormat), regularImage)
   }
 }

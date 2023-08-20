@@ -26,12 +26,12 @@ class ImagePool {
   final def locationOf(image: ImageStorage): Option[SaveLocation] = mapping.getLeft(image)
 
   def getSaveLocationAndInfo(image: ImageStorage): (Option[SaveLocation], Option[SaveInfo]) =
-    (locationOf(image), saveInfo.get(image))
+    (mapping.getLeft(image), saveInfo.get(image))
 
   def imageAt(location: SaveLocation): Option[ImageStorage] = mapping.getRight(location)
 
   def set(image: ImageStorage, location: SaveLocation, info: SaveInfo): Unit =
-    imageAt(location).foreach(this.remove)
+    mapping.getRight(location).foreach(this.remove)
     mapping.set(location, image)
     saveInfo(image) = info
 

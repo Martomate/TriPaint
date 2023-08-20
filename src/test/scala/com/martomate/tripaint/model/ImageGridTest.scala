@@ -203,7 +203,7 @@ class ImageGridTest extends FunSuite with MockitoSugar {
 
     val grid = new ImageGrid(2)
 
-    val fs = FileSystem.createNull(new FileSystem.NullArgs(supportedImageFormats = Set()))
+    val fs = FileSystem.createNull(FileSystem.NullArgs(supportedImageFormats = Set()))
     assertEquals(grid.save(image, fs, location, info), false)
   }
 
@@ -239,7 +239,7 @@ class ImageGridTest extends FunSuite with MockitoSugar {
 
     val existingImage = RegularImage.fill(2, 2, Color.Red)
     val fs = FileSystem.createNull(
-      new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage))
+      FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage))
     )
     val tracker = Tracker.withStorage[FileSystem.Event]
     fs.trackChanges(tracker)
@@ -266,7 +266,7 @@ class ImageGridTest extends FunSuite with MockitoSugar {
 
     val existingImage = RegularImage.fill(3, 5, Color.Red)
     val fs = FileSystem.createNull(
-      new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage))
+      FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage))
     )
     val tracker = Tracker.withStorage[FileSystem.Event]
     fs.trackChanges(tracker)
@@ -293,7 +293,7 @@ class ImageGridTest extends FunSuite with MockitoSugar {
 
     val existingImage = RegularImage.fill(3, 2, Color.Red)
     val fs = FileSystem.createNull(
-      new FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage))
+      FileSystem.NullArgs(initialImages = Map(new File(path) -> existingImage))
     )
     val tracker = Tracker.withStorage[FileSystem.Event]
     fs.trackChanges(tracker)

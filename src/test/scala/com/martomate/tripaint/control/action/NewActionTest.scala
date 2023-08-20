@@ -5,12 +5,12 @@ import com.martomate.tripaint.model.{Color, TriPaintModel}
 import com.martomate.tripaint.model.coords.GridCoords
 import com.martomate.tripaint.model.image.RegularImage
 import com.martomate.tripaint.model.image.format.SimpleStorageFormat
+
 import munit.FunSuite
 
 class NewActionTest extends FunSuite {
   test("NewAction should add a new image to the grid") {
-    val model = TriPaintModel.createNull()
-    model.imageGrid.setImageSizeIfEmpty(8)
+    val model = TriPaintModel.createNull(8)
 
     val imageSize = model.imageGrid.imageSize
     val backgroundColor = Color.Cyan
@@ -30,8 +30,7 @@ class NewActionTest extends FunSuite {
 
   // TODO: Is this really how it should work?
   test("NewAction should replace any existing image at the location") {
-    val model = TriPaintModel.createNull()
-    model.imageGrid.setImageSizeIfEmpty(8)
+    val model = TriPaintModel.createNull(8)
 
     val imageSize = model.imageGrid.imageSize
     val backgroundColor = Color.Cyan

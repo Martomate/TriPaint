@@ -32,13 +32,13 @@ class FileSystem private (imageIO: ImageIOWrapper) {
 }
 
 object FileSystem {
-  class NullArgs(
-      val initialImages: Map[File, RegularImage] = Map.empty,
-      val supportedImageFormats: Set[String] = Set("png", "jpg")
+  case class NullArgs(
+      initialImages: Map[File, RegularImage] = Map.empty,
+      supportedImageFormats: Set[String] = Set("png", "jpg")
   )
 
   def create(): FileSystem = new FileSystem(new RealImageIO)
-  def createNull(args: NullArgs = new NullArgs()): FileSystem = {
+  def createNull(args: NullArgs = NullArgs()): FileSystem = {
     val allSupportedFormats =
       args.supportedImageFormats | args.supportedImageFormats.map(_.toUpperCase)
     val imageIO = new NullImageIO(args.initialImages, allSupportedFormats)
