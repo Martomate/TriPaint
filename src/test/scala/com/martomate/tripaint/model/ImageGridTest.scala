@@ -16,11 +16,13 @@ import com.martomate.tripaint.model.image.format.SimpleStorageFormat
 import com.martomate.tripaint.util.Tracker
 
 import munit.FunSuite
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.mockito.MockitoSugar.mock
 
 import java.io.File
 
-class ImageGridTest extends FunSuite {
+class ImageGridTest extends FunSuite with MockitoSugar {
   given collisionHandler: ImageSaveCollisionHandler = mock[ImageSaveCollisionHandler]
 
   test("setImageSizeIfEmpty should set the image size and return true if the grid is new") {
@@ -307,4 +309,87 @@ class ImageGridTest extends FunSuite {
     assertEquals(tracker.events, Seq(FileSystem.Event.ImageWritten(expectedImage, new File(path))))
   }
 
+  test("setImageSource should set the image and return true if the location is empty") {
+    val image = ImageStorage.fill(8, Color.Blue)
+    val location = SaveLocation(null)
+    val info = ImagePool.SaveInfo(null)
+
+    val p = new ImagePool()
+    val grid = new ImageGrid(8)
+
+    assertEquals(grid.setImageSource(image, location, info)(p, collisionHandler), true)
+    assertEquals(p.locationOf(image), Some(location))
+  }
+
+  test("setImageSource should simply return true if the image is already there") {
+    val image = ImageStorage.fill(8, Color.Blue)
+    val location = SaveLocation(null)
+    val info = ImagePool.SaveInfo(null)
+
+    val p = new ImagePool()
+    val grid = new ImageGrid(8)
+
+    grid.setImageSource(image, location, info)(p, collisionHandler)
+    assertEquals(grid.setImageSource(image, location, info)(p, collisionHandler), true)
+    assertEquals(p.locationOf(image), Some(location))
+  }
+
+  test("setImageSource should return false if the handler doesn't accept the collision") {
+    val handler = collisionHandler
+    val currentImage = ImageStorage.fill(8, Color.Blue)
+    val newImage = ImageStorage.fill(8, Color.Yellow)
+    val location = SaveLocation(null)
+    val info = ImagePool.SaveInfo(null)
+
+    val p = new ImagePool()
+    val grid = new ImageGrid(8)
+
+    when(handler.shouldReplaceImage(currentImage, newImage, location)).thenReturn(None)
+
+    grid.setImageSource(currentImage, location, info)(p, handler)
+    assertEquals(grid.setImageSource(newImage, location, info)(p, handler), false)
+  }
+
+  test(
+    "setImageSource should replace the current image and return true if the handler wants to replace it"
+  ) {
+    val handler = collisionHandler
+
+    val currentImage = ImageStorage.fill(8, Color.Blue)
+    val newImage = ImageStorage.fill(8, Color.Yellow)
+    val location = SaveLocation(null)
+    val info = ImagePool.SaveInfo(null)
+
+    val p = new ImagePool()
+    val grid = new ImageGrid(8)
+
+    when(handler.shouldReplaceImage(currentImage, newImage, location)).thenReturn(Some(true))
+
+    grid.setImageSource(currentImage, location, info)(p, handler)
+    assertEquals(grid.setImageSource(newImage, location, info)(p, handler), true)
+    assertEquals(p.locationOf(currentImage), None)
+    assertEquals(p.locationOf(newImage), Some(location))
+  }
+
+  test(
+    "setImageSource should keep the current image and return true if the handler wants to keep it"
+  ) {
+    val handler = collisionHandler
+
+    val currentImage = ImageStorage.fill(8, Color.Blue)
+    val newImage = ImageStorage.fill(8, Color.Yellow)
+    val location = SaveLocation(null)
+    val info = ImagePool.SaveInfo(null)
+
+    val p = new ImagePool()
+    val grid = new ImageGrid(8)
+
+    when(handler.shouldReplaceImage(currentImage, newImage, location)).thenReturn(Some(false))
+
+    grid.setImageSource(currentImage, location, info)(p, handler)
+    assertEquals(grid.setImageSource(newImage, location, info)(p, handler), true)
+    assertEquals(p.locationOf(currentImage), Some(location))
+    assertEquals(p.locationOf(newImage), None)
+
+  }
 }

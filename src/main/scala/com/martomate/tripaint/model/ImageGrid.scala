@@ -2,7 +2,13 @@ package com.martomate.tripaint.model
 
 import com.martomate.tripaint.infrastructure.FileSystem
 import com.martomate.tripaint.model.coords.GridCoords
-import com.martomate.tripaint.model.image.{GridCell, ImagePool, ImageStorage, RegularImage}
+import com.martomate.tripaint.model.image.{
+  GridCell,
+  ImagePool,
+  ImageSaveCollisionHandler,
+  ImageStorage,
+  RegularImage
+}
 import com.martomate.tripaint.model.image.ImagePool.{SaveInfo, SaveLocation}
 import com.martomate.tripaint.util.{EventDispatcher, Tracker}
 
@@ -74,31 +80,59 @@ class ImageGrid(init_imageSize: Int) {
     } else false
   }
 
-  def save(image: ImageStorage, fileSystem: FileSystem, loc: SaveLocation, info: SaveInfo): Boolean =
-      val didWrite = doSave(image, fileSystem, loc, info)
+  def setImageSource(image: ImageStorage, location: SaveLocation, info: SaveInfo)(
+      imagePool: ImagePool,
+      imageSaveCollisionHandler: ImageSaveCollisionHandler
+  ): Boolean =
+    imagePool.imageAt(location) match
+      case Some(currentImage) =>
+        if currentImage == image then
+          imagePool.set(image, location, info)
+          true
+        else
+          imageSaveCollisionHandler.shouldReplaceImage(currentImage, image, location) match
+            case Some(true) =>
+              imagePool.set(image, location, info)
+              this._images.find(_.storage == currentImage).foreach(_.replaceImage(image))
+              true
+            case Some(false) =>
+              imagePool.remove(image)
+              imagePool.set(currentImage, location, info)
+              this._images.find(_.storage == image).foreach(_.replaceImage(currentImage))
+              true
+            case None =>
+              false
+      case None =>
+        imagePool.set(image, location, info)
+        true
 
-      if didWrite then
-        for
-          im <- this._images
-          if im.storage == image
-        do im.setImageSaved()
-      didWrite
+  def save(
+      image: ImageStorage,
+      fileSystem: FileSystem,
+      loc: SaveLocation,
+      info: SaveInfo
+  ): Boolean =
+    val didWrite = doSave(image, fileSystem, loc, info)
 
-  private def doSave(image: ImageStorage, fileSystem: FileSystem, loc: SaveLocation, info: SaveInfo): Boolean =
+    if didWrite then
+      for
+        im <- this._images
+        if im.storage == image
+      do im.setImageSaved()
+    didWrite
+
+  private def doSave(
+      image: ImageStorage,
+      fileSystem: FileSystem,
+      loc: SaveLocation,
+      info: SaveInfo
+  ): Boolean =
     val oldImage = fileSystem.readImage(loc.file)
 
     val imageToSave = image.toRegularImage(info.format)
     val newImage = RegularImage.fromBaseAndOverlay(oldImage, imageToSave, loc.offset)
 
     fileSystem.writeImage(newImage, loc.file)
-
-  def listenToImagePool(pool: ImagePool): Unit =
-    pool.trackChanges:
-      case ImagePool.Event.ImageReplaced(oldImage, newImage, _) =>
-        for
-          im <- this._images
-          if im.storage == oldImage
-        do im.replaceImage(newImage)
 
   def replaceImage(coords: GridCoords, newImage: ImageStorage): Unit =
     apply(coords).foreach(_.replaceImage(newImage))

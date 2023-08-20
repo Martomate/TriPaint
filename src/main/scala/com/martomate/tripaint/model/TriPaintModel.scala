@@ -6,7 +6,6 @@ import com.martomate.tripaint.model.image.ImagePool
 class TriPaintModel(val fileSystem: FileSystem) {
   val imagePool: ImagePool = new ImagePool()
   val imageGrid: ImageGrid = new ImageGrid(-1)
-  imageGrid.listenToImagePool(imagePool)
 }
 
 object TriPaintModel {

@@ -11,11 +11,13 @@ import com.martomate.tripaint.model.image.{
   ImageSaveCollisionHandler,
   ImageStorage
 }
+import com.martomate.tripaint.model.image.ImagePool.{SaveInfo, SaveLocation}
+import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.view.{FileOpenSettings, FileSaveSettings}
 
 import java.io.File
 import scala.collection.mutable
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 object Actions {
   def save(
@@ -61,7 +63,10 @@ object Actions {
     yield
       val location = ImagePool.SaveLocation(file, settings.offset)
       val info = ImagePool.SaveInfo(settings.format)
-      imagePool.move(image.storage, location, info)(using imageSaveCollisionHandler)
+      imageGrid.setImageSource(image.storage, location, info)(
+        imagePool,
+        imageSaveCollisionHandler
+      )
 
     val didMove = didMoveOpt.getOrElse(false)
 
@@ -85,9 +90,36 @@ object Actions {
     val location = ImagePool.SaveLocation(file, offset)
     val imageSize = model.imageGrid.imageSize
 
-    model.imagePool.fromFile(location, format, imageSize, model.fileSystem) match
+    loadFromFileIntoPool(model.imagePool, location, format, imageSize, model.fileSystem) match
       case Success(storage) => model.imageGrid.set(new GridCell(whereToPutImage, storage))
       case Failure(exc)     => exc.printStackTrace()
+
+  def loadFromFileIntoPool(
+      imagePool: ImagePool,
+      location: SaveLocation,
+      format: StorageFormat,
+      imageSize: Int,
+      fileSystem: FileSystem
+  ): Try[ImageStorage] =
+    imagePool.imageAt(location) match
+      case Some(image) => Success(image)
+      case None =>
+        val loadResult = loadImageFromFile(location, format, imageSize, fileSystem)
+        for image <- loadResult do imagePool.set(image, location, SaveInfo(format))
+        loadResult
+
+  private def loadImageFromFile(
+      location: SaveLocation,
+      format: StorageFormat,
+      imageSize: Int,
+      fileSystem: FileSystem
+  ): Try[ImageStorage] =
+    for
+      regularImage <- fileSystem.readImage(location.file) match
+        case Some(im) => Success(im)
+        case None     => Failure(new RuntimeException("no such image"))
+      image <- ImageStorage.fromRegularImage(regularImage, location.offset, format, imageSize)
+    yield image
 
   def openHexagon(
       model: TriPaintModel,
@@ -111,7 +143,7 @@ object Actions {
       val imageOffset = StorageCoords(offset.x + idx * imageSize, offset.y)
       val location = ImagePool.SaveLocation(file, imageOffset)
 
-      model.imagePool.fromFile(location, format, imageSize, model.fileSystem) match
+      loadFromFileIntoPool(model.imagePool, location, format, imageSize, model.fileSystem) match
         case Success(storage) =>
           val off = coordOffset(idx)
           val imageCoords = GridCoords(coords.x + off._1, coords.y + off._2)
