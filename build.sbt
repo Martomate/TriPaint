@@ -31,4 +31,6 @@ libraryDependencies ++= Seq(
 )
 
 // Add dependency on ScalaFX library
-libraryDependencies += "org.scalafx" %% "scalafx" % "18.0.2-R29"
+libraryDependencies += "org.scalafx" %% "scalafx" % "21.0.0-R32"
+libraryDependencies ++= Seq("base", "controls", "fxml", "graphics", "media", "swing", "web")
+  .map(m => "org.openjfx" % s"javafx-$m" % "21.0.1")
