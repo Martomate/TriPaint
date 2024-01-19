@@ -4,13 +4,14 @@ import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.effects.{BlurEffect, MotionBlurEffect, RandomNoiseEffect}
 import com.martomate.tripaint.model.image.{GridCell, ImagePool, ImageStorage}
 import com.martomate.tripaint.model.image.format.{RecursiveStorageFormat, SimpleStorageFormat}
-import com.martomate.tripaint.view.image.ImageGridPane
 import com.martomate.tripaint.view.*
+import com.martomate.tripaint.view.image.ImageGridPane
+
 import scalafx.application.JFXApp3.PrimaryStage
 import scalafx.scene.Scene
+import scalafx.scene.control.*
 import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.control.ButtonBar.ButtonData
-import scalafx.scene.control.*
 import scalafx.scene.layout.{AnchorPane, BorderPane, TilePane, VBox}
 import scalafx.scene.paint.Color
 import scalafx.stage.FileChooser
@@ -96,10 +97,10 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
       image.storage,
       file,
       Seq(
-        SimpleStorageFormat -> "Simple format (old)",
-        RecursiveStorageFormat -> "Recursive format (new)"
+        SimpleStorageFormat -> "Simple format",
+        RecursiveStorageFormat -> "Recursive format"
       ),
-      1
+      0
     )
   }
 
@@ -224,10 +225,10 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     AskForFileOpenSettingsDialog.askForFileOpenSettings(
       imagePreview = (file, imageSize, xCount, yCount),
       Seq(
-        SimpleStorageFormat -> "Simple format (old)",
-        RecursiveStorageFormat -> "Recursive format (new)"
+        SimpleStorageFormat -> "Simple format",
+        RecursiveStorageFormat -> "Recursive format"
       ),
-      1,
+      0,
       model.fileSystem
     )
   }
