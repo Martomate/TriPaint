@@ -1,4 +1,4 @@
-scalaVersion := "3.3.0"
+scalaVersion := "3.3.1"
 
 name := "TriPaint"
 organization := "com.martomate"
@@ -14,7 +14,9 @@ jlinkIgnoreMissingDependency := JlinkIgnore.only(
   "scalafx" -> "javafx.embed.swing",
   "scalafx.embed.swing" -> "javafx.embed.swing",
   "scalafx" -> "javafx.scene.web",
-  "scalafx.scene.web" -> "javafx.scene.web"
+  "scalafx.scene.web" -> "javafx.scene.web",
+  "scala.quoted" -> "scala",
+  "scala.quoted.runtime" -> "scala"
 )
 
 jlinkOptions ++= Seq(
