@@ -2,7 +2,7 @@ scalaVersion := "3.3.1"
 
 name := "TriPaint"
 organization := "com.martomate"
-version := "1.3.3"
+version := "1.3.4"
 
 Compile / mainClass := Some("com.martomate.tripaint.TriPaint")
 Compile / discoveredMainClasses := Seq()
