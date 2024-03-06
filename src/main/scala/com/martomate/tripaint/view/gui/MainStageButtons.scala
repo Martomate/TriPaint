@@ -1,6 +1,7 @@
 package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.view.{MenuBarAction, TriPaintViewListener}
+
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 
 object MainStageButtons {
@@ -59,4 +60,5 @@ object MainStageButtons {
   val RandomNoise: MenuBarAction =
     MenuBarAction("Random noise", action = UIAction.RandomNoise)
   val Scramble: MenuBarAction = MenuBarAction("Scramble", action = UIAction.Scramble)
+  val Cell: MenuBarAction = MenuBarAction("Cell", action = UIAction.Cell)
 }

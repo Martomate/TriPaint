@@ -1,11 +1,11 @@
 package com.martomate.tripaint.control
 
+import com.martomate.tripaint.model.{Color, TriPaintModel}
 import com.martomate.tripaint.model.coords.GridCoords
 import com.martomate.tripaint.model.effects.*
 import com.martomate.tripaint.model.image.{GridCell, ImageStorage}
-import com.martomate.tripaint.model.{Color, TriPaintModel}
-import com.martomate.tripaint.view.gui.UIAction
 import com.martomate.tripaint.view.{TriPaintView, TriPaintViewFactory, TriPaintViewListener}
+import com.martomate.tripaint.view.gui.UIAction
 
 class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFactory)
     extends TriPaintViewListener {
@@ -71,6 +71,9 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
       do Actions.applyEffect(model, new RandomNoiseEffect(lo, hi))
 
     case UIAction.Scramble => Actions.applyEffect(model, ScrambleEffect)
+
+    case UIAction.Cell =>
+      Actions.applyEffect(model, new CellEffect)
 
     case _ =>
 

@@ -22,6 +22,18 @@ case class GlobalPixCoords(x: Int, y: Int) {
       )
     yield GlobalPixCoords(xx, yy)
   }
+
+  def cell: GlobalPixCoords = {
+    val cy = y >> 1
+    val cx = x >> 2
+    val cz = (x + 1 + (y << 1)) >> 2
+
+    if cx % 2 == cz % 2 then {
+      GlobalPixCoords(cx << 1, cy)
+    } else {
+      GlobalPixCoords((cx << 1) + 1, cy)
+    }
+  }
 }
 
 object GlobalPixCoords {

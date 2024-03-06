@@ -19,4 +19,5 @@ enum UIAction {
   case MotionBlur
   case RandomNoise
   case Scramble
+  case Cell
 }

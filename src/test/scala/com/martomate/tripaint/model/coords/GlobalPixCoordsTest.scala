@@ -40,4 +40,38 @@ class GlobalPixCoordsTest extends FunSuite {
       }
     }
   }
+
+  test("cell works for bottom triangles") {
+    assertEquals(GlobalPixCoords(0, 1).cell, GlobalPixCoords(0, 0))
+    assertEquals(GlobalPixCoords(0, 0).cell, GlobalPixCoords(0, 0))
+    assertEquals(GlobalPixCoords(1, 0).cell, GlobalPixCoords(0, 0))
+    assertEquals(GlobalPixCoords(2, 0).cell, GlobalPixCoords(0, 0))
+
+    assertEquals(GlobalPixCoords(12, 5).cell, GlobalPixCoords(6, 2))
+    assertEquals(GlobalPixCoords(12, 4).cell, GlobalPixCoords(6, 2))
+    assertEquals(GlobalPixCoords(13, 4).cell, GlobalPixCoords(6, 2))
+    assertEquals(GlobalPixCoords(14, 4).cell, GlobalPixCoords(6, 2))
+
+    assertEquals(GlobalPixCoords(-8, -3).cell, GlobalPixCoords(-4, -2))
+    assertEquals(GlobalPixCoords(-8, -4).cell, GlobalPixCoords(-4, -2))
+    assertEquals(GlobalPixCoords(-7, -4).cell, GlobalPixCoords(-4, -2))
+    assertEquals(GlobalPixCoords(-6, -4).cell, GlobalPixCoords(-4, -2))
+  }
+
+  test("cell works for top triangles") {
+    assertEquals(GlobalPixCoords(3, 0).cell, GlobalPixCoords(1, 0))
+    assertEquals(GlobalPixCoords(1, 1).cell, GlobalPixCoords(1, 0))
+    assertEquals(GlobalPixCoords(2, 1).cell, GlobalPixCoords(1, 0))
+    assertEquals(GlobalPixCoords(3, 1).cell, GlobalPixCoords(1, 0))
+
+    assertEquals(GlobalPixCoords(15, 4).cell, GlobalPixCoords(7, 2))
+    assertEquals(GlobalPixCoords(13, 5).cell, GlobalPixCoords(7, 2))
+    assertEquals(GlobalPixCoords(14, 5).cell, GlobalPixCoords(7, 2))
+    assertEquals(GlobalPixCoords(15, 5).cell, GlobalPixCoords(7, 2))
+
+    assertEquals(GlobalPixCoords(-5, -4).cell, GlobalPixCoords(-3, -2))
+    assertEquals(GlobalPixCoords(-7, -3).cell, GlobalPixCoords(-3, -2))
+    assertEquals(GlobalPixCoords(-6, -3).cell, GlobalPixCoords(-3, -2))
+    assertEquals(GlobalPixCoords(-5, -3).cell, GlobalPixCoords(-3, -2))
+  }
 }

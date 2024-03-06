@@ -7,7 +7,8 @@ import com.martomate.tripaint.model.{
   ImageGrid,
   ImageGridColorLookup
 }
-import com.martomate.tripaint.model.coords.{GlobalPixCoords, PixelCoords, GridCoords}
+import com.martomate.tripaint.model.coords.{GlobalPixCoords, GridCoords, PixelCoords}
+
 import scalafx.scene.paint.{Color => FXColor}
 
 abstract class LocalEffect extends Effect {
@@ -31,12 +32,13 @@ abstract class LocalEffect extends Effect {
       val newVals = for (here <- image.allPixels) yield {
         val coords = PixelCoords(here, imageCoords)
         val coordsGlobal = coords.toGlobal(grid.imageSize)
+
         val cols = searcher
           .search(coordsGlobal, predicate(colorLookup, coordsGlobal))
           .map(weightedColor(colorLookup, coordsGlobal))
 
         val numCols = cols.foldLeft(0d)(_ + _._1)
-        here -> (cols.foldLeft(Color.Black)((now, next) => now + next._2 * next._1) / numCols)
+        here -> (cols.map((w, c) => c * w).reduce(_ + _) / numCols)
       }
       imageCoords -> newVals
     }

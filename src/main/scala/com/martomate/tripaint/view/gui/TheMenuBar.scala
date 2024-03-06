@@ -1,6 +1,7 @@
 package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.view.{MenuBarAction, TriPaintViewListener}
+
 import scalafx.scene.control.{Menu, MenuBar, MenuItem, SeparatorMenuItem}
 import scalafx.scene.image.ImageView
 
@@ -41,7 +42,8 @@ object TheMenuBar:
       makeMenuItem(controls, MainStageButtons.Blur),
       makeMenuItem(controls, MainStageButtons.MotionBlur),
       makeMenuItem(controls, MainStageButtons.RandomNoise),
-      makeMenuItem(controls, MainStageButtons.Scramble)
+      makeMenuItem(controls, MainStageButtons.Scramble),
+      makeMenuItem(controls, MainStageButtons.Cell)
     )
 
     val menuBar = new MenuBar
