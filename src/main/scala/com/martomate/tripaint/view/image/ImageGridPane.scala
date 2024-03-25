@@ -7,8 +7,9 @@ import com.martomate.tripaint.model.{
   ImageGridColorLookup
 }
 import com.martomate.tripaint.model.coords.{GridCoords, PixelCoords}
-import com.martomate.tripaint.model.image.{GridCell, ImageChange}
+import com.martomate.tripaint.model.image.ImageChange
 import com.martomate.tripaint.view.EditMode
+
 import javafx.scene.input.{MouseButton, MouseEvent}
 import javafx.scene.paint
 import javafx.scene.shape.Rectangle
@@ -18,21 +19,29 @@ import scalafx.scene.paint.Color
 
 import scala.collection.mutable
 
-class ImageGridPane(imageGrid: ImageGrid) extends Pane:
+class ImageGridPane(imageGrid: ImageGrid) extends Pane {
   private var xScroll: Double = 0
   private var yScroll: Double = 0
   private var zoom: Double = 1d
 
-  private object drag:
+  private object drag {
     var x: Double = -1
     var y: Double = -1
+  }
 
-  object colors:
+  object colors {
     val primaryColor: ObjectProperty[paint.Color] = ObjectProperty(Color.Black)
-    def primaryColor_=(col: Color): Unit = primaryColor.value = col
+
+    def primaryColor_=(col: Color): Unit = {
+      primaryColor.value = col
+    }
 
     val secondaryColor: ObjectProperty[paint.Color] = ObjectProperty(Color.White)
-    def secondaryColor_=(col: Color): Unit = secondaryColor.value = col
+
+    def secondaryColor_=(col: Color): Unit = {
+      secondaryColor.value = col
+    }
+  }
 
   private val gridSearcher: FloodFillSearcher = new FloodFillSearcher(
     new ImageGridColorLookup(imageGrid)
@@ -42,89 +51,112 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane:
 
   imageGrid.trackChanges(this.onImageGridEvent _)
 
-  private def triImages: Seq[TriImage] = for im <- imageGrid.images yield imageMap(im.coords)
+  private def triImages: Seq[TriImage] = {
+    for im <- imageGrid.images yield imageMap(im.coords)
+  }
 
-  private def imageAt(x: Double, y: Double): Option[TriImage] =
+  private def imageAt(x: Double, y: Double): Option[TriImage] = {
     triImages.find(_.coordsAt(x, y) != null)
+  }
 
-  onMouseDragged = e =>
-    if !e.isConsumed then
+  onMouseDragged = e => {
+    if !e.isConsumed then {
       val xDiff = e.getX - drag.x
       val yDiff = e.getY - drag.y
 
       drag.x = e.getX
       drag.y = e.getY
 
-      EditMode.currentMode match
+      EditMode.currentMode match {
         case EditMode.Organize => // TODO: implement scale and rotation if (x, y) is close enough to a corner
           setScroll(xScroll + xDiff, yScroll + yDiff)
         case _ =>
           val dist = Math.hypot(xDiff, yDiff) / zoom
 
           val steps = 4 * dist.toInt + 1
-          for i <- 1 to steps do
+          for i <- 1 to steps do {
             val xx = e.getSceneX + xDiff / steps * (i - steps)
             val yy = e.getSceneY + yDiff / steps * (i - steps)
 
-            for
+            for {
               image <- imageAt(xx, yy)
               if image.content.editable
-            do
+            } do {
               val internalCoords = image.coordsAt(xx, yy)
               val coords = PixelCoords(image.content.coords, internalCoords)
               mousePressedAt(coords, e, dragged = true)
+            }
+          }
+      }
+    }
+  }
 
-  onMousePressed = e =>
-    if !e.isConsumed then
+  onMousePressed = e => {
+    if !e.isConsumed then {
       drag.x = e.getX
       drag.y = e.getY
 
-      for
+      for {
         image <- imageAt(e.getSceneX, e.getSceneY)
         if image.content.editable
-      do
+      } do {
         val internalCoords = image.coordsAt(e.getSceneX, e.getSceneY)
         mousePressedAt(PixelCoords(internalCoords, image.content.coords), e, dragged = false)
+      }
+    }
+  }
 
-  onMouseReleased = e =>
+  onMouseReleased = e => {
     if !e.isConsumed
-    then
+    then {
       val changes = mutable.Map.empty[GridCoords, ImageChange]
       for im <- triImages.reverse
-      do
+      do {
         val change = im.stopDrawing()
         change.undo()
         changes(im.content.coords) = change
+      }
 
       imageGrid.performChange(new ImageGridChange(changes.toMap))
+    }
+  }
 
-  onScroll = e =>
+  onScroll = e => {
     val (dx, dy) = (e.getDeltaX, e.getDeltaY)
 
-    if e.isControlDown then
+    if e.isControlDown then {
       val factor = Math.min(Math.max(Math.exp(e.getDeltaY * 0.01), 1.0 / 32 / zoom), 32 / zoom)
       zoom *= factor
       setScroll(xScroll * factor, yScroll * factor)
-    else setScroll(xScroll + dx, yScroll + dy)
+    } else {
+      setScroll(xScroll + dx, yScroll + dy)
+    }
 
-    if e.isControlDown then for im <- triImages.reverse do im.onZoom(zoom)
+    if e.isControlDown then {
+      for im <- triImages.reverse do {
+        im.onZoom(zoom)
+      }
+    }
+  }
 
-  private def setScroll(sx: Double, sy: Double): Unit =
+  private def setScroll(sx: Double, sy: Double): Unit = {
     xScroll = sx
     yScroll = sy
     relocateChildren()
+  }
 
-  private def mousePressedAt(coords: PixelCoords, e: MouseEvent, dragged: Boolean): Unit =
-    val colorToUse = e.getButton match
+  private def mousePressedAt(coords: PixelCoords, e: MouseEvent, dragged: Boolean): Unit = {
+    val colorToUse = e.getButton match {
       case MouseButton.PRIMARY   => Some(colors.primaryColor)
       case MouseButton.SECONDARY => Some(colors.secondaryColor)
       case _                     => None
+    }
 
-    for
+    for {
       image <- imageGrid(coords.image)
       color <- colorToUse
-    do
-      EditMode.currentMode match
+    } do {
+      EditMode.currentMode match {
         case EditMode.Draw =>
           imageMap(image.coords).drawAt(coords.pix, new Color(color()))
         case EditMode.Fill =>
@@ -132,34 +164,46 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane:
         case EditMode.PickColor =>
           color() = image.storage.getColor(coords.pix).toFXColor
         case _ =>
+      }
+    }
+  }
 
-  private def fill(coords: PixelCoords, color: Color): Unit =
-    for image <- imageGrid(coords.image) do
+  private def fill(coords: PixelCoords, color: Color): Unit = {
+    for image <- imageGrid(coords.image) do {
       val referenceColor = imageMap(image.coords).content.storage.getColor(coords.pix)
       val places = gridSearcher
         .search(coords.toGlobal(imageGrid.imageSize), (_, col) => col == referenceColor)
         .map(p => PixelCoords(p, imageGrid.imageSize))
 
-      for
+      for {
         p <- places
         im <- imageGrid(p.image)
-      do imageMap(im.coords).drawAt(p.pix, color)
+      } do {
+        imageMap(im.coords).drawAt(p.pix, color)
+      }
+    }
+  }
 
   this.width.onChange(updateSize())
   this.height.onChange(updateSize())
 
-  private def updateSize(): Unit =
+  private def updateSize(): Unit = {
     this.clip() = new Rectangle(0, 0, width(), height())
     relocateChildren()
+  }
 
-  private def relocateChildren(): Unit =
-    for im <- imageGrid.images do relocateImage(im.coords)
+  private def relocateChildren(): Unit = {
+    for im <- imageGrid.images do {
+      relocateImage(im.coords)
+    }
+  }
 
-  private def relocateImage(coords: GridCoords): Unit =
+  private def relocateImage(coords: GridCoords): Unit = {
     imageMap(coords).pane.relocate(width() / 2 + xScroll, height() / 2 + yScroll)
+  }
 
-  private def onImageGridEvent(event: ImageGrid.Event): Unit =
-    event match
+  private def onImageGridEvent(event: ImageGrid.Event): Unit = {
+    event match {
       case ImageGrid.Event.ImageAdded(image) =>
         val triImage = new TriImage(image, zoom)
         children.add(triImage.pane.delegate)
@@ -168,3 +212,6 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane:
       case ImageGrid.Event.ImageRemoved(image) =>
         val index = children.indexOf(imageMap(image.coords).pane.delegate, 0)
         if index != -1 then children.remove(index)
+    }
+  }
+}
