@@ -9,6 +9,7 @@ import scalafx.scene.canvas.Canvas
 
 class TriImageCanvas(init_width: Double, imageSize: Int)
     extends Canvas(init_width, init_width * Math.sqrt(3) / 2) {
+
   private val coordsToRealConverter =
     new TriangleCoordsToReal(imageSize, (xx, yy) => (xx * width(), yy * height()))
 
@@ -40,11 +41,8 @@ class TriImageCanvas(init_width: Double, imageSize: Int)
       for x <- xLo.toInt - 1 to xHi.toInt + 1 do {
         val c = indexMap.coordsAt(x / width(), y / height())
         if c != null then {
-          if c == coords then {
-            gc.pixelWriter.setColor(x, y, color.toFXColor)
-          } else {
-            gc.pixelWriter.setColor(x, y, pixels.getColor(c).toFXColor)
-          }
+          val col = if c == coords then color else pixels.getColor(c)
+          gc.pixelWriter.setColor(x, y, col.toFXColor)
         }
       }
     }
@@ -64,22 +62,15 @@ class TriImageCanvas(init_width: Double, imageSize: Int)
       for xc <- 0 until widthInt by 16 do {
         val w = Math.min(widthInt - xc, 16)
 
-        var dy = 0
-        while dy < h do {
+        for dy <- 0 until h do {
           val y = yc + dy
-          var dx = 0
-          while dx < w do {
+          for dx <- 0 until w do {
             val x = xc + dx
 
             val coords = indexMap.coordsAt(x.toDouble / widthInt, y.toDouble / heightInt)
-            if coords != null then {
-              image(dx + dy * 16) = pixels.getColor(coords).withAlpha(1).toInt
-            } else {
-              image(dx + dy * 16) = 0
-            }
-            dx += 1
+            val col = if coords != null then pixels.getColor(coords).withAlpha(1).toInt else 0
+            image(dx + dy * 16) = col
           }
-          dy += 1
         }
 
         gc.getPixelWriter.setPixels(xc, yc, w, h, PixelFormat.getIntArgbInstance, image, 0, 16)

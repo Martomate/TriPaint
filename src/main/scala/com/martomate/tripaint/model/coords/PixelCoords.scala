@@ -50,6 +50,8 @@ object PixelCoords {
     PixelCoords(coords1, coords)
 
   def apply(coords: GlobalPixCoords, imageSize: Int): PixelCoords = {
+    require(imageSize > 0)
+
     val iy = Math.floorDiv(coords.y, imageSize)
     val ix = Math.floorDiv(coords.x, 2 * imageSize) * 2
     val py1 = imageSize - 1 - (coords.y - iy * imageSize)
