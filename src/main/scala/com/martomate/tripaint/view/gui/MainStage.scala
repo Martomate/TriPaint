@@ -1,6 +1,6 @@
 package com.martomate.tripaint.view.gui
 
-import com.martomate.tripaint.model.TriPaintModel
+import com.martomate.tripaint.model.{Color, TriPaintModel}
 import com.martomate.tripaint.model.effects.{BlurEffect, MotionBlurEffect, RandomNoiseEffect}
 import com.martomate.tripaint.model.image.{GridCell, ImagePool, ImageStorage}
 import com.martomate.tripaint.model.image.format.{RecursiveStorageFormat, SimpleStorageFormat}
@@ -13,7 +13,7 @@ import scalafx.scene.control.*
 import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.control.ButtonBar.ButtonData
 import scalafx.scene.layout.{AnchorPane, BorderPane, TilePane, VBox}
-import scalafx.scene.paint.Color
+import scalafx.scene.paint.Color as FXColor
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
 
@@ -66,14 +66,14 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
 
   private def makeColorBox() = {
     // overlay and imageDisplay
-    val colorPicker1 = new ColorPicker(new Color(imageDisplay.colors.primaryColor().toFXColor))
-    val colorPicker2 = new ColorPicker(new Color(imageDisplay.colors.secondaryColor().toFXColor))
+    val colorPicker1 = new ColorPicker(new FXColor(imageDisplay.colors.primaryColor().toFXColor))
+    val colorPicker2 = new ColorPicker(new FXColor(imageDisplay.colors.secondaryColor().toFXColor))
 
     colorPicker1.value.onChange: (_, from, to) =>
-      if from != to then imageDisplay.colors.setPrimaryColor(new Color(to))
+      if from != to then imageDisplay.colors.setPrimaryColor(new FXColor(to))
 
     colorPicker2.value.onChange: (_, from, to) =>
-      if from != to then imageDisplay.colors.setSecondaryColor(new Color(to))
+      if from != to then imageDisplay.colors.setSecondaryColor(new FXColor(to))
 
     imageDisplay.colors.primaryColor.onChange: (_, from, to) =>
       if from != to then colorPicker1.value = to.toFXColor
@@ -89,7 +89,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     )
   }
 
-  override def backgroundColor: Color = new Color(imageDisplay.colors.secondaryColor().toFXColor)
+  override def backgroundColor: Color = imageDisplay.colors.secondaryColor()
 
   override def askForSaveFile(image: GridCell): Option[File] = {
     val chooser = new FileChooser
@@ -163,15 +163,15 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
   override def askForRandomNoiseColors(): Option[(Color, Color)] = {
     val images = model.imageGrid.selectedImages
     val selectedImagesCoords = model.imageGrid.selectedImages.map(_.coords)
-    val loColorPicker = new ColorPicker(Color.Black)
-    val hiColorPicker = new ColorPicker(Color.White)
+    val loColorPicker = new ColorPicker(FXColor.Black)
+    val hiColorPicker = new ColorPicker(FXColor.White)
     import DialogUtils._
 
     val (previewPane, updatePreview) = DialogUtils.makeImagePreviewList(images, model.imagePool)
 
     def updatePreviewFromInputs(): Unit =
-      val lo = new Color(loColorPicker.value())
-      val hi = new Color(hiColorPicker.value())
+      val lo = new FXColor(loColorPicker.value())
+      val hi = new FXColor(hiColorPicker.value())
       updatePreview(grid => new RandomNoiseEffect(lo, hi).action(selectedImagesCoords, grid))
 
     loColorPicker.value.onChange((_, _, _) => updatePreviewFromInputs())
@@ -193,7 +193,9 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
       ),
       resultConverter = {
         case ButtonType.OK =>
-          Try((new Color(loColorPicker.value()), new Color(hiColorPicker.value()))).getOrElse(null)
+          Try((new FXColor(loColorPicker.value()), new FXColor(hiColorPicker.value())))
+            .map((lo, hi) => (Color.fromFXColor(lo), Color.fromFXColor(hi)))
+            .getOrElse(null)
         case _ => null
       },
       buttons = Seq(ButtonType.OK, ButtonType.Cancel)

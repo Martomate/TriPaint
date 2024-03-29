@@ -15,7 +15,7 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
     case UIAction.New =>
       for
         (x, y) <- view.askForWhereToPutImage()
-        backgroundColor = Color.fromFXColor(view.backgroundColor)
+        backgroundColor = view.backgroundColor
         coords = GridCoords(x, y)
       do Actions.createNewImage(model.imageGrid, backgroundColor, coords)
 
