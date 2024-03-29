@@ -13,27 +13,27 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
 
   override def perform(action: UIAction): Unit = action match
     case UIAction.New =>
-      for
+      for {
         (x, y) <- view.askForWhereToPutImage()
         backgroundColor = view.backgroundColor
         coords = GridCoords(x, y)
-      do Actions.createNewImage(model.imageGrid, backgroundColor, coords)
+      } do Actions.createNewImage(model.imageGrid, backgroundColor, coords)
 
     case UIAction.Open =>
-      for
+      for {
         file <- view.askForFileToOpen()
         fileOpenSettings <- view.askForFileOpenSettings(file, model.imageGrid.imageSize, 1, 1)
         (x, y) <- view.askForWhereToPutImage()
         coords = GridCoords(x, y)
-      do Actions.openImage(model, file, fileOpenSettings, coords)
+      } do Actions.openImage(model, file, fileOpenSettings, coords)
 
     case UIAction.OpenHexagon =>
-      for
+      for {
         file <- view.askForFileToOpen()
         fileOpenSettings <- view.askForFileOpenSettings(file, model.imageGrid.imageSize, 6, 1)
         (x, y) <- view.askForWhereToPutImage()
         coords = GridCoords(x, y)
-      do Actions.openHexagon(model, file, fileOpenSettings, coords)
+      } do Actions.openHexagon(model, file, fileOpenSettings, coords)
 
     case UIAction.Save =>
       Actions.save(
@@ -70,7 +70,8 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
       for (lo, hi) <- view.askForRandomNoiseColors()
       do Actions.applyEffect(model, new RandomNoiseEffect(lo, hi))
 
-    case UIAction.Scramble => Actions.applyEffect(model, ScrambleEffect)
+    case UIAction.Scramble =>
+      Actions.applyEffect(model, ScrambleEffect)
 
     case UIAction.Cell =>
       Actions.applyEffect(model, new CellEffect)

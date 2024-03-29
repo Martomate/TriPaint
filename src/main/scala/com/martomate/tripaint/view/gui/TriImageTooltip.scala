@@ -2,34 +2,36 @@ package com.martomate.tripaint.view.gui
 
 import com.martomate.tripaint.model.coords.StorageCoords
 import com.martomate.tripaint.model.image.{GridCell, ImagePool, ImageStorage}
+
 import scalafx.scene.control.Tooltip
 
-object TriImageTooltip:
+object TriImageTooltip {
   def fromImagePool(
-                     content: GridCell,
-                     locationOfImage: ImageStorage => Option[ImagePool.SaveLocation]
-  ): Tooltip =
-    val tooltip = new Tooltip()
+      content: GridCell,
+      locationOfImage: ImageStorage => Option[ImagePool.SaveLocation]
+  ): Tooltip = {
+    val getText = () => makeText(content.storage.imageSize, locationOfImage(content.storage))
 
-    tooltip.text = makeText(content, locationOfImage)
-    tooltip.activated.onChange(tooltip.text = makeText(content, locationOfImage))
+    val tooltip = new Tooltip()
+    tooltip.text = getText()
+    tooltip.activated.onChange(tooltip.text = getText())
 
     tooltip
+  }
 
-  private def makeText(
-                        content: GridCell,
-                        locationOfImage: ImageStorage => Option[ImagePool.SaveLocation]
-  ) =
-    val storage = content.storage
-    val startText = locationOfImage(storage) match
+  private def makeText(imageSize: Int, saveLocation: Option[ImagePool.SaveLocation]) = {
+    val startText = saveLocation match {
       case Some(location) =>
         val fileName = location.file.getName
-        val offsetText =
-          if location.offset == StorageCoords(0, 0)
-          then ""
-          else s"\nOffset: ${location.offset}"
-        s"File: $fileName" + offsetText
-      case None => "Not saved"
 
-    val newText = s"$startText\nSize: ${storage.imageSize}"
-    newText
+        val hasOffset = location.offset != StorageCoords(0, 0)
+        val offsetText = if hasOffset then s"\nOffset: ${location.offset}" else ""
+
+        s"File: $fileName" + offsetText
+      case None =>
+        "Not saved"
+    }
+
+    s"$startText\nSize: $imageSize"
+  }
+}

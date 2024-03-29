@@ -5,8 +5,8 @@ import com.martomate.tripaint.view.{MenuBarAction, TriPaintViewListener}
 import scalafx.scene.control.{Menu, MenuBar, MenuItem, SeparatorMenuItem}
 import scalafx.scene.image.ImageView
 
-object TheMenuBar:
-  def create(controls: TriPaintViewListener): MenuBar =
+object TheMenuBar {
+  def create(controls: TriPaintViewListener): MenuBar = {
     val menu_file = makeMenu(
       "File",
       makeMenuItem(controls, MainStageButtons.New),
@@ -50,17 +50,28 @@ object TheMenuBar:
     menuBar.useSystemMenuBar = true
     menuBar.menus = Seq(menu_file, menu_edit, menu_organize, menu_effects)
     menuBar
+  }
 
-  private def makeMenu(text: String, menuItems: MenuItem*): Menu =
+  private def makeMenu(text: String, menuItems: MenuItem*): Menu = {
     val menu = new Menu(text)
     menu.items = menuItems
     menu
+  }
 
-  private def makeMenuItem(controls: TriPaintViewListener, action: MenuBarAction): MenuItem =
-    val item =
-      if action.imagePath == null
-      then new MenuItem(action.text)
-      else new MenuItem(action.text, new ImageView("icons/" + action.imagePath + ".png"))
-    item.onAction = _ => if action.action != null then controls.perform(action.action)
-    if (action.accelerator != null) item.accelerator = action.accelerator
+  private def makeMenuItem(controls: TriPaintViewListener, action: MenuBarAction): MenuItem = {
+    val item = if action.imagePath == null then {
+      new MenuItem(action.text)
+    } else {
+      new MenuItem(action.text, new ImageView(s"icons/${action.imagePath}.png"))
+    }
+    item.onAction = _ => {
+      if action.action != null then {
+        controls.perform(action.action)
+      }
+    }
+    if action.accelerator != null then {
+      item.accelerator = action.accelerator
+    }
     item
+  }
+}

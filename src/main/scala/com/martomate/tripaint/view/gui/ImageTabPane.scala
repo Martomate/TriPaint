@@ -1,51 +1,61 @@
 package com.martomate.tripaint.view.gui
 
-import com.martomate.tripaint.model.TriPaintModel
 import com.martomate.tripaint.model.image.{GridCell, ImagePool}
-import com.martomate.tripaint.view.TriPaintViewListener
 import com.martomate.tripaint.view.image.TriImageForPreview
+
 import scalafx.geometry.Pos
 import scalafx.scene.control.{Button, ToggleButton}
 import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout.StackPane
 
-object ImageTabPane:
+object ImageTabPane {
   def apply(
-             image: GridCell,
-             requestImageRemoval: GridCell => Unit,
-             imagePool: ImagePool
-  ): StackPane =
+      image: GridCell,
+      requestImageRemoval: GridCell => Unit,
+      imagePool: ImagePool
+  ): StackPane = {
     val preview = new TriImageForPreview(image, TriImageForPreview.previewSize)
 
-    val closeButton = new Button {
-      text = "X"
-      visible = false
-      alignmentInParent = Pos.TopRight
-
-      onAction = _ => requestImageRemoval(image)
+    val closeButton = {
+      val b = new Button
+      b.text = "X"
+      b.visible = false
+      b.alignmentInParent = Pos.TopRight
+      b.onAction = _ => requestImageRemoval(image)
+      b
     }
 
-    val previewButton = new ToggleButton {
-      this.graphic = preview
-      this.tooltip = TriImageTooltip.fromImagePool(image, imagePool.locationOf)
-      this.selected <==> image.editableProperty
+    val previewButton = {
+      val b = new ToggleButton
+      b.graphic = preview
+      b.tooltip = TriImageTooltip.fromImagePool(image, imagePool.locationOf)
+      b.selected <==> image.editableProperty
+      b
     }
 
     val starView: ImageView = makeStarView(image)
 
-    val stackPane = new StackPane
-
-    stackPane.children.addAll(previewButton, closeButton, starView)
-
-    stackPane.onMouseEntered = _ => closeButton.visible = true
-    stackPane.onMouseExited = _ => closeButton.visible = false
+    val stackPane = {
+      val p = new StackPane
+      p.children.addAll(previewButton, closeButton, starView)
+      p.onMouseEntered = _ => {
+        closeButton.visible = true
+      }
+      p.onMouseExited = _ => {
+        closeButton.visible = false
+      }
+      p
+    }
 
     stackPane
+  }
 
-  private def makeStarView(image: GridCell): ImageView =
+  private def makeStarView(image: GridCell): ImageView = {
     val star: ImageView = new ImageView
     star.image = new Image("/icons/star.png")
     star.alignmentInParent = Pos.TopLeft
     star.mouseTransparent = true
     star.visible <== image.changedProperty
     star
+  }
+}

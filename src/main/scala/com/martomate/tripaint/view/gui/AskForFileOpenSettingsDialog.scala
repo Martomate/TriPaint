@@ -8,18 +8,19 @@ import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.view.FileOpenSettings
 import com.martomate.tripaint.view.gui.DialogUtils.{getValueFromCustomDialog, makeGridPane}
 import com.martomate.tripaint.view.image.TriImageForPreview
+
 import scalafx.collections.ObservableBuffer
 import scalafx.embed.swing.SwingFXUtils
 import scalafx.geometry.Orientation
 import scalafx.scene.control.{ButtonType, ChoiceBox, Label, Separator}
-import scalafx.scene.image.{Image, ImageView}
+import scalafx.scene.image.ImageView
 import scalafx.scene.layout.Pane
 import scalafx.util.StringConverter
 
-import java.io.{File, FileInputStream}
+import java.io.File
 import scala.util.{Success, Try}
 
-object AskForFileOpenSettingsDialog:
+object AskForFileOpenSettingsDialog {
   def askForFileOpenSettings(
       imagePreview: (File, Int, Int, Int),
       formats: Seq[(StorageFormat, String)],
@@ -37,26 +38,25 @@ object AskForFileOpenSettingsDialog:
 
     val formatMap: Map[StorageFormat, String] = Map.from(formats)
 
-    val formatChooser = new ChoiceBox[StorageFormat](ObservableBuffer(formats.map(_._1): _*))
-    formatChooser.selectionModel.value.select(initiallySelectedFormat)
-    formatChooser.converter = StringConverter.toStringConverter(formatMap(_))
+    val formatChooser = {
+      val b = new ChoiceBox[StorageFormat](ObservableBuffer(formats.map(_._1): _*))
+      b.selectionModel.value.select(initiallySelectedFormat)
+      b.converter = StringConverter.toStringConverter(formatMap(_))
+      b
+    }
 
     val resultFromInputs = () => {
       val xt = xCoordTF.text()
       val yt = yCoordTF.text()
       val format = formatChooser.selectionModel.value.getSelectedItem
 
-      for
+      for {
         xOffset <- Try(if xt != "" then xt.toInt else 0)
         yOffset <- Try(if yt != "" then yt.toInt else 0)
-      yield FileOpenSettings(StorageCoords(xOffset, yOffset), format)
+      } yield FileOpenSettings(StorageCoords(xOffset, yOffset), format)
     }
 
-    val previewPane = new Pane
-    previewPane.setMinSize(previewWidth, previewHeight)
-    previewPane.setMaxSize(previewWidth, previewHeight)
-
-    {
+    val previewPaneBorder = {
       import javafx.scene.layout.*
       import javafx.scene.paint.Color
       val stroke = new BorderStroke(
@@ -65,7 +65,15 @@ object AskForFileOpenSettingsDialog:
         CornerRadii.EMPTY,
         BorderWidths.DEFAULT
       )
-      previewPane.delegate.setBorder(new Border(stroke))
+      new Border(stroke)
+    }
+
+    val previewPane = {
+      val p = new Pane
+      p.setMinSize(previewWidth, previewHeight)
+      p.setMaxSize(previewWidth, previewHeight)
+      p.delegate.setBorder(previewPaneBorder)
+      p
     }
 
     val underlyingImage = fileSystem.readImage(previewFile).get
@@ -76,23 +84,22 @@ object AskForFileOpenSettingsDialog:
     previewStack.delegate.getChildren.addAll(wholeImage, previewPane)
 
     val blankImage = ImageStorage.fill(imageSize, Color.White)
-    val imageGrid = ImageGrid.fromCells(
-      imageSize,
-      Seq.tabulate(xCount)(x => new GridCell(GridCoords(x, 0), blankImage))
-    )
+    val imageGridCells = Seq.tabulate(xCount)(x => new GridCell(GridCoords(x, 0), blankImage))
+    val imageGrid = ImageGrid.fromCells(imageSize, imageGridCells)
+
     val (triPreviewPane, updateTriPreview) = ImagePreviewList.fromImageContent(
       imageGrid.images,
       TriImageForPreview.previewSize,
       _ => None
     )
 
-    def updatePreviewAction(): Unit =
-      resultFromInputs() match
+    def updatePreviewAction(): Unit = {
+      resultFromInputs() match {
         case Success(FileOpenSettings(StorageCoords(sx, sy), format)) =>
           previewPane.setLayoutX(sx)
           previewPane.setLayoutY(sy)
 
-          for x <- 0 until xCount do
+          for x <- 0 until xCount do {
             val offset = StorageCoords(sx + x * imageSize, sy)
             val newPreviewImage = ImageStorage
               .fromRegularImage(underlyingImage, offset, format, imageSize)
@@ -101,7 +108,10 @@ object AskForFileOpenSettingsDialog:
             imageGrid.replaceImage(GridCoords(x, 0), newPreviewImage)
 
             updateTriPreview(_ => ())
+          }
         case _ =>
+      }
+    }
 
     updatePreviewAction()
 
@@ -109,17 +119,19 @@ object AskForFileOpenSettingsDialog:
     yCoordTF.text.onChange(updatePreviewAction())
     formatChooser.onAction = _ => updatePreviewAction()
 
+    val inputForm = makeGridPane(
+      Seq(
+        Seq(new Label("X coordinate:"), xCoordTF),
+        Seq(new Label("Y coordinate:"), yCoordTF),
+        Seq(new Label("Format:"), formatChooser)
+      )
+    )
+
     getValueFromCustomDialog[FileOpenSettings](
       title = "Open image",
       headerText = "Which part of the image should be opened? Please enter the top left corner:",
       content = Seq(
-        makeGridPane(
-          Seq(
-            Seq(new Label("X coordinate:"), xCoordTF),
-            Seq(new Label("Y coordinate:"), yCoordTF),
-            Seq(new Label("Format:"), formatChooser)
-          )
-        ),
+        inputForm,
         Separator(Orientation.Horizontal),
         previewStack
       ),
@@ -131,3 +143,4 @@ object AskForFileOpenSettingsDialog:
       buttons = Seq(ButtonType.OK, ButtonType.Cancel)
     )
   }
+}

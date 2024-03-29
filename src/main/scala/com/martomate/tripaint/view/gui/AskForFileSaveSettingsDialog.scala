@@ -5,6 +5,7 @@ import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.model.image.format.StorageFormat
 import com.martomate.tripaint.view.FileSaveSettings
 import com.martomate.tripaint.view.gui.DialogUtils.{getValueFromCustomDialog, makeGridPane}
+
 import scalafx.collections.ObservableBuffer
 import scalafx.geometry.Orientation
 import scalafx.scene.control.{ButtonType, ChoiceBox, Label, Separator}
@@ -15,13 +16,13 @@ import scalafx.util.StringConverter
 import java.io.{File, FileInputStream, FileNotFoundException, IOException}
 import scala.util.{Success, Try}
 
-object AskForFileSaveSettingsDialog:
+object AskForFileSaveSettingsDialog {
   def askForFileSaveSettings(
       storage: ImageStorage,
       file: File,
       formats: Seq[(StorageFormat, String)],
       initiallySelectedFormat: Int
-  ): Option[FileSaveSettings] =
+  ): Option[FileSaveSettings] = {
     val imageSize = storage.imageSize
     val (previewFile, previewWidth, previewHeight) = (file, imageSize, imageSize)
 
@@ -33,19 +34,22 @@ object AskForFileSaveSettingsDialog:
 
     val formatMap: Map[StorageFormat, String] = Map.from(formats)
 
-    val formatChooser = new ChoiceBox[StorageFormat](ObservableBuffer(formats.map(_._1): _*))
-    formatChooser.selectionModel.value.select(initiallySelectedFormat)
-    formatChooser.converter = StringConverter.toStringConverter(formatMap(_))
+    val formatChooser = {
+      val b = new ChoiceBox[StorageFormat](ObservableBuffer(formats.map(_._1): _*))
+      b.selectionModel.value.select(initiallySelectedFormat)
+      b.converter = StringConverter.toStringConverter(formatMap(_))
+      b
+    }
 
     val resultFromInputs = () => {
       val xt = xCoordTF.text()
       val yt = yCoordTF.text()
       val format = formatChooser.selectionModel.value.getSelectedItem
 
-      for
+      for {
         xOffset <- Try(if xt != "" then xt.toInt else 0)
         yOffset <- Try(if yt != "" then yt.toInt else 0)
-      yield FileSaveSettings(StorageCoords(xOffset, yOffset), format)
+      } yield FileSaveSettings(StorageCoords(xOffset, yOffset), format)
     }
 
     val previewPane = new StackPane
@@ -74,34 +78,29 @@ object AskForFileSaveSettingsDialog:
     }
 
     val previewStack = new Pane
-    try
+    try {
       val wholeImage = new ImageView(new Image(new FileInputStream(previewFile)))
       previewStack.children.add(wholeImage)
-    catch
+    } catch {
       case _: FileNotFoundException =>
       case _: IOException           =>
+    }
 
     previewStack.delegate.getChildren.add(previewPane)
 
-    def updatePreviewAction(): Unit =
-      resultFromInputs() match
+    def updatePreviewAction(): Unit = {
+      resultFromInputs() match {
         case Success(FileSaveSettings(StorageCoords(x, y), format)) =>
           previewPane.setLayoutX(x)
           previewPane.setLayoutY(y)
 
-          val array = storage.toRegularImage(format).toIntArray
+          val pixels = storage.toRegularImage(format).toIntArray
 
-          previewImage.pixelWriter.setPixels(
-            0,
-            0,
-            imageSize,
-            imageSize,
-            pixelFormat,
-            array,
-            0,
-            imageSize
-          )
+          val w = previewImage.pixelWriter
+          w.setPixels(0, 0, imageSize, imageSize, pixelFormat, pixels, 0, imageSize)
         case _ =>
+      }
+    }
 
     updatePreviewAction()
 
@@ -109,17 +108,19 @@ object AskForFileSaveSettingsDialog:
     yCoordTF.text.onChange(updatePreviewAction())
     formatChooser.selectionModel().selectedItemProperty().addListener(_ => updatePreviewAction())
 
+    val inputForm = makeGridPane(
+      Seq(
+        Seq(new Label("X coordinate:"), xCoordTF),
+        Seq(new Label("Y coordinate:"), yCoordTF),
+        Seq(new Label("Format:"), formatChooser)
+      )
+    )
+
     getValueFromCustomDialog[FileSaveSettings](
       title = "Save file",
       headerText = "Where in the file should the image be saved, and how?",
       content = Seq(
-        makeGridPane(
-          Seq(
-            Seq(new Label("X coordinate:"), xCoordTF),
-            Seq(new Label("Y coordinate:"), yCoordTF),
-            Seq(new Label("Format:"), formatChooser)
-          )
-        ),
+        inputForm,
         Separator(Orientation.Horizontal),
         previewStack
       ),
@@ -129,3 +130,5 @@ object AskForFileSaveSettingsDialog:
       },
       buttons = Seq(ButtonType.OK, ButtonType.Cancel)
     )
+  }
+}
