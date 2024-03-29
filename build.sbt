@@ -4,7 +4,7 @@ name := "TriPaint"
 organization := "com.martomate"
 version := "1.3.4"
 
-Compile / mainClass := Some("com.martomate.tripaint.TriPaint")
+Compile / mainClass := Some("tripaint.TriPaint")
 Compile / discoveredMainClasses := Seq()
 
 enablePlugins(LauncherJarPlugin)
