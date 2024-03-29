@@ -3,7 +3,7 @@ package com.martomate.tripaint.control
 import com.martomate.tripaint.model.{Color, TriPaintModel}
 import com.martomate.tripaint.model.coords.GridCoords
 import com.martomate.tripaint.model.effects.*
-import com.martomate.tripaint.model.image.{GridCell, ImageStorage}
+import com.martomate.tripaint.model.image.GridCell
 import com.martomate.tripaint.view.{TriPaintView, TriPaintViewFactory, TriPaintViewListener}
 import com.martomate.tripaint.view.gui.UIAction
 

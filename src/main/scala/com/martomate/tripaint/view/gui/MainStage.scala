@@ -66,11 +66,20 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
 
   private def makeColorBox() = {
     // overlay and imageDisplay
-    val colorPicker1 = new ColorPicker(new Color(imageDisplay.colors.primaryColor()))
-    val colorPicker2 = new ColorPicker(new Color(imageDisplay.colors.secondaryColor()))
+    val colorPicker1 = new ColorPicker(new Color(imageDisplay.colors.primaryColor().toFXColor))
+    val colorPicker2 = new ColorPicker(new Color(imageDisplay.colors.secondaryColor().toFXColor))
 
-    imageDisplay.colors.primaryColor <==> colorPicker1.value
-    imageDisplay.colors.secondaryColor <==> colorPicker2.value
+    colorPicker1.value.onChange: (_, from, to) =>
+      if from != to then imageDisplay.colors.setPrimaryColor(new Color(to))
+
+    colorPicker2.value.onChange: (_, from, to) =>
+      if from != to then imageDisplay.colors.setSecondaryColor(new Color(to))
+
+    imageDisplay.colors.primaryColor.onChange: (_, from, to) =>
+      if from != to then colorPicker1.value = to.toFXColor
+
+    imageDisplay.colors.secondaryColor.onChange: (_, from, to) =>
+      if from != to then colorPicker2.value = to.toFXColor
 
     new VBox(
       new Label("Primary color:"),
@@ -80,7 +89,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     )
   }
 
-  override def backgroundColor: Color = new Color(imageDisplay.colors.secondaryColor())
+  override def backgroundColor: Color = new Color(imageDisplay.colors.secondaryColor().toFXColor)
 
   override def askForSaveFile(image: GridCell): Option[File] = {
     val chooser = new FileChooser
