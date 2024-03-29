@@ -2,8 +2,8 @@ package com.martomate.tripaint.model.image
 
 import com.martomate.tripaint.model.Color
 import com.martomate.tripaint.model.coords.{GridCoords, TriangleCoords}
-import com.martomate.tripaint.model.image.ImageStorage
 import com.martomate.tripaint.util.{EventDispatcher, Tracker}
+
 import scalafx.beans.property.{BooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanWrapper}
 
 object GridCell:
@@ -15,7 +15,7 @@ class GridCell(val coords: GridCoords, init_image: ImageStorage):
   private var _image: ImageStorage = init_image
 
   private val dispatcher = new EventDispatcher[GridCell.Event]
-  def trackChanges(tracker: Tracker[GridCell.Event]): Unit = dispatcher.track(tracker)
+  def trackChanges(tracker: Tracker[GridCell.Event]): Tracker.RevokeFn = dispatcher.track(tracker)
 
   _image.trackChanges(this.onStorageChanged _)
 

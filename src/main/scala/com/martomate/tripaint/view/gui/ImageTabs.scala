@@ -1,9 +1,10 @@
 package com.martomate.tripaint.view.gui
 
-import com.martomate.tripaint.model.image.{GridCell, ImagePool}
 import com.martomate.tripaint.model.{ImageGrid, TriPaintModel}
+import com.martomate.tripaint.model.image.{GridCell, ImagePool}
 import com.martomate.tripaint.view.TriPaintViewListener
 import com.martomate.tripaint.view.image.TriImageForPreview
+
 import scalafx.scene.layout.{StackPane, TilePane}
 
 import scala.collection.mutable
@@ -23,6 +24,7 @@ class ImageTabs(imagePool: ImagePool, requestImageRemoval: GridCell => Unit) ext
         imageTabMap.remove(image) match
           case Some(pane) => children.remove(pane.delegate)
           case None       =>
+      case _ =>
 
 object ImageTabs:
   def fromImagePool(

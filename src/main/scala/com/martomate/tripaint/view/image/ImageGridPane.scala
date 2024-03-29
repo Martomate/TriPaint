@@ -6,7 +6,7 @@ import com.martomate.tripaint.model.{
   ImageGridChange,
   ImageGridColorLookup
 }
-import com.martomate.tripaint.model.coords.{GridCoords, PixelCoords, TriangleCoords}
+import com.martomate.tripaint.model.coords.{GridCoords, PixelCoords}
 import com.martomate.tripaint.model.image.ImageChange
 import com.martomate.tripaint.view.EditMode
 
@@ -85,7 +85,7 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane {
             for {
               (image, coords) <- imageAt(xx, yy)
               if image.content.editable
-            } do mousePressedAt(coords, e, dragged = true)
+            } do mousePressedAt(coords, xx, yy, e.getButton, dragged = true)
           }
       }
     }
@@ -100,7 +100,7 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane {
         (image, coords) <- imageAt(e.getSceneX, e.getSceneY)
         if image.content.editable
       } do {
-        mousePressedAt(coords, e, dragged = false)
+        mousePressedAt(coords, e.getSceneX, e.getSceneY, e.getButton, dragged = false)
       }
     }
   }
@@ -148,8 +148,14 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane {
     canvas.setDisplacement(xScroll, yScroll)
   }
 
-  private def mousePressedAt(coords: PixelCoords, e: MouseEvent, dragged: Boolean): Unit = {
-    val colorToUse = e.getButton match {
+  private def mousePressedAt(
+      coords: PixelCoords,
+      xx: Double,
+      yy: Double,
+      button: MouseButton,
+      dragged: Boolean
+  ): Unit = {
+    val colorToUse = button match {
       case MouseButton.PRIMARY   => Some(colors.primaryColor)
       case MouseButton.SECONDARY => Some(colors.secondaryColor)
       case _                     => None
@@ -169,19 +175,23 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane {
         case _ =>
       }
     }
+  }
 
-    val pt = canvas.sceneToLocal(e.getSceneX, e.getSceneY)
+  private inline def clamp(a: Int, lo: Int, hi: Int): Int = Math.min(Math.max(a, lo), hi)
+
+  private def updateCanvasAt(sceneX: Double, sceneY: Double): Unit = {
+    val pt = canvas.sceneToLocal(sceneX, sceneY)
     val (sx, sy) = (pt.x, pt.y)
 
     val (w, h) = (canvas.width().toInt, canvas.height().toInt)
 
-    val startX = Math.min(Math.max((sx - 3 * zoom).toInt, 0), w - 1)
-    val startY = Math.min(Math.max((sy - 3 * zoom).toInt, 0), h - 1)
-    val endX = Math.min(Math.max((sx + 3 * zoom + 1).toInt, 0), w - 1)
-    val endY = Math.min(Math.max((sy + 3 * zoom + 1).toInt, 0), h - 1)
+    val startX = clamp((sx - 3 * zoom).toInt, 0, w - 1)
+    val startY = clamp((sy - 3 * zoom).toInt, 0, h - 1)
+    val endX = clamp((sx + 3 * zoom + 1).toInt, 0, w - 1)
+    val endY = clamp((sy + 3 * zoom + 1).toInt, 0, h - 1)
 
     if endX >= startX && endY >= startY then {
-      canvas.redraw(startX, startY, endX - startX, endY - startY)
+      canvas.redraw(startX, startY, endX - startX + 1, endY - startY + 1)
     }
   }
 
@@ -230,11 +240,20 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane {
         val triImage = new TriImage(image, zoom)
         imageMap(image.coords) = triImage
         relocateImage(image.coords)
-      case ImageGrid.Event.ImageRemoved(image) =>
-    }
 
-    canvas.setScale(zoom)
-    canvas.setDisplacement(xScroll, yScroll)
-    canvas.redraw()
+        canvas.setScale(zoom)
+        canvas.setDisplacement(xScroll, yScroll)
+        canvas.redraw()
+      case ImageGrid.Event.ImageRemoved(image) =>
+        canvas.setScale(zoom)
+        canvas.setDisplacement(xScroll, yScroll)
+        canvas.redraw()
+      case ImageGrid.Event.PixelChanged(coords, from, to) =>
+        val (x, y) = canvas.locationOf(coords.toGlobal(imageGrid.imageSize))
+        this.updateCanvasAt(x, y)
+      case ImageGrid.Event.ImageChangedALot(coords) =>
+        // TODO: calculate bounds of the image and only redraw that part of the canvas
+        canvas.redraw()
+    }
   }
 }

@@ -1,7 +1,7 @@
 package com.martomate.tripaint.model
 
 import com.martomate.tripaint.infrastructure.FileSystem
-import com.martomate.tripaint.model.coords.GridCoords
+import com.martomate.tripaint.model.coords.{GridCoords, PixelCoords}
 import com.martomate.tripaint.model.image.{
   GridCell,
   ImagePool,
@@ -12,12 +12,15 @@ import com.martomate.tripaint.model.image.{
 import com.martomate.tripaint.model.image.ImagePool.{SaveInfo, SaveLocation}
 import com.martomate.tripaint.util.{EventDispatcher, Tracker}
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 object ImageGrid {
   enum Event:
     case ImageAdded(image: GridCell)
     case ImageRemoved(image: GridCell)
+    case PixelChanged(coords: PixelCoords, from: Color, to: Color)
+    case ImageChangedALot(coords: GridCoords)
 
   def fromCells(imageSize: Int, cells: Seq[GridCell]): ImageGrid =
     val grid = new ImageGrid(imageSize)
@@ -32,6 +35,8 @@ class ImageGrid(init_imageSize: Int) {
   private val _images: ArrayBuffer[GridCell] = ArrayBuffer.empty
   def images: Seq[GridCell] = _images.toSeq
 
+  private val imageTrackerRevokeFns = mutable.Map.empty[GridCoords, Tracker.RevokeFn]
+
   private val dispatcher = new EventDispatcher[ImageGrid.Event]
   def trackChanges(tracker: Tracker[ImageGrid.Event]): Unit = dispatcher.track(tracker)
 
@@ -43,9 +48,16 @@ class ImageGrid(init_imageSize: Int) {
     val idx = _images.indexWhere(_.coords == image.coords)
     if (idx != -1) {
       val prev = _images(idx)
-      if (prev != image) dispatcher.notify(ImageGrid.Event.ImageRemoved(prev))
+      if (prev == image) {
+        return
+      }
+      imageTrackerRevokeFns.remove(image.coords).foreach(_.apply())
+      dispatcher.notify(ImageGrid.Event.ImageRemoved(prev))
       _images(idx) = image
     } else _images += image
+    imageTrackerRevokeFns += image.coords -> image.trackChanges(e =>
+      this.onGridCellEvent(image.coords, e)
+    )
     dispatcher.notify(ImageGrid.Event.ImageAdded(image))
   }
 
@@ -53,6 +65,7 @@ class ImageGrid(init_imageSize: Int) {
     val idx = _images.indexWhere(_.coords == coords)
     if (idx != -1) {
       val ret = _images.remove(idx)
+      imageTrackerRevokeFns.remove(ret.coords).foreach(_.apply())
       dispatcher.notify(ImageGrid.Event.ImageRemoved(ret))
       ret
     } else null
@@ -140,4 +153,13 @@ class ImageGrid(init_imageSize: Int) {
   final def selectedImages: Seq[GridCell] = images.filter(_.editable)
 
   final def changedImages: Seq[GridCell] = images.filter(_.changed)
+
+  private def onGridCellEvent(cell: GridCoords, event: GridCell.Event): Unit = {
+    event match {
+      case GridCell.Event.PixelChanged(pix, from, to) =>
+        dispatcher.notify(ImageGrid.Event.PixelChanged(PixelCoords(cell, pix), from, to))
+      case GridCell.Event.ImageChangedALot =>
+        dispatcher.notify(ImageGrid.Event.ImageChangedALot(cell))
+    }
+  }
 }

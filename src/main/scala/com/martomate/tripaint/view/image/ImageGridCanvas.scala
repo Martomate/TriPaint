@@ -35,6 +35,19 @@ class ImageGridCanvas(images: ImageGrid) extends Canvas {
     }
   }
 
+  /** locationOf is the inverse of the coordsAt function */
+  def locationOf(coords: GlobalPixCoords): (Double, Double) = {
+    val (xScroll, yScroll) = this.displacement
+
+    val (xInt, yInt) = (Math.floorDiv(coords.x, 2), coords.y)
+    val (xx, yy) = (xInt + 0.5, yInt + 0.5)
+
+    val y = -yy * Math.sqrt(3) * this.scale + height() / 2 + yScroll
+    val x = (xx * 2 + yy) * this.scale + width() / 2 + xScroll
+
+    (x, y)
+  }
+
   def redraw(): Unit = {
     val w = width().toInt
     val h = height().toInt
