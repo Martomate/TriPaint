@@ -65,8 +65,7 @@ class ImageGridCanvas(images: ImageGrid) extends Canvas {
 
     for y <- startY until (startY + h) do {
       for x <- startX until (startX + w) do {
-        val pt = this.localToScene(x, y)
-        val coords = PixelCoords(this.coordsAt(pt.x, pt.y), images.imageSize)
+        val coords = PixelCoords(this.coordsAt(x, y), images.imageSize)
         val col = images(coords.image) match {
           case Some(image) => image.storage.getColor(coords.pix)
           case None        => Color(0, 0, 0, 0)

@@ -70,7 +70,8 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane {
   }
 
   private def imageAt(x: Double, y: Double): Option[(GridCell, PixelCoords)] = {
-    val coords = PixelCoords(canvas.coordsAt(x, y), imageGrid.imageSize)
+    val pt = canvas.sceneToLocal(x, y)
+    val coords = PixelCoords(canvas.coordsAt(pt.x, pt.y), imageGrid.imageSize)
     imageGrid.images.find(_.coords == coords.image).map((_, coords))
   }
 
@@ -96,7 +97,7 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane {
             for {
               (image, coords) <- imageAt(xx, yy)
               if image.editable
-            } do mousePressedAt(coords, xx, yy, e.getButton, dragged = true)
+            } do mousePressedAt(coords, e.getButton, dragged = true)
           }
       }
     }
@@ -111,7 +112,7 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane {
         (image, coords) <- imageAt(e.getSceneX, e.getSceneY)
         if image.editable
       } do {
-        mousePressedAt(coords, e.getSceneX, e.getSceneY, e.getButton, dragged = false)
+        mousePressedAt(coords, e.getButton, dragged = false)
       }
     }
   }
@@ -154,8 +155,6 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane {
 
   private def mousePressedAt(
       coords: PixelCoords,
-      xx: Double,
-      yy: Double,
       button: MouseButton,
       dragged: Boolean
   ): Unit = {
@@ -183,16 +182,13 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane {
 
   private inline def clamp(a: Int, lo: Int, hi: Int): Int = Math.min(Math.max(a, lo), hi)
 
-  private def updateCanvasAt(sceneX: Double, sceneY: Double): Unit = {
-    val pt = canvas.sceneToLocal(sceneX, sceneY)
-    val (sx, sy) = (pt.x, pt.y)
-
+  private def updateCanvasAt(x: Double, y: Double): Unit = {
     val (w, h) = (canvas.width().toInt, canvas.height().toInt)
 
-    val startX = clamp((sx - 3 * zoom).toInt, 0, w - 1)
-    val startY = clamp((sy - 3 * zoom).toInt, 0, h - 1)
-    val endX = clamp((sx + 3 * zoom + 1).toInt, 0, w - 1)
-    val endY = clamp((sy + 3 * zoom + 1).toInt, 0, h - 1)
+    val startX = clamp((x - 3 * zoom).toInt, 0, w - 1)
+    val startY = clamp((y - 3 * zoom).toInt, 0, h - 1)
+    val endX = clamp((x + 3 * zoom + 1).toInt, 0, w - 1)
+    val endY = clamp((y + 3 * zoom + 1).toInt, 0, h - 1)
 
     if endX >= startX && endY >= startY then {
       canvas.redraw(startX, startY, endX - startX + 1, endY - startY + 1)
@@ -221,7 +217,7 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane {
   this.height.onChange(updateSize())
 
   private def updateSize(): Unit = {
-    this.clip() = new Rectangle(0, 0, width(), height())
+    this.setClip(new Rectangle(0, 0, width(), height()))
     canvas.width = width()
     canvas.height = height()
     canvas.redraw()
