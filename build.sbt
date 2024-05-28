@@ -1,4 +1,4 @@
-scalaVersion := "3.3.1"
+scalaVersion := "3.4.2"
 
 name := "TriPaint"
 organization := "com.martomate"
@@ -28,7 +28,7 @@ jlinkOptions ++= Seq(
 Compile / scalacOptions += "-deprecation"
 
 libraryDependencies ++= Seq(
-  "org.scalameta" %% "munit" % "0.7.29" % "test",
+  "org.scalameta" %% "munit" % "1.0.0" % "test",
   "org.scalatestplus" %% "mockito-4-5" % "3.2.12.0" % "test"
 )
 

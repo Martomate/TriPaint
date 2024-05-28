@@ -2,7 +2,7 @@ package tripaint.model.coords
 
 /** Like TriImageCoords but for pixels (on the entire area) */
 case class GlobalPixCoords(x: Int, y: Int) {
-  def distanceSq(other: GlobalPixCoords): Double = {
+  infix def distanceSq(other: GlobalPixCoords): Double = {
     val dx = other.x - x
     val dy = other.y - y
     val otherY = other.y + (if other.x % 2 == 0 then 1.0 / 3 else 2.0 / 3)

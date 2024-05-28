@@ -36,7 +36,7 @@ object ImageTabs {
       requestImageRemoval: GridCell => Unit
   ): TilePane = {
     val tilePane = new ImageTabs(imagePool, requestImageRemoval)
-    imageGrid.trackChanges(tilePane.onImageGridEvent _)
+    imageGrid.trackChanges(tilePane.onImageGridEvent(_))
     tilePane
   }
 }

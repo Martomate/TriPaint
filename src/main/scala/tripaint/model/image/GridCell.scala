@@ -17,7 +17,7 @@ class GridCell(val coords: GridCoords, init_image: ImageStorage):
   private val dispatcher = new EventDispatcher[GridCell.Event]
   def trackChanges(tracker: Tracker[GridCell.Event]): Tracker.RevokeFn = dispatcher.track(tracker)
 
-  _image.trackChanges(this.onStorageChanged _)
+  _image.trackChanges(this.onStorageChanged(_))
 
   def storage: ImageStorage = _image
 
@@ -35,7 +35,7 @@ class GridCell(val coords: GridCoords, init_image: ImageStorage):
 
   def replaceImage(newImage: ImageStorage): Unit =
     _image = newImage
-    _image.trackChanges(this.onStorageChanged _)
+    _image.trackChanges(this.onStorageChanged(_))
     dispatcher.notify(GridCell.Event.ImageChangedALot)
 
   private def onStorageChanged(event: ImageStorage.Event): Unit =

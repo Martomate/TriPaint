@@ -72,7 +72,7 @@ object DialogUtils {
     dialog.contentText = contentText
     dialog.graphic = graphic
 
-    val contentBox = new VBox(content: _*)
+    val contentBox = new VBox(content*)
     contentBox.setSpacing(10)
 
     dialog.dialogPane().setContent(contentBox)

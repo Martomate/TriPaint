@@ -54,7 +54,7 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane {
 
   children.add(canvas)
 
-  imageGrid.trackChanges(this.onImageGridEvent _)
+  imageGrid.trackChanges(this.onImageGridEvent(_))
 
   private val cumulativeImageChange = mutable.Map.empty[GridCoords, ImageChange.Builder]
 

@@ -38,13 +38,13 @@ object ImagePreviewList {
     val scrollPane = {
       val p = new ScrollPane()
       p.maxWidth = previewSize * 5
-      p.content = new HBox(children = makeContent(_ => ()): _*)
+      p.content = new HBox(children = makeContent(_ => ())*)
       p.minViewportHeight = previewSize * Math.sqrt(3) / 2
       p
     }
 
     val updatePreview: (ImageGrid => Unit) => Unit = effect => {
-      scrollPane.content = new HBox(children = makeContent(effect): _*)
+      scrollPane.content = new HBox(children = makeContent(effect)*)
     }
 
     (scrollPane, updatePreview)

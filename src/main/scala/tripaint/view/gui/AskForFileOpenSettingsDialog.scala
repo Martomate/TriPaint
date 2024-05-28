@@ -39,7 +39,7 @@ object AskForFileOpenSettingsDialog {
     val formatMap: Map[StorageFormat, String] = Map.from(formats)
 
     val formatChooser = {
-      val b = new ChoiceBox[StorageFormat](ObservableBuffer(formats.map(_._1): _*))
+      val b = new ChoiceBox[StorageFormat](ObservableBuffer(formats.map(_._1)*))
       b.selectionModel.value.select(initiallySelectedFormat)
       b.converter = StringConverter.toStringConverter(formatMap(_))
       b

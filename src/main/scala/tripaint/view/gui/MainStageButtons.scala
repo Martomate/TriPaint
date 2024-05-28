@@ -33,7 +33,7 @@ object MainStageButtons {
     "Save As",
     accelerator =
       new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown, KeyCombination.ShiftDown),
-    UIAction.SaveAs
+    action = UIAction.SaveAs
   )
   val Exit: MenuBarAction = MenuBarAction("Exit", action = UIAction.Exit)
   val Undo: MenuBarAction = MenuBarAction(

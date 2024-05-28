@@ -12,7 +12,7 @@ class TriImageForPreview(content: GridCell, previewWidth: Double) extends Pane {
 
   private val canvas: TriImageCanvas = new TriImageCanvas(previewWidth, storage.imageSize)
 
-  content.trackChanges(onImageChanged _)
+  content.trackChanges(onImageChanged(_))
   children.add(canvas)
 
   redraw()
