@@ -1,9 +1,9 @@
 package tripaint.view.image
 
-import tripaint.Color
+import tripaint.{Color, FloodFillSearcher}
 import tripaint.ScalaFxExt.fromFXColor
 import tripaint.coords.{GridCoords, PixelCoords, TriangleCoords}
-import tripaint.model.{FloodFillSearcher, ImageGrid, ImageGridChange, ImageGridColorLookup}
+import tripaint.model.{ImageGrid, ImageGridChange, ImageGridColorLookup}
 import tripaint.model.image.{GridCell, ImageChange}
 import tripaint.view.EditMode
 

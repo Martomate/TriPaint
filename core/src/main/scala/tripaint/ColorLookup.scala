@@ -1,6 +1,5 @@
-package tripaint.model
+package tripaint
 
-import tripaint.Color
 import tripaint.coords.GlobalPixCoords
 
 trait ColorLookup {

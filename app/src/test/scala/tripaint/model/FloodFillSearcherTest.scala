@@ -1,8 +1,7 @@
 package tripaint.model
 
-import tripaint.Color
+import tripaint.{Color, FloodFillSearcher}
 import tripaint.coords.GlobalPixCoords
-
 import munit.FunSuite
 
 class FloodFillSearcherTest extends FunSuite {
