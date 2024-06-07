@@ -3,14 +3,9 @@ package tripaint.model.image
 import tripaint.Color
 import tripaint.coords.{GridCoords, TriangleCoords}
 import tripaint.image.ImageStorage
-import tripaint.image.format.SimpleStorageFormat
-import tripaint.infrastructure.FileSystem
-import tripaint.model.ImageGrid
 import tripaint.util.Tracker
 
 import munit.FunSuite
-
-import java.io.File
 
 class GridCellTest extends FunSuite {
 
@@ -43,19 +38,14 @@ class GridCellTest extends FunSuite {
 
   test("changed should return false if the image was just saved") {
     val image = ImageStorage.fill(2, Color.Black)
-    val location = ImagePool.SaveLocation(new File("a.png"))
-    val format = SimpleStorageFormat
-    val info = ImagePool.SaveInfo(format)
 
-    val grid = new ImageGrid(2)
-
-    val f = new GridCell(GridCoords(0, 0), image)
-    grid.set(f)
+    val cell = new GridCell(GridCoords(0, 0), image)
 
     image.setColor(TriangleCoords(0, 0), Color.Blue)
-    grid.save(image, FileSystem.createNull(), location, info)
+    assert(cell.changed)
 
-    assert(!f.changed)
+    cell.setImageSaved()
+    assert(!cell.changed)
   }
 
   test("changedProperty should return a property with the same value as 'changed'".ignore) {}

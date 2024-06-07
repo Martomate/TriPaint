@@ -1,8 +1,8 @@
 package tripaint.control
 
-import tripaint.Color
+import tripaint.{Color, ImageSaver}
 import tripaint.coords.{GridCoords, StorageCoords}
-import tripaint.image.ImageStorage
+import tripaint.image.{ImageStorage, RegularImage}
 import tripaint.image.format.StorageFormat
 import tripaint.infrastructure.FileSystem
 import tripaint.model.{ImageGrid, ImageGridChange, TriPaintModel}
@@ -44,10 +44,12 @@ object Actions {
       imagePool: ImagePool,
       image: ImageStorage,
       fileSystem: FileSystem
-  ): Boolean =
-    imagePool.getSaveLocationAndInfo(image) match
-      case (Some(loc), Some(info)) => imageGrid.save(image, fileSystem, loc, info)
+  ): Boolean = {
+    imagePool.getSaveLocationAndInfo(image) match {
+      case (Some(loc), Some(info)) => ImageSaver.saveImage(imageGrid, image, fileSystem, loc, info)
       case _                       => false
+    }
+  }
 
   def saveAs(imageGrid: ImageGrid, imagePool: ImagePool, image: GridCell, fileSystem: FileSystem)(
       askForSaveFile: GridCell => Option[File],

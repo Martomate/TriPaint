@@ -2,26 +2,30 @@ package tripaint.model
 
 import tripaint.Color
 import tripaint.coords.{GridCoords, PixelCoords}
-import tripaint.image.{ImageStorage, RegularImage}
-import tripaint.infrastructure.FileSystem
+import tripaint.image.ImageStorage
 import tripaint.model.image.{GridCell, ImagePool, ImageSaveCollisionHandler}
 import tripaint.model.image.ImagePool.{SaveInfo, SaveLocation}
 import tripaint.util.{EventDispatcher, Tracker}
 
+import scala.annotation.targetName
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 object ImageGrid {
-  enum Event:
+  enum Event {
     case ImageAdded(image: GridCell)
     case ImageRemoved(image: GridCell)
     case PixelChanged(coords: PixelCoords, from: Color, to: Color)
     case ImageChangedALot(coords: GridCoords)
+  }
 
-  def fromCells(imageSize: Int, cells: Seq[GridCell]): ImageGrid =
+  def fromCells(imageSize: Int, cells: Seq[GridCell]): ImageGrid = {
     val grid = new ImageGrid(imageSize)
-    for c <- cells do grid.set(c)
+    for c <- cells do {
+      grid.set(c)
+    }
     grid
+  }
 }
 
 class ImageGrid(init_imageSize: Int) {
@@ -42,109 +46,103 @@ class ImageGrid(init_imageSize: Int) {
 
   def set(image: GridCell): Unit = {
     val idx = _images.indexWhere(_.coords == image.coords)
-    if (idx != -1) {
+    if idx != -1 then {
       val prev = _images(idx)
-      if (prev == image) {
+      if prev == image then {
         return
       }
       imageTrackerRevokeFns.remove(image.coords).foreach(_.apply())
       dispatcher.notify(ImageGrid.Event.ImageRemoved(prev))
       _images(idx) = image
-    } else _images += image
+    } else {
+      _images += image
+    }
     imageTrackerRevokeFns += image.coords -> image.trackChanges(e =>
       this.onGridCellEvent(image.coords, e)
     )
     dispatcher.notify(ImageGrid.Event.ImageAdded(image))
   }
 
+  @targetName("remove")
   def -=(coords: GridCoords): GridCell = {
     val idx = _images.indexWhere(_.coords == coords)
-    if (idx != -1) {
+    if idx != -1 then {
       val ret = _images.remove(idx)
       imageTrackerRevokeFns.remove(ret.coords).foreach(_.apply())
       dispatcher.notify(ImageGrid.Event.ImageRemoved(ret))
       ret
-    } else null
+    } else {
+      null
+    }
   }
 
   private val undoManager = new UndoManager
 
-  def performChange(change: ImageGridChange): Unit =
+  def performChange(change: ImageGridChange): Unit = {
     change.redo()
     undoManager.append(change)
-    for im <- images do im.onImageChangedALot()
+    for im <- images do {
+      im.onImageChangedALot()
+    }
+  }
 
-  def undo(): Unit =
+  def undo(): Unit = {
     undoManager.undo()
-    for im <- images do im.onImageChangedALot()
+    for im <- images do {
+      im.onImageChangedALot()
+    }
+  }
 
-  def redo(): Unit =
+  def redo(): Unit = {
     undoManager.redo()
-    for im <- images do im.onImageChangedALot()
+    for im <- images do {
+      im.onImageChangedALot()
+    }
+  }
 
   def setImageSizeIfEmpty(size: Int): Boolean = {
     if (_images.isEmpty) {
       _imageSize = size
       true
-    } else false
+    } else {
+      false
+    }
   }
 
   def setImageSource(image: ImageStorage, location: SaveLocation, info: SaveInfo)(
       imagePool: ImagePool,
       imageSaveCollisionHandler: ImageSaveCollisionHandler
-  ): Boolean =
-    imagePool.imageAt(location) match
+  ): Boolean = {
+    imagePool.imageAt(location) match {
       case Some(currentImage) =>
-        if currentImage == image then
+        if currentImage == image then {
           imagePool.set(image, location, info)
           true
-        else
-          imageSaveCollisionHandler.shouldReplaceImage(currentImage, image, location) match
-            case Some(true) =>
-              imagePool.set(image, location, info)
-              this._images.find(_.storage == currentImage).foreach(_.replaceImage(image))
-              true
-            case Some(false) =>
-              imagePool.remove(image)
-              imagePool.set(currentImage, location, info)
-              this._images.find(_.storage == image).foreach(_.replaceImage(currentImage))
+        } else {
+          imageSaveCollisionHandler.shouldReplaceImage(currentImage, image, location) match {
+            case Some(replace) =>
+              if replace then { // replace old image with new image
+                imagePool.set(image, location, info)
+                this._images.find(_.storage == currentImage).foreach(_.replaceImage(image))
+              } else { // keep current image
+                imagePool.remove(image)
+                imagePool.set(currentImage, location, info)
+                this._images.find(_.storage == image).foreach(_.replaceImage(currentImage))
+              }
               true
             case None =>
               false
+          }
+        }
       case None =>
         imagePool.set(image, location, info)
         true
+    }
+  }
 
-  def save(
-      image: ImageStorage,
-      fileSystem: FileSystem,
-      loc: SaveLocation,
-      info: SaveInfo
-  ): Boolean =
-    val didWrite = doSave(image, fileSystem, loc, info)
-
-    if didWrite then
-      for
-        im <- this._images
-        if im.storage == image
-      do im.setImageSaved()
-    didWrite
-
-  private def doSave(
-      image: ImageStorage,
-      fileSystem: FileSystem,
-      loc: SaveLocation,
-      info: SaveInfo
-  ): Boolean =
-    val oldImage = fileSystem.readImage(loc.file)
-
-    val imageToSave = image.toRegularImage(info.format)
-    val newImage = RegularImage.fromBaseAndOverlay(oldImage, imageToSave, loc.offset)
-
-    fileSystem.writeImage(newImage, loc.file)
-
-  def replaceImage(coords: GridCoords, newImage: ImageStorage): Unit =
+  def replaceImage(coords: GridCoords, newImage: ImageStorage): Unit = {
     apply(coords).foreach(_.replaceImage(newImage))
+  }
 
   final def selectedImages: Seq[GridCell] = images.filter(_.editable)
 
