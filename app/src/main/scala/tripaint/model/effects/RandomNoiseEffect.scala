@@ -19,10 +19,16 @@ class RandomNoiseEffect(min: Color, max: Color) extends Effect {
     for (imageCoords <- images) {
       val image = grid(imageCoords).get.storage
       for (coords <- image.allPixels) {
+        var hueDiff = hi.hue - lo.hue
+        if hueDiff > 180 then {
+          hueDiff -= 360
+        } else if hueDiff < -180 then {
+          hueDiff += 360
+        }
         image.setColor(
           coords,
           FXColor.hsb(
-            math.random() * (hi.hue - lo.hue) + lo.hue,
+            math.random() * hueDiff + lo.hue,
             math.random() * (hi.saturation - lo.saturation) + lo.saturation,
             math.random() * (hi.brightness - lo.brightness) + lo.brightness,
             1
