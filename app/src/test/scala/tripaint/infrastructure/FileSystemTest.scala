@@ -1,6 +1,6 @@
 package tripaint.infrastructure
 
-import tripaint.model.Color
+import tripaint.Color
 import tripaint.model.image.RegularImage
 import tripaint.util.Tracker
 

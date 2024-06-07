@@ -1,6 +1,7 @@
 package tripaint.model.effects
 
-import tripaint.model.{Color, ImageGrid, ImageGridColorLookup}
+import tripaint.Color
+import tripaint.model.{ImageGrid, ImageGridColorLookup}
 import tripaint.model.coords.{GlobalPixCoords, GridCoords, PixelCoords, TriangleCoords}
 import tripaint.model.image.{GridCell, ImageStorage}
 

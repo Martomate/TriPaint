@@ -1,6 +1,6 @@
 package tripaint.model.image
 
-import tripaint.model.Color
+import tripaint.Color
 import tripaint.model.coords.StorageCoords
 
 import java.awt.image.BufferedImage

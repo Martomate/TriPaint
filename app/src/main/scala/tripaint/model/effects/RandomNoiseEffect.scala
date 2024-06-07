@@ -1,9 +1,13 @@
 package tripaint.model.effects
 
-import tripaint.model.{Color, ImageGrid}
+import tripaint.Color
+import tripaint.ScalaFxExt.{*, given}
+import tripaint.model.ImageGrid
 import tripaint.model.coords.GridCoords
 
 import scalafx.scene.paint.Color as FXColor
+
+import scala.language.implicitConversions
 
 class RandomNoiseEffect(min: Color, max: Color) extends Effect {
   override def name: String = "Random noise"

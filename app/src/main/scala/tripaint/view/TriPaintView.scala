@@ -1,6 +1,6 @@
 package tripaint.view
 
-import tripaint.model.Color
+import tripaint.Color
 import tripaint.model.coords.StorageCoords
 import tripaint.model.image.{GridCell, ImageSaveCollisionHandler}
 import tripaint.model.image.format.StorageFormat

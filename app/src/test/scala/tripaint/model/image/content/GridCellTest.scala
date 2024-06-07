@@ -1,5 +1,6 @@
 package tripaint.model.image.content
 
+import tripaint.Color
 import tripaint.infrastructure.FileSystem
 import tripaint.model.ImageGrid
 import tripaint.model.coords.{GridCoords, TriangleCoords}
@@ -8,7 +9,6 @@ import tripaint.model.image.format.SimpleStorageFormat
 import tripaint.util.Tracker
 
 import munit.FunSuite
-import scalafx.scene.paint.Color
 
 import java.io.File
 

@@ -1,6 +1,4 @@
-package tripaint.model
-
-import scalafx.scene.paint.Color as FXColor
+package tripaint
 
 case class Color(r: Double, g: Double, b: Double, a: Double) {
   def withAlpha(a: Double): Color = Color(r, g, b, a)
@@ -13,8 +11,6 @@ case class Color(r: Double, g: Double, b: Double, a: Double) {
 
   def /(d: Double): Color = Color(r / d, g / d, b / d, a / d)
 
-  def toFXColor: FXColor = FXColor.color(clamp(r), clamp(g), clamp(b), clamp(a))
-
   def toInt: Int = asInt(a) << 24 | asInt(r) << 16 | asInt(g) << 8 | asInt(b)
 
   private def clamp(v: Double): Double = math.min(math.max(v, 0), 1)
@@ -23,10 +19,6 @@ case class Color(r: Double, g: Double, b: Double, a: Double) {
 }
 
 object Color {
-  import scala.language.implicitConversions
-
-  implicit def fromFXColor(c: FXColor): Color = Color(c.red, c.green, c.blue, c.opacity)
-
   def fromInt(value: Int): Color = Color(
     (value >> 16 & 0xff) / 255.0,
     (value >> 8 & 0xff) / 255.0,

@@ -1,6 +1,7 @@
 package tripaint.view.image
 
-import tripaint.model.{Color, ImageGrid}
+import tripaint.Color
+import tripaint.model.ImageGrid
 import tripaint.model.coords.{GlobalPixCoords, PixelCoords}
 import tripaint.model.image.RegularImage
 

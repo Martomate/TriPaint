@@ -1,6 +1,8 @@
 package tripaint.view.image
 
-import tripaint.model.{Color, FloodFillSearcher, ImageGrid, ImageGridChange, ImageGridColorLookup}
+import tripaint.Color
+import tripaint.ScalaFxExt.fromFXColor
+import tripaint.model.{FloodFillSearcher, ImageGrid, ImageGridChange, ImageGridColorLookup}
 import tripaint.model.coords.{GridCoords, PixelCoords, TriangleCoords}
 import tripaint.model.image.{GridCell, ImageChange}
 import tripaint.view.EditMode
@@ -36,11 +38,11 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane {
     }
 
     def setPrimaryColor(col: FXColor): Unit = {
-      setPrimaryColor(Color.fromFXColor(col))
+      setPrimaryColor(fromFXColor(col))
     }
 
     def setSecondaryColor(col: FXColor): Unit = {
-      setSecondaryColor(Color.fromFXColor(col))
+      setSecondaryColor(fromFXColor(col))
     }
   }
 

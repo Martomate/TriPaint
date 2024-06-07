@@ -1,7 +1,8 @@
 package tripaint.view.gui
 
+import tripaint.Color
 import tripaint.infrastructure.FileSystem
-import tripaint.model.{Color, ImageGrid}
+import tripaint.model.ImageGrid
 import tripaint.model.coords.{GridCoords, StorageCoords}
 import tripaint.model.image.{GridCell, ImageStorage}
 import tripaint.model.image.format.StorageFormat

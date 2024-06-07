@@ -1,6 +1,6 @@
 package tripaint.model.image
 
-import tripaint.model.Color
+import tripaint.Color
 import tripaint.model.coords.{GridCoords, TriangleCoords}
 import tripaint.util.{EventDispatcher, Tracker}
 

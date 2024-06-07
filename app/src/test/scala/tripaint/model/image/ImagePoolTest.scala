@@ -1,8 +1,10 @@
 package tripaint.model.image
 
+import tripaint.Color
+import tripaint.ScalaFxExt.given
 import tripaint.control.Actions
 import tripaint.infrastructure.FileSystem
-import tripaint.model.{Color, TriPaintModel}
+import tripaint.model.TriPaintModel
 import tripaint.model.coords.{GridCoords, StorageCoords}
 import tripaint.model.image.ImagePool.SaveLocation
 import tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
@@ -12,6 +14,7 @@ import munit.FunSuite
 import scalafx.scene.paint.Color as FXColor
 
 import java.io.File
+import scala.language.implicitConversions
 
 class ImagePoolTest extends FunSuite {
   val storageFormat: StorageFormat = SimpleStorageFormat

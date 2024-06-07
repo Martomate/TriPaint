@@ -1,6 +1,7 @@
 package tripaint.model.effects
 
-import tripaint.model.{Color, ColorLookup, FloodFillSearcher, ImageGrid, ImageGridColorLookup}
+import tripaint.Color
+import tripaint.model.{ColorLookup, FloodFillSearcher, ImageGrid, ImageGridColorLookup}
 import tripaint.model.coords.{GlobalPixCoords, GridCoords, PixelCoords}
 
 import scalafx.scene.paint.Color as FXColor

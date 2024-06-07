@@ -4,6 +4,7 @@ ThisBuild / name := "TriPaint"
 ThisBuild / organization := "com.martomate"
 ThisBuild / version := "1.3.4"
 ThisBuild / scalaVersion := "3.4.2"
+ThisBuild / scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")
 
 lazy val tripaint = project
   .in(file("."))
@@ -32,8 +33,7 @@ lazy val `tripaint-app` = project
   .enablePlugins(JlinkPlugin)
   .settings(
     Compile / mainClass := Some("tripaint.TriPaint"),
-    Compile / discoveredMainClasses := Seq(),
-    Compile / scalacOptions += "-deprecation"
+    Compile / discoveredMainClasses := Seq()
   )
   .settings(
     jlinkIgnoreMissingDependency := JlinkIgnore.only(

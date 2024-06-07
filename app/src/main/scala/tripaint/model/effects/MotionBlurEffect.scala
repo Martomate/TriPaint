@@ -1,6 +1,7 @@
 package tripaint.model.effects
 
-import tripaint.model.{Color, ColorLookup}
+import tripaint.Color
+import tripaint.model.ColorLookup
 import tripaint.model.coords.GlobalPixCoords
 
 class MotionBlurEffect(radius: Int) extends LocalEffect {

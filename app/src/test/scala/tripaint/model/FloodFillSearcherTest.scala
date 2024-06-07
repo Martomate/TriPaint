@@ -1,9 +1,9 @@
 package tripaint.model
 
+import tripaint.Color
 import tripaint.model.coords.GlobalPixCoords
 
 import munit.FunSuite
-import scalafx.scene.paint.Color
 
 class FloodFillSearcherTest extends FunSuite {
   private def makeWhite = new FloodFillSearcher(_ => Some(Color.White))

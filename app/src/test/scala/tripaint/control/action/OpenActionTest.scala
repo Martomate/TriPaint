@@ -1,8 +1,9 @@
 package tripaint.control.action
 
+import tripaint.Color
 import tripaint.control.Actions
 import tripaint.infrastructure.FileSystem
-import tripaint.model.{Color, TriPaintModel}
+import tripaint.model.TriPaintModel
 import tripaint.model.coords.{GridCoords, StorageCoords}
 import tripaint.model.image.RegularImage
 import tripaint.model.image.format.SimpleStorageFormat

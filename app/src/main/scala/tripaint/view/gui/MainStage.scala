@@ -1,6 +1,8 @@
 package tripaint.view.gui
 
-import tripaint.model.{Color, TriPaintModel}
+import tripaint.Color
+import tripaint.ScalaFxExt.{*, given}
+import tripaint.model.TriPaintModel
 import tripaint.model.effects.{BlurEffect, MotionBlurEffect, RandomNoiseEffect}
 import tripaint.model.image.{GridCell, ImagePool, ImageStorage}
 import tripaint.model.image.format.{RecursiveStorageFormat, SimpleStorageFormat}
@@ -24,6 +26,7 @@ import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
 
 import java.io.File
+import scala.language.implicitConversions
 import scala.util.Try
 
 class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
@@ -200,7 +203,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
       resultConverter = {
         case ButtonType.OK =>
           Try((new FXColor(loColorPicker.value()), new FXColor(hiColorPicker.value())))
-            .map((lo, hi) => (Color.fromFXColor(lo), Color.fromFXColor(hi)))
+            .map((lo, hi) => (fromFXColor(lo), fromFXColor(hi)))
             .getOrElse(null)
         case _ => null
       },

@@ -1,5 +1,6 @@
 package tripaint.model
 
+import tripaint.Color
 import tripaint.infrastructure.FileSystem
 import tripaint.model.coords.{GridCoords, StorageCoords, TriangleCoords}
 import tripaint.model.image.{
