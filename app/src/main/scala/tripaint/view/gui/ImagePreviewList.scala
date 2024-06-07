@@ -1,10 +1,11 @@
 package tripaint.view.gui
 
 import tripaint.coords.StorageCoords
+import tripaint.image.ImageStorage
+import tripaint.image.format.SimpleStorageFormat
 import tripaint.model.ImageGrid
-import tripaint.model.image.{GridCell, ImagePool, ImageStorage}
+import tripaint.model.image.{GridCell, ImagePool}
 import tripaint.model.image.ImagePool.SaveLocation
-import tripaint.model.image.format.SimpleStorageFormat
 import tripaint.view.image.TriImageForPreview
 
 import scalafx.beans.property.ObjectProperty

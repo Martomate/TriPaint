@@ -1,4 +1,4 @@
-package tripaint.model.image.format
+package tripaint.image.format
 
 class RecursiveStorageFormatTest extends StorageFormatTest {
   test("transformToStorage should transform correctly") {

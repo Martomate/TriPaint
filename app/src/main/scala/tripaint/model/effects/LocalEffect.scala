@@ -4,8 +4,6 @@ import tripaint.{Color, ColorLookup, FloodFillSearcher}
 import tripaint.coords.{GlobalPixCoords, GridCoords, PixelCoords}
 import tripaint.model.{ImageGrid, ImageGridColorLookup}
 
-import scalafx.scene.paint.Color as FXColor
-
 abstract class LocalEffect extends Effect {
 
   protected def predicate(image: ColorLookup, here: GlobalPixCoords)(

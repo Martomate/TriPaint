@@ -2,8 +2,8 @@ package tripaint.view.image
 
 import tripaint.Color
 import tripaint.coords.{GlobalPixCoords, PixelCoords}
+import tripaint.image.RegularImage
 import tripaint.model.ImageGrid
-import tripaint.model.image.RegularImage
 
 import javafx.scene.image.PixelFormat
 import scalafx.scene.canvas.Canvas

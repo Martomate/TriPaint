@@ -3,10 +3,10 @@ package tripaint.control.action
 import tripaint.Color
 import tripaint.control.Actions
 import tripaint.coords.{GridCoords, StorageCoords}
+import tripaint.image.RegularImage
+import tripaint.image.format.SimpleStorageFormat
 import tripaint.infrastructure.FileSystem
 import tripaint.model.TriPaintModel
-import tripaint.model.image.RegularImage
-import tripaint.model.image.format.SimpleStorageFormat
 import tripaint.view.FileOpenSettings
 
 import munit.FunSuite

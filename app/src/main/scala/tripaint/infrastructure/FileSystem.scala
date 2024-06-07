@@ -1,6 +1,6 @@
 package tripaint.infrastructure
 
-import tripaint.model.image.RegularImage
+import tripaint.image.RegularImage
 import tripaint.util.{EventDispatcher, Tracker}
 
 import java.awt.image.BufferedImage

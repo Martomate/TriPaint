@@ -1,8 +1,8 @@
-package tripaint.model.image
+package tripaint.image
 
 import tripaint.Color
 import tripaint.coords.StorageCoords
-import tripaint.model.image.format.SimpleStorageFormat
+import tripaint.image.format.SimpleStorageFormat
 
 import munit.FunSuite
 
@@ -235,7 +235,7 @@ class RegularImageTest extends FunSuite {
 
   test("overwritePartOfImage should write image if it doesn't exist") {
     val file = new File("file.png")
-    val location = ImagePool.SaveLocation(file)
+    val offset = StorageCoords(0, 0)
     val format = SimpleStorageFormat
 
     val storage = ImageStorage.fill(16, Color.Blue)
@@ -247,7 +247,7 @@ class RegularImageTest extends FunSuite {
     expectedImage.pasteImage(StorageCoords(0, 0), storage.toRegularImage(format))
 
     val storedImage =
-      RegularImage.fromBaseAndOverlay(None, storage.toRegularImage(format), location.offset)
+      RegularImage.fromBaseAndOverlay(None, storage.toRegularImage(format), offset)
 
     assertEquals(storedImage, expectedImage)
   }

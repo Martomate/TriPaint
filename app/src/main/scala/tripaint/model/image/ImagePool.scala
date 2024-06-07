@@ -1,7 +1,8 @@
 package tripaint.model.image
 
 import tripaint.coords.StorageCoords
-import tripaint.model.image.format.StorageFormat
+import tripaint.image.ImageStorage
+import tripaint.image.format.StorageFormat
 import tripaint.util.{InjectiveHashMap, InjectiveMap}
 
 import java.io.File

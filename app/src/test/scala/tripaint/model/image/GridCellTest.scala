@@ -1,11 +1,11 @@
-package tripaint.model.image.content
+package tripaint.model.image
 
 import tripaint.Color
 import tripaint.coords.{GridCoords, TriangleCoords}
+import tripaint.image.ImageStorage
+import tripaint.image.format.SimpleStorageFormat
 import tripaint.infrastructure.FileSystem
 import tripaint.model.ImageGrid
-import tripaint.model.image.{GridCell, ImagePool, ImageStorage}
-import tripaint.model.image.format.SimpleStorageFormat
 import tripaint.util.Tracker
 
 import munit.FunSuite

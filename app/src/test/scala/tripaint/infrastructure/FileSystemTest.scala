@@ -1,7 +1,7 @@
 package tripaint.infrastructure
 
 import tripaint.Color
-import tripaint.model.image.RegularImage
+import tripaint.image.RegularImage
 import tripaint.util.Tracker
 
 import munit.FunSuite

@@ -1,5 +1,7 @@
 package tripaint.model.image
 
+import tripaint.image.ImageStorage
+
 trait ImageSaveCollisionHandler {
   def shouldReplaceImage(
       currentImage: ImageStorage,

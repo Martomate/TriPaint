@@ -1,4 +1,4 @@
-package tripaint.model.image.format
+package tripaint.image.format
 
 import tripaint.coords.{StorageCoords, TriangleCoords}
 

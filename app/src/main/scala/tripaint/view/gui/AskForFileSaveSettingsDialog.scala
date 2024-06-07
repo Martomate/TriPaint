@@ -1,8 +1,8 @@
 package tripaint.view.gui
 
 import tripaint.coords.StorageCoords
-import tripaint.model.image.ImageStorage
-import tripaint.model.image.format.StorageFormat
+import tripaint.image.ImageStorage
+import tripaint.image.format.StorageFormat
 import tripaint.view.FileSaveSettings
 import tripaint.view.gui.DialogUtils.{getValueFromCustomDialog, makeGridPane}
 

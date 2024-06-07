@@ -2,17 +2,11 @@ package tripaint.model
 
 import tripaint.Color
 import tripaint.coords.{GridCoords, StorageCoords, TriangleCoords}
+import tripaint.image.{ImageStorage, RegularImage}
+import tripaint.image.format.SimpleStorageFormat
 import tripaint.infrastructure.FileSystem
-import tripaint.model.image.{
-  GridCell,
-  ImageChange,
-  ImagePool,
-  ImageSaveCollisionHandler,
-  ImageStorage,
-  RegularImage
-}
+import tripaint.model.image.{GridCell, ImageChange, ImagePool, ImageSaveCollisionHandler}
 import tripaint.model.image.ImagePool.{SaveInfo, SaveLocation}
-import tripaint.model.image.format.SimpleStorageFormat
 import tripaint.util.Tracker
 
 import munit.FunSuite

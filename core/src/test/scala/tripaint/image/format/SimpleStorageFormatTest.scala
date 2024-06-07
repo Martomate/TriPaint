@@ -1,4 +1,4 @@
-package tripaint.model.image.format
+package tripaint.image.format
 
 class SimpleStorageFormatTest extends StorageFormatTest {
   test("transformToStorage should transform correctly") {

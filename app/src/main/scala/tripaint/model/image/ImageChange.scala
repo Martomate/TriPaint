@@ -2,6 +2,7 @@ package tripaint.model.image
 
 import tripaint.Color
 import tripaint.coords.TriangleCoords
+import tripaint.image.ImageStorage
 import tripaint.model.Change
 
 import scala.collection.mutable.ArrayBuffer

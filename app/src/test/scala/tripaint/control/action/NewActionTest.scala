@@ -3,9 +3,9 @@ package tripaint.control.action
 import tripaint.Color
 import tripaint.control.Actions
 import tripaint.coords.GridCoords
+import tripaint.image.RegularImage
+import tripaint.image.format.SimpleStorageFormat
 import tripaint.model.TriPaintModel
-import tripaint.model.image.RegularImage
-import tripaint.model.image.format.SimpleStorageFormat
 
 import munit.FunSuite
 

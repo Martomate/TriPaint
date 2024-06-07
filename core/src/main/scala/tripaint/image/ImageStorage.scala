@@ -1,8 +1,8 @@
-package tripaint.model.image
+package tripaint.image
 
 import tripaint.Color
 import tripaint.coords.{StorageCoords, TriangleCoords}
-import tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
+import tripaint.image.format.{SimpleStorageFormat, StorageFormat}
 import tripaint.util.{EventDispatcher, Tracker}
 
 import scala.util.Try
