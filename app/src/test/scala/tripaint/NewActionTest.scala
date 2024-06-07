@@ -1,8 +1,5 @@
-package tripaint.control.action
+package tripaint
 
-import tripaint.Color
-import tripaint.TriPaintModel
-import tripaint.control.Actions
 import tripaint.coords.GridCoords
 import tripaint.image.RegularImage
 import tripaint.image.format.SimpleStorageFormat

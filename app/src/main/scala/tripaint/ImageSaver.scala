@@ -3,7 +3,6 @@ package tripaint
 import tripaint.grid.ImageGrid
 import tripaint.image.{ImageStorage, RegularImage}
 import tripaint.image.ImagePool.{SaveInfo, SaveLocation}
-import tripaint.infrastructure.FileSystem
 
 object ImageSaver {
   def saveImage(

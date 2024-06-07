@@ -1,14 +1,11 @@
-package tripaint.control
+package tripaint
 
-import tripaint.{Color, ImageSaver}
-import tripaint.TriPaintModel
 import tripaint.coords.{GridCoords, StorageCoords}
 import tripaint.effects.Effect
-import tripaint.grid.{GridCell, ImageChange, ImageGrid, ImageGridChange, ImageSaveCollisionHandler}
+import tripaint.grid.*
 import tripaint.image.{ImagePool, ImageStorage, RegularImage}
 import tripaint.image.ImagePool.{SaveInfo, SaveLocation}
 import tripaint.image.format.StorageFormat
-import tripaint.infrastructure.FileSystem
 import tripaint.util.CachedLoader
 import tripaint.view.{FileOpenSettings, FileSaveSettings}
 

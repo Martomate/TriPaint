@@ -5,7 +5,6 @@ import tripaint.grid.ImageGrid
 import tripaint.image.{ImageStorage, RegularImage}
 import tripaint.image.ImagePool.{SaveInfo, SaveLocation}
 import tripaint.image.format.SimpleStorageFormat
-import tripaint.infrastructure.FileSystem
 import tripaint.util.Tracker
 
 import munit.FunSuite

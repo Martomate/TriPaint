@@ -1,12 +1,11 @@
-package tripaint.control
+package tripaint
 
+import tripaint.{Actions, TriPaintModel}
 import tripaint.ScalaFxExt.given
-import tripaint.TriPaintModel
 import tripaint.coords.{GridCoords, StorageCoords}
 import tripaint.image.{ImageStorage, RegularImage}
 import tripaint.image.ImagePool.SaveLocation
 import tripaint.image.format.{SimpleStorageFormat, StorageFormat}
-import tripaint.infrastructure.FileSystem
 import tripaint.view.FileOpenSettings
 
 import munit.FunSuite

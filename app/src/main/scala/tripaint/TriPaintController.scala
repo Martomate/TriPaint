@@ -1,16 +1,9 @@
-package tripaint.control
+package tripaint
 
-import tripaint.TriPaintModel
 import tripaint.coords.GridCoords
-import tripaint.effects.{
-  BlurEffect,
-  CellEffect,
-  MotionBlurEffect,
-  RandomNoiseEffect,
-  ScrambleEffect
-}
+import tripaint.effects.*
 import tripaint.grid.GridCell
-import tripaint.view.{TriPaintView, TriPaintViewFactory, TriPaintViewListener}
+import tripaint.view.{TriPaintView, TriPaintViewListener}
 import tripaint.view.gui.UIAction
 
 class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFactory)

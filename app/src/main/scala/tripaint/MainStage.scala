@@ -1,12 +1,12 @@
-package tripaint.view.gui
+package tripaint
 
-import tripaint.{Color, TriPaintModel}
 import tripaint.ScalaFxExt.{*, given}
 import tripaint.effects.{BlurEffect, MotionBlurEffect, RandomNoiseEffect}
 import tripaint.grid.GridCell
 import tripaint.image.{ImagePool, ImageStorage}
 import tripaint.image.format.{RecursiveStorageFormat, SimpleStorageFormat}
 import tripaint.view.*
+import tripaint.view.gui.*
 import tripaint.view.image.ImageGridPane
 
 import scalafx.application.JFXApp3.PrimaryStage

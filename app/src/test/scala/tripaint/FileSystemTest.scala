@@ -1,4 +1,4 @@
-package tripaint.infrastructure
+package tripaint
 
 import tripaint.Color
 import tripaint.image.RegularImage

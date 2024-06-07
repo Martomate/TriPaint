@@ -39,6 +39,7 @@ object ImageTabPane {
       b.selected.onChange { (_, _, selected) =>
         image.setEditable(selected)
       }
+      b.selected = image.editable
 
       b
     }
@@ -71,6 +72,7 @@ object ImageTabPane {
         star.visible = changed
       case _ =>
     }
+    star.visible = image.changed
 
     star
   }
