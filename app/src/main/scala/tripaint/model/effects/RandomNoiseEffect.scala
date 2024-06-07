@@ -2,7 +2,7 @@ package tripaint.model.effects
 
 import tripaint.{Color, HsbColor}
 import tripaint.coords.GridCoords
-import tripaint.model.ImageGrid
+import tripaint.grid.ImageGrid
 
 class RandomNoiseEffect(min: Color, max: Color) extends Effect {
   override def name: String = "Random noise"

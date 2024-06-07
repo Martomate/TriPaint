@@ -1,18 +1,17 @@
-package tripaint.model.image
+package tripaint.image
 
+import munit.FunSuite
+import scalafx.scene.paint.Color as FXColor
 import tripaint.Color
 import tripaint.ScalaFxExt.given
 import tripaint.control.Actions
 import tripaint.coords.{GridCoords, StorageCoords}
-import tripaint.image.{ImageStorage, RegularImage}
+import tripaint.image.{ImagePool, ImageStorage, RegularImage}
+import tripaint.image.ImagePool.SaveLocation
 import tripaint.image.format.{SimpleStorageFormat, StorageFormat}
 import tripaint.infrastructure.FileSystem
 import tripaint.model.TriPaintModel
-import tripaint.model.image.ImagePool.SaveLocation
 import tripaint.view.FileOpenSettings
-
-import munit.FunSuite
-import scalafx.scene.paint.Color as FXColor
 
 import java.io.File
 import scala.language.implicitConversions

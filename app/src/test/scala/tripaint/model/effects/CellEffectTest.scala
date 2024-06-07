@@ -2,9 +2,9 @@ package tripaint.model.effects
 
 import tripaint.Color
 import tripaint.coords.{GridCoords, TriangleCoords}
+import tripaint.grid.GridCell
+import tripaint.grid.ImageGrid
 import tripaint.image.ImageStorage
-import tripaint.model.ImageGrid
-import tripaint.model.image.GridCell
 
 import munit.FunSuite
 

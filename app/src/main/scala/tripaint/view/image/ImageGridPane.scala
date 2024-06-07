@@ -3,8 +3,7 @@ package tripaint.view.image
 import tripaint.{Color, FloodFillSearcher}
 import tripaint.ScalaFxExt.fromFXColor
 import tripaint.coords.{GridCoords, PixelCoords, TriangleCoords}
-import tripaint.model.{ImageGrid, ImageGridChange, ImageGridColorLookup}
-import tripaint.model.image.{GridCell, ImageChange}
+import tripaint.grid.{GridCell, ImageChange, ImageGrid, ImageGridChange, ImageGridColorLookup}
 import tripaint.view.EditMode
 
 import javafx.scene.input.{MouseButton, MouseEvent}

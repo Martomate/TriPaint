@@ -1,7 +1,7 @@
 package tripaint.model.effects
 
 import tripaint.coords.GridCoords
-import tripaint.model.ImageGrid
+import tripaint.grid.ImageGrid
 
 import scala.util.Random
 

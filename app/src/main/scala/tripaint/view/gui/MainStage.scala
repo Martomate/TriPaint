@@ -2,11 +2,11 @@ package tripaint.view.gui
 
 import tripaint.Color
 import tripaint.ScalaFxExt.{*, given}
-import tripaint.image.ImageStorage
+import tripaint.grid.GridCell
+import tripaint.image.{ImagePool, ImageStorage}
 import tripaint.image.format.{RecursiveStorageFormat, SimpleStorageFormat}
 import tripaint.model.TriPaintModel
 import tripaint.model.effects.{BlurEffect, MotionBlurEffect, RandomNoiseEffect}
-import tripaint.model.image.{GridCell, ImagePool}
 import tripaint.view.{
   EditMode,
   FileOpenSettings,

@@ -1,4 +1,6 @@
-package tripaint.model
+package tripaint.grid
+
+import tripaint.model.Change
 
 import scala.collection.mutable.ArrayBuffer
 

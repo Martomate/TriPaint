@@ -1,10 +1,9 @@
-package tripaint.model
+package tripaint.grid
 
 import tripaint.Color
 import tripaint.coords.{GridCoords, PixelCoords}
-import tripaint.image.ImageStorage
-import tripaint.model.image.{GridCell, ImagePool, ImageSaveCollisionHandler}
-import tripaint.model.image.ImagePool.{SaveInfo, SaveLocation}
+import tripaint.image.{ImagePool, ImageStorage}
+import tripaint.image.ImagePool.{SaveInfo, SaveLocation}
 import tripaint.util.{EventDispatcher, Tracker}
 
 import scala.annotation.targetName

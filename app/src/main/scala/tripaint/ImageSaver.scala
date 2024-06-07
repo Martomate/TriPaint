@@ -1,9 +1,9 @@
 package tripaint
 
+import tripaint.grid.ImageGrid
 import tripaint.image.{ImageStorage, RegularImage}
+import tripaint.image.ImagePool.{SaveInfo, SaveLocation}
 import tripaint.infrastructure.FileSystem
-import tripaint.model.ImageGrid
-import tripaint.model.image.ImagePool.{SaveInfo, SaveLocation}
 
 object ImageSaver {
   def saveImage(

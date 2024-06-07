@@ -2,7 +2,7 @@ package tripaint.model.effects
 
 import tripaint.{Color, ColorLookup, FloodFillSearcher}
 import tripaint.coords.{GlobalPixCoords, GridCoords, PixelCoords}
-import tripaint.model.{ImageGrid, ImageGridColorLookup}
+import tripaint.grid.{ImageGrid, ImageGridColorLookup}
 
 abstract class LocalEffect extends Effect {
 

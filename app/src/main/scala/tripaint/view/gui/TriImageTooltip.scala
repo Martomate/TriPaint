@@ -1,8 +1,8 @@
 package tripaint.view.gui
 
 import tripaint.coords.StorageCoords
-import tripaint.image.ImageStorage
-import tripaint.model.image.{GridCell, ImagePool}
+import tripaint.grid.GridCell
+import tripaint.image.{ImagePool, ImageStorage}
 
 import scalafx.scene.control.Tooltip
 

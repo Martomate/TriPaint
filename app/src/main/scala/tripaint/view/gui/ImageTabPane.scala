@@ -1,6 +1,7 @@
 package tripaint.view.gui
 
-import tripaint.model.image.{GridCell, ImagePool}
+import tripaint.grid.GridCell
+import tripaint.image.ImagePool
 import tripaint.view.image.TriImageForPreview
 
 import scalafx.geometry.Pos

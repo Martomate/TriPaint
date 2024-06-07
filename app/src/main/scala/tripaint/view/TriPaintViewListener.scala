@@ -1,6 +1,6 @@
 package tripaint.view
 
-import tripaint.model.image.GridCell
+import tripaint.grid.GridCell
 import tripaint.view.gui.UIAction
 
 trait TriPaintViewListener {

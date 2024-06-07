@@ -1,11 +1,11 @@
 package tripaint.view.gui
 
 import tripaint.coords.StorageCoords
+import tripaint.grid.GridCell
+import tripaint.grid.ImageGrid
+import tripaint.image.ImagePool.SaveLocation
 import tripaint.image.ImageStorage
 import tripaint.image.format.SimpleStorageFormat
-import tripaint.model.ImageGrid
-import tripaint.model.image.{GridCell, ImagePool}
-import tripaint.model.image.ImagePool.SaveLocation
 import tripaint.view.image.TriImageForPreview
 
 import scalafx.beans.property.ObjectProperty
@@ -64,7 +64,7 @@ object ImagePreview {
   def fromImageContent(
       content: GridCell,
       previewSize: Int,
-      locationOfImage: ImageStorage => Option[ImagePool.SaveLocation]
+      locationOfImage: ImageStorage => Option[SaveLocation]
   ): ImageView = {
     val preview = new TriImageForPreview(content, previewSize)
     val tooltip = TriImageTooltip.fromImagePool(content, locationOfImage)

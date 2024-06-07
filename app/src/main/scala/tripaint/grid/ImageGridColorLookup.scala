@@ -1,4 +1,4 @@
-package tripaint.model
+package tripaint.grid
 
 import tripaint.{Color, ColorLookup}
 import tripaint.coords.{GlobalPixCoords, PixelCoords}

@@ -1,11 +1,11 @@
 package tripaint
 
 import tripaint.coords.StorageCoords
+import tripaint.grid.ImageGrid
 import tripaint.image.{ImageStorage, RegularImage}
+import tripaint.image.ImagePool.{SaveInfo, SaveLocation}
 import tripaint.image.format.SimpleStorageFormat
 import tripaint.infrastructure.FileSystem
-import tripaint.model.ImageGrid
-import tripaint.model.image.ImagePool.{SaveInfo, SaveLocation}
 import tripaint.util.Tracker
 
 import munit.FunSuite

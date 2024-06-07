@@ -1,7 +1,8 @@
 package tripaint.model
 
+import tripaint.grid.ImageGrid
+import tripaint.image.ImagePool
 import tripaint.infrastructure.FileSystem
-import tripaint.model.image.ImagePool
 
 class TriPaintModel(val fileSystem: FileSystem, initialImageSize: Int) {
   val imagePool: ImagePool = new ImagePool()

@@ -2,11 +2,10 @@ package tripaint.view.gui
 
 import tripaint.Color
 import tripaint.coords.{GridCoords, StorageCoords}
+import tripaint.grid.{GridCell, ImageGrid}
 import tripaint.image.ImageStorage
 import tripaint.image.format.StorageFormat
 import tripaint.infrastructure.FileSystem
-import tripaint.model.ImageGrid
-import tripaint.model.image.GridCell
 import tripaint.view.FileOpenSettings
 import tripaint.view.gui.DialogUtils.{getValueFromCustomDialog, makeGridPane}
 import tripaint.view.image.TriImageForPreview

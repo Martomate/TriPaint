@@ -1,6 +1,7 @@
 package tripaint.control
 
 import tripaint.coords.GridCoords
+import tripaint.grid.GridCell
 import tripaint.model.TriPaintModel
 import tripaint.model.effects.{
   BlurEffect,
@@ -9,7 +10,6 @@ import tripaint.model.effects.{
   RandomNoiseEffect,
   ScrambleEffect
 }
-import tripaint.model.image.GridCell
 import tripaint.view.{TriPaintView, TriPaintViewFactory, TriPaintViewListener}
 import tripaint.view.gui.UIAction
 

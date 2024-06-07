@@ -2,8 +2,9 @@ package tripaint.view
 
 import tripaint.Color
 import tripaint.coords.StorageCoords
+import tripaint.grid.GridCell
+import tripaint.grid.ImageSaveCollisionHandler
 import tripaint.image.format.StorageFormat
-import tripaint.model.image.{GridCell, ImageSaveCollisionHandler}
 
 import java.io.File
 

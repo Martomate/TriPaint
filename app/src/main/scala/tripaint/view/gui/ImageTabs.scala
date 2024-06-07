@@ -1,7 +1,8 @@
 package tripaint.view.gui
 
-import tripaint.model.ImageGrid
-import tripaint.model.image.{GridCell, ImagePool}
+import tripaint.grid.GridCell
+import tripaint.grid.ImageGrid
+import tripaint.image.ImagePool
 import tripaint.view.image.TriImageForPreview
 
 import scalafx.scene.layout.{StackPane, TilePane}

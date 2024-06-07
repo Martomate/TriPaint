@@ -1,8 +1,8 @@
 package tripaint.view.image
 
 import tripaint.coords.TriangleCoords
+import tripaint.grid.GridCell
 import tripaint.image.ImageStorage
-import tripaint.model.image.GridCell
 
 import scalafx.scene.SnapshotParameters
 import scalafx.scene.image.Image
