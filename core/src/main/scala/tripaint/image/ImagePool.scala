@@ -1,7 +1,6 @@
 package tripaint.image
 
 import tripaint.coords.StorageCoords
-import tripaint.image.ImageStorage
 import tripaint.image.format.StorageFormat
 import tripaint.util.{InjectiveHashMap, InjectiveMap}
 

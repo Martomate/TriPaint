@@ -1,4 +1,4 @@
-package tripaint.model.effects
+package tripaint.effects
 
 import tripaint.{Color, HsbColor}
 import tripaint.coords.GridCoords

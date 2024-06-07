@@ -30,7 +30,16 @@ object ImageTabPane {
       val b = new ToggleButton
       b.graphic = preview
       b.tooltip = TriImageTooltip.fromImagePool(image, imagePool.locationOf)
-      b.selected <==> image.editableProperty
+
+      image.trackChanges {
+        case GridCell.Event.StateUpdated(editable, _) =>
+          b.selected = editable
+        case _ =>
+      }
+      b.selected.onChange { (_, _, selected) =>
+        image.setEditable(selected)
+      }
+
       b
     }
 
@@ -56,7 +65,13 @@ object ImageTabPane {
     star.image = new Image("/icons/star.png")
     star.alignmentInParent = Pos.TopLeft
     star.mouseTransparent = true
-    star.visible <== image.changedProperty
+
+    image.trackChanges {
+      case GridCell.Event.StateUpdated(_, changed) =>
+        star.visible = changed
+      case _ =>
+    }
+
     star
   }
 }

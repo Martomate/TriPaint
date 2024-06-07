@@ -1,4 +1,4 @@
-package tripaint.model.effects
+package tripaint.effects
 
 import tripaint.{Color, ColorLookup, FloodFillSearcher}
 import tripaint.coords.{GlobalPixCoords, GridCoords, PixelCoords}

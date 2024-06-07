@@ -1,39 +1,22 @@
-package tripaint.image
+package tripaint.control
 
-import munit.FunSuite
-import scalafx.scene.paint.Color as FXColor
-import tripaint.Color
 import tripaint.ScalaFxExt.given
-import tripaint.control.Actions
+import tripaint.TriPaintModel
 import tripaint.coords.{GridCoords, StorageCoords}
-import tripaint.image.{ImagePool, ImageStorage, RegularImage}
+import tripaint.image.{ImageStorage, RegularImage}
 import tripaint.image.ImagePool.SaveLocation
 import tripaint.image.format.{SimpleStorageFormat, StorageFormat}
 import tripaint.infrastructure.FileSystem
-import tripaint.model.TriPaintModel
 import tripaint.view.FileOpenSettings
+
+import munit.FunSuite
+import scalafx.scene.paint.Color as FXColor
 
 import java.io.File
 import scala.language.implicitConversions
 
-class ImagePoolTest extends FunSuite {
+class ActionsTest extends FunSuite {
   val storageFormat: StorageFormat = SimpleStorageFormat
-
-  test("locationOf should return None if the image doesn't exist") {
-    val image = ImageStorage.fill(2, Color.Black)
-    assertEquals(new ImagePool().locationOf(image), None)
-  }
-
-  test("locationOf should return the location of the image if it exists") {
-    val image = ImageStorage.fill(2, Color.Black)
-    val location = SaveLocation(null)
-    val info = ImagePool.SaveInfo(null)
-
-    val f = new ImagePool()
-    f.set(image, location, info)
-
-    assertEquals(f.locationOf(image), Some(location))
-  }
 
   test("Actions.openImage should do nothing if loading failed") {
     val location = SaveLocation(null)

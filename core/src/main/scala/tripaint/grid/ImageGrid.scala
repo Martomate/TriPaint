@@ -153,6 +153,7 @@ class ImageGrid(init_imageSize: Int) {
         dispatcher.notify(ImageGrid.Event.PixelChanged(PixelCoords(cell, pix), from, to))
       case GridCell.Event.ImageChangedALot =>
         dispatcher.notify(ImageGrid.Event.ImageChangedALot(cell))
+      case _ =>
     }
   }
 }

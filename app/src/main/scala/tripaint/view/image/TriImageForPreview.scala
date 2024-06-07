@@ -36,6 +36,7 @@ class TriImageForPreview(content: GridCell, previewWidth: Double) extends Pane {
         drawTriangle(coords)
       case ImageChangedALot =>
         redraw()
+      case _ =>
     }
   }
 

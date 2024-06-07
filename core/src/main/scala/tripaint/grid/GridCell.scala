@@ -5,12 +5,13 @@ import tripaint.coords.{GridCoords, TriangleCoords}
 import tripaint.image.ImageStorage
 import tripaint.util.{EventDispatcher, Tracker}
 
-import scalafx.beans.property.{BooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanWrapper}
-
-object GridCell:
-  enum Event:
+object GridCell {
+  enum Event {
     case PixelChanged(coords: TriangleCoords, from: Color, to: Color)
     case ImageChangedALot
+    case StateUpdated(editable: Boolean, changed: Boolean)
+  }
+}
 
 class GridCell(val coords: GridCoords, init_image: ImageStorage):
   private var _image: ImageStorage = init_image
@@ -22,17 +23,25 @@ class GridCell(val coords: GridCoords, init_image: ImageStorage):
 
   def storage: ImageStorage = _image
 
-  val editableProperty: BooleanProperty = BooleanProperty(true)
-  def editable: Boolean = editableProperty.value
+  private var _editable = true
+  def editable: Boolean = _editable
+  def setEditable(editable: Boolean): Unit = {
+    _editable = editable
+    dispatcher.notify(GridCell.Event.StateUpdated(editable, changed))
+  }
 
   def onImageChangedALot(): Unit =
     dispatcher.notify(GridCell.Event.ImageChangedALot)
 
-  private val _changed: ReadOnlyBooleanWrapper = ReadOnlyBooleanWrapper(false)
-  def changed: Boolean = _changed.value
-  def changedProperty: ReadOnlyBooleanProperty = _changed.readOnlyProperty
+  private var _changed = false
+  def changed: Boolean = _changed
 
-  def setImageSaved(): Unit = _changed.value = false
+  def setImageSaved(): Unit = {
+    if _changed then {
+      _changed = false
+      dispatcher.notify(GridCell.Event.StateUpdated(editable, changed))
+    }
+  }
 
   def replaceImage(newImage: ImageStorage): Unit =
     _image = newImage
@@ -42,5 +51,8 @@ class GridCell(val coords: GridCoords, init_image: ImageStorage):
   private def onStorageChanged(event: ImageStorage.Event): Unit =
     event match
       case ImageStorage.Event.PixelChanged(coords, from, to) =>
-        _changed.value = true
+        if !_changed then {
+          _changed = true
+          dispatcher.notify(GridCell.Event.StateUpdated(editable, changed))
+        }
         dispatcher.notify(GridCell.Event.PixelChanged(coords, from, to))

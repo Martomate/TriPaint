@@ -1,6 +1,6 @@
 package tripaint.view
 
-import tripaint.model.TriPaintModel
+import tripaint.TriPaintModel
 
 trait TriPaintViewFactory {
   def createView(controls: TriPaintViewListener, model: TriPaintModel): TriPaintView

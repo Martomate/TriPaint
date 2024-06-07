@@ -1,7 +1,7 @@
 package tripaint
 
+import tripaint.TriPaintModel
 import tripaint.control.TriPaintController
-import tripaint.model.TriPaintModel
 import tripaint.view.gui.MainStage
 
 import scalafx.application.{JFXApp3, Platform}

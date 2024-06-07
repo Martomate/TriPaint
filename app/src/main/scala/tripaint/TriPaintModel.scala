@@ -1,4 +1,4 @@
-package tripaint.model
+package tripaint
 
 import tripaint.grid.ImageGrid
 import tripaint.image.ImagePool

@@ -1,6 +1,6 @@
 package tripaint.grid
 
-import tripaint.model.Change
+import tripaint.Change
 
 import scala.collection.mutable.ArrayBuffer
 

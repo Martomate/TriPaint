@@ -1,4 +1,4 @@
-package tripaint.model
+package tripaint
 
 trait Change {
   def undo(): Unit

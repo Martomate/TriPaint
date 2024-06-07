@@ -146,12 +146,12 @@ class ImageGridTest extends FunSuite with MockitoSugar {
     f.set(image2)
 
     assertEquals(f.selectedImages.sortBy(_.##), Seq(image, image2).sortBy(_.##))
-    image.editableProperty() = false
+    image.setEditable(false)
     assertEquals(f.selectedImages.sortBy(_.##), Seq(image2).sortBy(_.##))
-    image.editableProperty() = true
-    image2.editableProperty() = false
+    image.setEditable(true)
+    image2.setEditable(false)
     assertEquals(f.selectedImages.sortBy(_.##), Seq(image).sortBy(_.##))
-    image2.editableProperty() = true
+    image2.setEditable(true)
     assertEquals(f.selectedImages.sortBy(_.##), Seq(image, image2).sortBy(_.##))
   }
 

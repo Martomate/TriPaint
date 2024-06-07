@@ -1,4 +1,4 @@
-package tripaint.model.effects
+package tripaint.effects
 
 import tripaint.Color
 import tripaint.coords.{GridCoords, TriangleCoords}
