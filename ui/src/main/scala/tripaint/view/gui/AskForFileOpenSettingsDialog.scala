@@ -3,9 +3,8 @@ package tripaint.view.gui
 import tripaint.Color
 import tripaint.coords.{GridCoords, StorageCoords}
 import tripaint.grid.{GridCell, ImageGrid}
-import tripaint.image.ImageStorage
+import tripaint.image.{ImageStorage, RegularImage}
 import tripaint.image.format.StorageFormat
-import tripaint.infrastructure.FileSystem
 import tripaint.view.FileOpenSettings
 import tripaint.view.gui.DialogUtils.{getValueFromCustomDialog, makeGridPane}
 import tripaint.view.image.TriImageForPreview
@@ -26,7 +25,7 @@ object AskForFileOpenSettingsDialog {
       imagePreview: (File, Int, Int, Int),
       formats: Seq[(StorageFormat, String)],
       initiallySelectedFormat: Int,
-      fileSystem: FileSystem
+      readImage: File => Option[RegularImage]
   ): Option[FileOpenSettings] = {
     val (previewFile, imageSize, xCount, yCount) = imagePreview
     val (previewWidth, previewHeight) = (xCount * imageSize, yCount * imageSize)
@@ -77,7 +76,7 @@ object AskForFileOpenSettingsDialog {
       p
     }
 
-    val underlyingImage = fileSystem.readImage(previewFile).get
+    val underlyingImage = readImage(previewFile).get
 
     val wholeImage = new ImageView(SwingFXUtils.toFXImage(underlyingImage.toBufferedImage, null))
 

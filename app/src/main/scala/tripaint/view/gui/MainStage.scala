@@ -1,19 +1,12 @@
 package tripaint.view.gui
 
-import tripaint.Color
+import tripaint.{Color, TriPaintModel}
 import tripaint.ScalaFxExt.{*, given}
-import tripaint.TriPaintModel
 import tripaint.effects.{BlurEffect, MotionBlurEffect, RandomNoiseEffect}
 import tripaint.grid.GridCell
 import tripaint.image.{ImagePool, ImageStorage}
 import tripaint.image.format.{RecursiveStorageFormat, SimpleStorageFormat}
-import tripaint.view.{
-  EditMode,
-  FileOpenSettings,
-  FileSaveSettings,
-  TriPaintView,
-  TriPaintViewListener
-}
+import tripaint.view.*
 import tripaint.view.image.ImageGridPane
 
 import scalafx.application.JFXApp3.PrimaryStage
@@ -175,7 +168,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     val selectedImagesCoords = model.imageGrid.selectedImages.map(_.coords)
     val loColorPicker = new ColorPicker(FXColor.Black)
     val hiColorPicker = new ColorPicker(FXColor.White)
-    import DialogUtils._
+    import DialogUtils.*
 
     val (previewPane, updatePreview) = DialogUtils.makeImagePreviewList(images, model.imagePool)
 
@@ -250,7 +243,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
         RecursiveStorageFormat -> "Recursive format"
       ),
       0,
-      model.fileSystem
+      model.fileSystem.readImage
     )
   }
 
