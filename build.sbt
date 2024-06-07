@@ -1,41 +1,58 @@
-scalaVersion := "3.4.2"
+import Dependencies.*
 
-name := "TriPaint"
-organization := "com.martomate"
-version := "1.3.4"
+ThisBuild / name := "TriPaint"
+ThisBuild / organization := "com.martomate"
+ThisBuild / version := "1.3.4"
+ThisBuild / scalaVersion := "3.4.2"
 
-Compile / mainClass := Some("tripaint.TriPaint")
-Compile / discoveredMainClasses := Seq()
+lazy val tripaint = project
+  .in(file("."))
+  .aggregate(`tripaint-core`, `tripaint-ui`, `tripaint-app`)
 
-enablePlugins(LauncherJarPlugin)
-enablePlugins(JlinkPlugin)
+lazy val `tripaint-core` = project
+  .in(file("core"))
+  .settings(
+    libraryDependencies ++= Seq(MUnit, Mockito)
+  )
 
-jlinkIgnoreMissingDependency := JlinkIgnore.only(
-  "scalafx" -> "javafx.embed.swing",
-  "scalafx.embed.swing" -> "javafx.embed.swing",
-  "scalafx" -> "javafx.scene.web",
-  "scalafx.scene.web" -> "javafx.scene.web",
-  "scala.quoted" -> "scala",
-  "scala.quoted.runtime" -> "scala"
-)
+lazy val `tripaint-ui` = project
+  .in(file("ui"))
+  .dependsOn(`tripaint-core`)
+  .settings(
+    libraryDependencies ++= Seq(MUnit, Mockito),
+    libraryDependencies += ScalaFx,
+    libraryDependencies ++= JavaFxInclude,
+    excludeDependencies ++= JavaFxExclude
+  )
 
-jlinkOptions ++= Seq(
-  "--no-header-files",
-  "--no-man-pages",
-  "--strip-debug"
-)
-
-Compile / scalacOptions += "-deprecation"
-
-libraryDependencies ++= Seq(
-  "org.scalameta" %% "munit" % "1.0.0" % "test",
-  "org.scalatestplus" %% "mockito-4-5" % "3.2.12.0" % "test"
-)
-
-// Add dependency on ScalaFX library
-libraryDependencies += "org.scalafx" %% "scalafx" % "21.0.0-R32"
-libraryDependencies ++= Seq("base", "controls", "graphics", "media", "swing")
-  .map(m => "org.openjfx" % s"javafx-$m" % "21.0.1")
-
-excludeDependencies ++= Seq("fxml", "web")
-  .map(m => "org.openjfx" % s"javafx-$m")
+lazy val `tripaint-app` = project
+  .in(file("app"))
+  .dependsOn(`tripaint-core`, `tripaint-ui`)
+  .enablePlugins(LauncherJarPlugin)
+  .enablePlugins(JlinkPlugin)
+  .settings(
+    Compile / mainClass := Some("tripaint.TriPaint"),
+    Compile / discoveredMainClasses := Seq(),
+    Compile / scalacOptions += "-deprecation"
+  )
+  .settings(
+    jlinkIgnoreMissingDependency := JlinkIgnore.only(
+      "scalafx" -> "javafx.embed.swing",
+      "scalafx.embed.swing" -> "javafx.embed.swing",
+      "scalafx" -> "javafx.scene.web",
+      "scalafx.scene.web" -> "javafx.scene.web",
+      "scala.quoted" -> "scala",
+      "scala.quoted.runtime" -> "scala"
+    ),
+    jlinkOptions ++= Seq(
+      "--no-header-files",
+      "--no-man-pages",
+      "--strip-debug"
+    )
+  )
+  .settings(
+    libraryDependencies ++= Seq(MUnit, Mockito),
+    libraryDependencies += ScalaFx,
+    libraryDependencies ++= JavaFxInclude,
+    excludeDependencies ++= JavaFxExclude
+  )
