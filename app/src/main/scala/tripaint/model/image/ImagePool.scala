@@ -1,6 +1,6 @@
 package tripaint.model.image
 
-import tripaint.model.coords.StorageCoords
+import tripaint.coords.StorageCoords
 import tripaint.model.image.format.StorageFormat
 import tripaint.util.{InjectiveHashMap, InjectiveMap}
 

@@ -1,8 +1,8 @@
 package tripaint.view.image
 
 import tripaint.Color
+import tripaint.coords.{GlobalPixCoords, PixelCoords}
 import tripaint.model.ImageGrid
-import tripaint.model.coords.{GlobalPixCoords, PixelCoords}
 import tripaint.model.image.RegularImage
 
 import javafx.scene.image.PixelFormat

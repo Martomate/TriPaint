@@ -1,7 +1,7 @@
 package tripaint.model.image
 
 import tripaint.Color
-import tripaint.model.coords.{GridCoords, TriangleCoords}
+import tripaint.coords.{GridCoords, TriangleCoords}
 import tripaint.util.{EventDispatcher, Tracker}
 
 import scalafx.beans.property.{BooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanWrapper}

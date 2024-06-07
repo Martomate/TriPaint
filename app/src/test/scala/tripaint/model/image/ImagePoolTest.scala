@@ -3,9 +3,9 @@ package tripaint.model.image
 import tripaint.Color
 import tripaint.ScalaFxExt.given
 import tripaint.control.Actions
+import tripaint.coords.{GridCoords, StorageCoords}
 import tripaint.infrastructure.FileSystem
 import tripaint.model.TriPaintModel
-import tripaint.model.coords.{GridCoords, StorageCoords}
 import tripaint.model.image.ImagePool.SaveLocation
 import tripaint.model.image.format.{SimpleStorageFormat, StorageFormat}
 import tripaint.view.FileOpenSettings

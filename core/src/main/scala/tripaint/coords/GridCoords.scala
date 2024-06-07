@@ -1,4 +1,4 @@
-package tripaint.model.coords
+package tripaint.coords
 
 case class GridCoords(x: Int, y: Int) {
   def center: (Double, Double) = {

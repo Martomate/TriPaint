@@ -1,6 +1,6 @@
 package tripaint.model
 
-import tripaint.model.coords.GridCoords
+import tripaint.coords.GridCoords
 import tripaint.model.image.ImageChange
 
 class ImageGridChange(val changes: Map[GridCoords, ImageChange]) extends Change {

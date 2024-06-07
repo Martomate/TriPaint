@@ -1,7 +1,7 @@
 package tripaint.model
 
 import tripaint.Color
-import tripaint.model.coords.{GlobalPixCoords, GridCoords, TriangleCoords}
+import tripaint.coords.{GlobalPixCoords, GridCoords, TriangleCoords}
 import tripaint.model.image.{GridCell, ImageStorage}
 
 import munit.FunSuite

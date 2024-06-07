@@ -1,7 +1,7 @@
 package tripaint.view.gui
 
+import tripaint.coords.StorageCoords
 import tripaint.model.ImageGrid
-import tripaint.model.coords.StorageCoords
 import tripaint.model.image.{GridCell, ImagePool, ImageStorage}
 import tripaint.model.image.ImagePool.SaveLocation
 import tripaint.model.image.format.SimpleStorageFormat

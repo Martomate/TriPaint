@@ -1,4 +1,4 @@
-package tripaint.model.coords
+package tripaint.coords
 
 case class PixelCoords(image: GridCoords, pix: TriangleCoords) {
   def neighbours(imageSize: Int): Seq[PixelCoords] = {

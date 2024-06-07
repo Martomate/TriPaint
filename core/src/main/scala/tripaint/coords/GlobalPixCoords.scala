@@ -1,4 +1,4 @@
-package tripaint.model.coords
+package tripaint.coords
 
 /** Like TriImageCoords but for pixels (on the entire area) */
 case class GlobalPixCoords(x: Int, y: Int) {

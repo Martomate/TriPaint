@@ -1,8 +1,8 @@
 package tripaint.model.effects
 
 import tripaint.Color
+import tripaint.coords.GlobalPixCoords
 import tripaint.model.ColorLookup
-import tripaint.model.coords.GlobalPixCoords
 
 class CellEffect extends LocalEffect {
   def name: String = "Cell"

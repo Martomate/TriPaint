@@ -1,6 +1,6 @@
 package tripaint.model.image.format
 
-import tripaint.model.coords.{StorageCoords, TriangleCoords}
+import tripaint.coords.{StorageCoords, TriangleCoords}
 
 object SimpleStorageFormat extends StorageFormat {
   override def transform(coords: TriangleCoords): StorageCoords =

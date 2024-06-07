@@ -2,8 +2,8 @@ package tripaint.model.effects
 
 import tripaint.Color
 import tripaint.ScalaFxExt.{*, given}
+import tripaint.coords.GridCoords
 import tripaint.model.ImageGrid
-import tripaint.model.coords.GridCoords
 
 import scalafx.scene.paint.Color as FXColor
 

@@ -1,9 +1,9 @@
 package tripaint.model.image.content
 
 import tripaint.Color
+import tripaint.coords.{GridCoords, TriangleCoords}
 import tripaint.infrastructure.FileSystem
 import tripaint.model.ImageGrid
-import tripaint.model.coords.{GridCoords, TriangleCoords}
 import tripaint.model.image.{GridCell, ImagePool, ImageStorage}
 import tripaint.model.image.format.SimpleStorageFormat
 import tripaint.util.Tracker

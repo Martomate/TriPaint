@@ -1,6 +1,6 @@
 package tripaint.model.image.format
 
-import tripaint.model.coords.{StorageCoords, TriangleCoords}
+import tripaint.coords.{StorageCoords, TriangleCoords}
 
 /** This recursive format is designed to map small triangles into small squares If the storage image
   * is scaled up by a factor of 2, the corresponding triangle image looks the same.

@@ -1,8 +1,8 @@
 package tripaint.model.effects
 
 import tripaint.Color
+import tripaint.coords.{GridCoords, TriangleCoords}
 import tripaint.model.ImageGrid
-import tripaint.model.coords.{GridCoords, TriangleCoords}
 import tripaint.model.image.{GridCell, ImageStorage}
 
 import munit.FunSuite

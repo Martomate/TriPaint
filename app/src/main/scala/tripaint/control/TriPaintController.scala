@@ -1,7 +1,7 @@
 package tripaint.control
 
+import tripaint.coords.GridCoords
 import tripaint.model.TriPaintModel
-import tripaint.model.coords.GridCoords
 import tripaint.model.effects.{
   BlurEffect,
   CellEffect,

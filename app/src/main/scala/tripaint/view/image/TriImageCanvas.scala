@@ -2,7 +2,7 @@ package tripaint.view.image
 
 import tripaint.Color
 import tripaint.ScalaFxExt.*
-import tripaint.model.coords.TriangleCoords
+import tripaint.coords.TriangleCoords
 import tripaint.model.image.ImageStorage
 
 import javafx.scene.image.PixelFormat

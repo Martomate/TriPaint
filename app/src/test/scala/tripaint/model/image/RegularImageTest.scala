@@ -1,7 +1,7 @@
 package tripaint.model.image
 
 import tripaint.Color
-import tripaint.model.coords.StorageCoords
+import tripaint.coords.StorageCoords
 import tripaint.model.image.format.SimpleStorageFormat
 
 import munit.FunSuite

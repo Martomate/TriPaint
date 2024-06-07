@@ -1,6 +1,6 @@
 package tripaint.view.image
 
-import tripaint.model.coords.TriangleCoords
+import tripaint.coords.TriangleCoords
 
 class TriangleCoordsToReal(imageSize: Int, normToReal: (Double, Double) => (Double, Double)) {
   private val xs: Array[Double] = new Array(3)

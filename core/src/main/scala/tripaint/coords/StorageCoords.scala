@@ -1,4 +1,4 @@
-package tripaint.model.coords
+package tripaint.coords
 
 case class StorageCoords(x: Int, y: Int) {
   require(x >= 0, "x must be positive")

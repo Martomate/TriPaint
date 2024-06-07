@@ -1,8 +1,8 @@
 package tripaint.model.image
 
 import tripaint.Color
+import tripaint.coords.TriangleCoords
 import tripaint.model.Change
-import tripaint.model.coords.TriangleCoords
 
 import scala.collection.mutable.ArrayBuffer
 

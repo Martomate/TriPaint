@@ -1,6 +1,6 @@
 package tripaint.view.gui
 
-import tripaint.model.coords.StorageCoords
+import tripaint.coords.StorageCoords
 import tripaint.model.image.ImageStorage
 import tripaint.model.image.format.StorageFormat
 import tripaint.view.FileSaveSettings

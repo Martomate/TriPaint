@@ -1,8 +1,8 @@
 package tripaint.model
 
 import tripaint.Color
+import tripaint.coords.{GridCoords, PixelCoords}
 import tripaint.infrastructure.FileSystem
-import tripaint.model.coords.{GridCoords, PixelCoords}
 import tripaint.model.image.{
   GridCell,
   ImagePool,

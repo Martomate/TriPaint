@@ -1,4 +1,4 @@
-package tripaint.model.coords
+package tripaint.coords
 
 case class TriangleCoords(x: Int, y: Int) {
   require(x >= 0, s"x >= 0, x = $x")

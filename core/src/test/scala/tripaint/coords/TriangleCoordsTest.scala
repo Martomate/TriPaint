@@ -1,4 +1,4 @@
-package tripaint.model.coords
+package tripaint.coords
 
 import munit.FunSuite
 

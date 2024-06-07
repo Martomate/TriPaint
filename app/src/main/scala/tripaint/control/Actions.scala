@@ -1,9 +1,9 @@
 package tripaint.control
 
 import tripaint.Color
+import tripaint.coords.{GridCoords, StorageCoords}
 import tripaint.infrastructure.FileSystem
 import tripaint.model.{ImageGrid, ImageGridChange, TriPaintModel}
-import tripaint.model.coords.{GridCoords, StorageCoords}
 import tripaint.model.effects.Effect
 import tripaint.model.image.{
   GridCell,

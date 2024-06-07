@@ -1,6 +1,6 @@
 package tripaint.view.image
 
-import tripaint.model.coords.TriangleCoords
+import tripaint.coords.TriangleCoords
 
 import munit.FunSuite
 
