@@ -4,6 +4,7 @@ import tripaint.{Color, FloodFillSearcher}
 import tripaint.ScalaFxExt.fromFXColor
 import tripaint.coords.{GridCoords, PixelCoords, TriangleCoords}
 import tripaint.grid.{GridCell, ImageChange, ImageGrid, ImageGridChange, ImageGridColorLookup}
+import tripaint.util.Resource
 import tripaint.view.EditMode
 
 import javafx.scene.input.{MouseButton, MouseEvent}
@@ -14,7 +15,7 @@ import scalafx.scene.paint.Color as FXColor
 
 import scala.collection.mutable
 
-class ImageGridPane(imageGrid: ImageGrid) extends Pane {
+class ImageGridPane(imageGrid: ImageGrid, currentEditMode: Resource[EditMode]) extends Pane {
   private var xScroll: Double = 0
   private var yScroll: Double = 0
   private var zoom: Double = 1d
@@ -84,7 +85,7 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane {
       drag.x = e.getX
       drag.y = e.getY
 
-      EditMode.currentMode match {
+      currentEditMode.value match {
         case EditMode.Organize => // TODO: implement scale and rotation if (x, y) is close enough to a corner
           setScroll(xScroll + xDiff, yScroll + yDiff)
         case _ =>
@@ -169,7 +170,7 @@ class ImageGridPane(imageGrid: ImageGrid) extends Pane {
       image <- imageGrid(coords.image)
       color <- colorToUse
     } do {
-      EditMode.currentMode match {
+      currentEditMode.value match {
         case EditMode.Draw =>
           drawAt(image, coords.pix, color())
         case EditMode.Fill =>

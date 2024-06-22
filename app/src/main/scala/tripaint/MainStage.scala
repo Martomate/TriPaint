@@ -5,6 +5,7 @@ import tripaint.effects.{BlurEffect, MotionBlurEffect, RandomNoiseEffect}
 import tripaint.grid.GridCell
 import tripaint.image.{ImagePool, ImageStorage}
 import tripaint.image.format.{RecursiveStorageFormat, SimpleStorageFormat}
+import tripaint.util.{createResource, Resource}
 import tripaint.view.*
 import tripaint.view.gui.*
 import tripaint.view.image.ImageGridPane
@@ -26,11 +27,13 @@ import scala.util.Try
 class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     extends PrimaryStage
     with TriPaintView {
-  private val imageDisplay: ImageGridPane = new ImageGridPane(model.imageGrid)
+  private val (currentEditMode, setCurrentEditMode) = createResource(EditMode.Draw)
+
+  private val imageDisplay: ImageGridPane = new ImageGridPane(model.imageGrid, currentEditMode)
 
   private val menuBar: MenuBar = TheMenuBar.create(controls)
   private val toolBar: ToolBar = TheToolBar.create(controls)
-  private val toolBox: TilePane = ToolBox.create(EditMode.modes)
+  private val toolBox: TilePane = ToolBox.create(EditMode.all, currentEditMode, setCurrentEditMode)
   private val imageTabs: TilePane =
     ImageTabs.fromImagePool(model.imageGrid, model.imagePool, controls.requestImageRemoval)
   private val colorBox: VBox = makeColorBox()
@@ -63,9 +66,11 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     }
   }
 
-  EditMode.modes
-    .filter(_.shortCut != null)
-    .foreach(m => scene().getAccelerators.put(m.shortCut, () => m.toolboxButton.fire()))
+  for m <- EditMode.all do {
+    if m.shortCut != null then {
+      scene().getAccelerators.put(m.shortCut, () => setCurrentEditMode(m))
+    }
+  }
 
   private def makeColorBox() = {
     // overlay and imageDisplay
