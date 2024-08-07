@@ -7,11 +7,11 @@ import tripaint.grid.{GridCell, ImageChange, ImageGrid, ImageGridChange, ImageGr
 import tripaint.util.Resource
 import tripaint.view.EditMode
 
+import javafx.beans.property.{ObjectProperty, SimpleObjectProperty}
 import javafx.scene.input.{MouseButton, MouseEvent}
+import javafx.scene.layout.Pane
+import javafx.scene.paint.Color as FXColor
 import javafx.scene.shape.Rectangle
-import scalafx.beans.property.ObjectProperty
-import scalafx.scene.layout.Pane
-import scalafx.scene.paint.Color as FXColor
 
 import scala.collection.mutable
 
@@ -26,15 +26,15 @@ class ImageGridPane(imageGrid: ImageGrid, currentEditMode: Resource[EditMode]) e
   }
 
   object colors {
-    val primaryColor: ObjectProperty[Color] = ObjectProperty(Color.Black)
-    val secondaryColor: ObjectProperty[Color] = ObjectProperty(Color.White)
+    val primaryColor: ObjectProperty[Color] = new SimpleObjectProperty(Color.Black)
+    val secondaryColor: ObjectProperty[Color] = new SimpleObjectProperty(Color.White)
 
     def setPrimaryColor(col: Color): Unit = {
-      primaryColor.value = col
+      primaryColor.setValue(col)
     }
 
     def setSecondaryColor(col: Color): Unit = {
-      secondaryColor.value = col
+      secondaryColor.setValue(col)
     }
 
     def setPrimaryColor(col: FXColor): Unit = {
@@ -54,7 +54,7 @@ class ImageGridPane(imageGrid: ImageGrid, currentEditMode: Resource[EditMode]) e
   canvas.setScale(zoom)
   canvas.setDisplacement(xScroll, yScroll)
 
-  children.add(canvas)
+  this.getChildren.add(canvas)
 
   imageGrid.trackChanges(this.onImageGridEvent(_))
 
@@ -73,11 +73,11 @@ class ImageGridPane(imageGrid: ImageGrid, currentEditMode: Resource[EditMode]) e
 
   private def imageAt(x: Double, y: Double): Option[(GridCell, PixelCoords)] = {
     val pt = canvas.sceneToLocal(x, y)
-    val coords = PixelCoords(canvas.coordsAt(pt.x, pt.y), imageGrid.imageSize)
+    val coords = PixelCoords(canvas.coordsAt(pt.getX, pt.getY), imageGrid.imageSize)
     imageGrid.images.find(_.coords == coords.image).map((_, coords))
   }
 
-  onMouseDragged = e => {
+  this.setOnMouseDragged(e => {
     if !e.isConsumed then {
       val xDiff = e.getX - drag.x
       val yDiff = e.getY - drag.y
@@ -103,9 +103,9 @@ class ImageGridPane(imageGrid: ImageGrid, currentEditMode: Resource[EditMode]) e
           }
       }
     }
-  }
+  })
 
-  onMousePressed = e => {
+  this.setOnMousePressed(e => {
     if !e.isConsumed then {
       drag.x = e.getX
       drag.y = e.getY
@@ -117,9 +117,9 @@ class ImageGridPane(imageGrid: ImageGrid, currentEditMode: Resource[EditMode]) e
         mousePressedAt(coords, e.getButton, dragged = false)
       }
     }
-  }
+  })
 
-  onMouseReleased = e => {
+  this.setOnMouseReleased(e => {
     if !e.isConsumed
     then {
       val changes = mutable.Map.empty[GridCoords, ImageChange]
@@ -132,9 +132,9 @@ class ImageGridPane(imageGrid: ImageGrid, currentEditMode: Resource[EditMode]) e
 
       imageGrid.performChange(new ImageGridChange(changes.toMap))
     }
-  }
+  })
 
-  onScroll = e => {
+  this.setOnScroll(e => {
     val (dx, dy) = (e.getDeltaX, e.getDeltaY)
 
     if e.isControlDown then {
@@ -147,7 +147,7 @@ class ImageGridPane(imageGrid: ImageGrid, currentEditMode: Resource[EditMode]) e
     }
 
     canvas.redraw()
-  }
+  })
 
   private def setScroll(sx: Double, sy: Double): Unit = {
     xScroll = sx
@@ -172,11 +172,11 @@ class ImageGridPane(imageGrid: ImageGrid, currentEditMode: Resource[EditMode]) e
     } do {
       currentEditMode.value match {
         case EditMode.Draw =>
-          drawAt(image, coords.pix, color())
+          drawAt(image, coords.pix, color.get())
         case EditMode.Fill =>
-          fill(coords, color())
+          fill(coords, color.get())
         case EditMode.PickColor =>
-          color() = image.storage.getColor(coords.pix)
+          color.setValue(image.storage.getColor(coords.pix))
         case _ =>
       }
     }
@@ -185,7 +185,7 @@ class ImageGridPane(imageGrid: ImageGrid, currentEditMode: Resource[EditMode]) e
   private inline def clamp(a: Int, lo: Int, hi: Int): Int = Math.min(Math.max(a, lo), hi)
 
   private def updateCanvasAt(x: Double, y: Double): Unit = {
-    val (w, h) = (canvas.width().toInt, canvas.height().toInt)
+    val (w, h) = (canvas.getWidth.toInt, canvas.getHeight.toInt)
 
     val startX = clamp((x - 3 * zoom).toInt, 0, w - 1)
     val startY = clamp((y - 3 * zoom).toInt, 0, h - 1)
@@ -215,13 +215,13 @@ class ImageGridPane(imageGrid: ImageGrid, currentEditMode: Resource[EditMode]) e
     canvas.redraw()
   }
 
-  this.width.onChange(updateSize())
-  this.height.onChange(updateSize())
+  this.widthProperty.addListener(_ => updateSize())
+  this.heightProperty.addListener(_ => updateSize())
 
   private def updateSize(): Unit = {
-    this.setClip(new Rectangle(0, 0, width(), height()))
-    canvas.width = width()
-    canvas.height = height()
+    this.setClip(new Rectangle(0, 0, getWidth, getHeight))
+    canvas.setWidth(getWidth)
+    canvas.setHeight(getHeight)
     canvas.redraw()
   }
 

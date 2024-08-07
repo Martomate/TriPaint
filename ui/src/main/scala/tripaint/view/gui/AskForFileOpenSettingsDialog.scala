@@ -9,13 +9,14 @@ import tripaint.view.FileOpenSettings
 import tripaint.view.gui.DialogUtils.{getValueFromCustomDialog, makeGridPane}
 import tripaint.view.image.TriImageForPreview
 
-import scalafx.collections.ObservableBuffer
-import scalafx.embed.swing.SwingFXUtils
-import scalafx.geometry.Orientation
-import scalafx.scene.control.{ButtonType, ChoiceBox, Label, Separator}
-import scalafx.scene.image.ImageView
-import scalafx.scene.layout.Pane
-import scalafx.util.StringConverter
+import javafx.collections.FXCollections
+import javafx.embed.swing.SwingFXUtils
+import javafx.geometry.Orientation
+import javafx.scene.control.{ChoiceBox, Label, Separator}
+import javafx.scene.control.ButtonType
+import javafx.scene.image.ImageView
+import javafx.scene.layout.Pane
+import javafx.util.StringConverter
 
 import java.io.File
 import scala.util.{Success, Try}
@@ -31,24 +32,28 @@ object AskForFileOpenSettingsDialog {
     val (previewWidth, previewHeight) = (xCount * imageSize, yCount * imageSize)
 
     val xCoordTF = RestrictedTextField.uintTF
-    xCoordTF.promptText = "0"
+    xCoordTF.setPromptText("0")
 
     val yCoordTF = RestrictedTextField.uintTF
-    yCoordTF.promptText = "0"
+    yCoordTF.setPromptText("0")
 
     val formatMap: Map[StorageFormat, String] = Map.from(formats)
 
     val formatChooser = {
-      val b = new ChoiceBox[StorageFormat](ObservableBuffer(formats.map(_._1)*))
-      b.selectionModel.value.select(initiallySelectedFormat)
-      b.converter = StringConverter.toStringConverter(formatMap(_))
+      val b = new ChoiceBox[StorageFormat](FXCollections.observableArrayList(formats.map(_._1)*))
+      b.getSelectionModel.select(initiallySelectedFormat)
+      b.setConverter(new StringConverter[StorageFormat] {
+        override def toString(t: StorageFormat) = formatMap(t)
+        override def fromString(s: String): StorageFormat =
+          throw new UnsupportedOperationException()
+      })
       b
     }
 
     val resultFromInputs = () => {
-      val xt = xCoordTF.text()
-      val yt = yCoordTF.text()
-      val format = formatChooser.selectionModel.value.getSelectedItem
+      val xt = xCoordTF.getText()
+      val yt = yCoordTF.getText()
+      val format = formatChooser.getSelectionModel.getSelectedItem
 
       for {
         xOffset <- Try(if xt != "" then xt.toInt else 0)
@@ -72,7 +77,7 @@ object AskForFileOpenSettingsDialog {
       val p = new Pane
       p.setMinSize(previewWidth, previewHeight)
       p.setMaxSize(previewWidth, previewHeight)
-      p.delegate.setBorder(previewPaneBorder)
+      p.setBorder(previewPaneBorder)
       p
     }
 
@@ -81,7 +86,7 @@ object AskForFileOpenSettingsDialog {
     val wholeImage = new ImageView(SwingFXUtils.toFXImage(underlyingImage.toBufferedImage, null))
 
     val previewStack = new Pane
-    previewStack.delegate.getChildren.addAll(wholeImage, previewPane)
+    previewStack.getChildren.addAll(wholeImage, previewPane)
 
     val blankImage = ImageStorage.fill(imageSize, Color.White)
     val imageGridCells = Seq.tabulate(xCount)(x => new GridCell(GridCoords(x, 0), blankImage))
@@ -115,9 +120,9 @@ object AskForFileOpenSettingsDialog {
 
     updatePreviewAction()
 
-    xCoordTF.text.onChange(updatePreviewAction())
-    yCoordTF.text.onChange(updatePreviewAction())
-    formatChooser.onAction = _ => updatePreviewAction()
+    xCoordTF.textProperty.addListener(_ => updatePreviewAction())
+    yCoordTF.textProperty.addListener(_ => updatePreviewAction())
+    formatChooser.setOnAction(_ => updatePreviewAction())
 
     val inputForm = makeGridPane(
       Seq(
@@ -132,7 +137,7 @@ object AskForFileOpenSettingsDialog {
       headerText = "Which part of the image should be opened? Please enter the top left corner:",
       content = Seq(
         inputForm,
-        Separator(Orientation.Horizontal),
+        Separator(Orientation.HORIZONTAL),
         previewStack
       ),
       graphic = triPreviewPane,
@@ -140,7 +145,7 @@ object AskForFileOpenSettingsDialog {
         case ButtonType.OK => resultFromInputs().getOrElse(null)
         case _             => null
       },
-      buttons = Seq(ButtonType.OK, ButtonType.Cancel)
+      buttons = Seq(ButtonType.OK, ButtonType.CANCEL)
     )
   }
 }

@@ -8,12 +8,12 @@ import tripaint.image.ImageStorage
 import tripaint.image.format.SimpleStorageFormat
 import tripaint.view.image.TriImageForPreview
 
-import scalafx.beans.property.ObjectProperty
-import scalafx.scene.SnapshotParameters
-import scalafx.scene.control.{ScrollPane, Tooltip}
-import scalafx.scene.image.ImageView
-import scalafx.scene.layout.HBox
-import scalafx.scene.paint.Color
+import javafx.scene.SnapshotParameters
+import javafx.scene.control.ScrollPane
+import javafx.scene.control.Tooltip
+import javafx.scene.image.ImageView
+import javafx.scene.layout.HBox
+import javafx.scene.paint.Color
 
 object ImagePreviewList {
   def fromImageContent(
@@ -38,14 +38,14 @@ object ImagePreviewList {
 
     val scrollPane = {
       val p = new ScrollPane()
-      p.maxWidth = previewSize * 5
-      p.content = new HBox(children = makeContent(_ => ())*)
-      p.minViewportHeight = previewSize * Math.sqrt(3) / 2
+      p.setMaxWidth(previewSize * 5)
+      p.setContent(new HBox(makeContent(_ => ())*))
+      p.setMinViewportHeight(previewSize * Math.sqrt(3) / 2)
       p
     }
 
     val updatePreview: (ImageGrid => Unit) => Unit = effect => {
-      scrollPane.content = new HBox(children = makeContent(effect)*)
+      scrollPane.setContent(new HBox(makeContent(effect)*))
     }
 
     (scrollPane, updatePreview)
@@ -70,10 +70,10 @@ object ImagePreview {
     val tooltip = TriImageTooltip.fromImagePool(content, locationOfImage)
 
     val snapshotParams = new SnapshotParameters
-    snapshotParams.fill = Color.Transparent
+    snapshotParams.setFill(Color.TRANSPARENT)
 
     val view = new ImageView
-    view.image = preview.toImage(snapshotParams)
+    view.setImage(preview.toImage(snapshotParams))
     Tooltip.install(view, tooltip)
     view
   }

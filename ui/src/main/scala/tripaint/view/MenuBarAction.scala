@@ -2,10 +2,7 @@ package tripaint.view
 
 import tripaint.view.gui.UIAction
 
-import javafx.event.{ActionEvent, EventHandler}
-import scalafx.scene.control.{Button, MenuItem, Tooltip}
-import scalafx.scene.image.ImageView
-import scalafx.scene.input.KeyCombination
+import javafx.scene.input.KeyCombination
 
 case class MenuBarAction(
     text: String,

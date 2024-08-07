@@ -2,8 +2,8 @@ package tripaint.view.gui
 
 import tripaint.view.{MenuBarAction, TriPaintViewListener}
 
-import scalafx.scene.control.{Menu, MenuBar, MenuItem, SeparatorMenuItem}
-import scalafx.scene.image.ImageView
+import javafx.scene.control.{Menu, MenuBar, MenuItem, SeparatorMenuItem}
+import javafx.scene.image.ImageView
 
 object TheMenuBar {
   def create(controls: TriPaintViewListener): MenuBar = {
@@ -47,15 +47,13 @@ object TheMenuBar {
     )
 
     val menuBar = new MenuBar
-    menuBar.useSystemMenuBar = true
-    menuBar.menus = Seq(menu_file, menu_edit, menu_organize, menu_effects)
+    menuBar.setUseSystemMenuBar(true)
+    menuBar.getMenus.setAll(menu_file, menu_edit, menu_organize, menu_effects)
     menuBar
   }
 
   private def makeMenu(text: String, menuItems: MenuItem*): Menu = {
-    val menu = new Menu(text)
-    menu.items = menuItems
-    menu
+    new Menu(text, null, menuItems*)
   }
 
   private def makeMenuItem(controls: TriPaintViewListener, action: MenuBarAction): MenuItem = {
@@ -64,13 +62,11 @@ object TheMenuBar {
     } else {
       new MenuItem(action.text, new ImageView(s"icons/${action.imagePath}.png"))
     }
-    item.onAction = _ => {
-      if action.action != null then {
-        controls.perform(action.action)
-      }
+    if action.action != null then {
+      item.setOnAction(_ => controls.perform(action.action))
     }
     if action.accelerator != null then {
-      item.accelerator = action.accelerator
+      item.setAccelerator(action.accelerator)
     }
     item
   }

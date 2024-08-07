@@ -4,9 +4,9 @@ import tripaint.coords.TriangleCoords
 import tripaint.grid.GridCell
 import tripaint.image.ImageStorage
 
-import scalafx.scene.SnapshotParameters
-import scalafx.scene.image.Image
-import scalafx.scene.layout.Pane
+import javafx.scene.SnapshotParameters
+import javafx.scene.image.Image
+import javafx.scene.layout.Pane
 
 class TriImageForPreview(content: GridCell, previewWidth: Double) extends Pane {
   private def storage: ImageStorage = content.storage
@@ -14,7 +14,7 @@ class TriImageForPreview(content: GridCell, previewWidth: Double) extends Pane {
   private val canvas: TriImageCanvas = new TriImageCanvas(previewWidth, storage.imageSize)
 
   content.trackChanges(onImageChanged(_))
-  children.add(canvas)
+  this.getChildren.add(canvas)
 
   redraw()
 

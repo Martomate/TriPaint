@@ -2,20 +2,21 @@ package tripaint.view.gui
 
 import tripaint.view.gui.DialogUtils.{getValueFromCustomDialog, makeGridPane}
 
-import scalafx.scene.control.{ButtonType, Label}
+import javafx.scene.control.ButtonType
+import javafx.scene.control.Label
 
 import scala.util.Try
 
 object AskForXYDialog {
   def askForXY(title: String, headerText: String): Option[(Int, Int)] = {
     val xCoordTF = RestrictedTextField.intTF
-    xCoordTF.promptText = "0"
+    xCoordTF.setPromptText("0")
     val yCoordTF = RestrictedTextField.intTF
-    yCoordTF.promptText = "0"
+    yCoordTF.setPromptText("0")
 
     val coordsFromTF = () => {
-      val xt = xCoordTF.text()
-      val yt = yCoordTF.text()
+      val xt = xCoordTF.getText()
+      val yt = yCoordTF.getText()
 
       for {
         xOffset <- Try(if xt != "" then xt.toInt else 0)
@@ -38,7 +39,7 @@ object AskForXYDialog {
         case ButtonType.OK => coordsFromTF().getOrElse(null)
         case _             => null
       },
-      buttons = Seq(ButtonType.OK, ButtonType.Cancel)
+      buttons = Seq(ButtonType.OK, ButtonType.CANCEL)
     )
   }
 }

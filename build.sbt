@@ -21,7 +21,6 @@ lazy val `tripaint-ui` = project
   .dependsOn(`tripaint-core`)
   .settings(
     libraryDependencies ++= Seq(MUnit, Mockito),
-    libraryDependencies += ScalaFx,
     libraryDependencies ++= JavaFxInclude,
     excludeDependencies ++= JavaFxExclude
   )
@@ -37,10 +36,6 @@ lazy val `tripaint-app` = project
   )
   .settings(
     jlinkIgnoreMissingDependency := JlinkIgnore.only(
-      "scalafx" -> "javafx.embed.swing",
-      "scalafx.embed.swing" -> "javafx.embed.swing",
-      "scalafx" -> "javafx.scene.web",
-      "scalafx.scene.web" -> "javafx.scene.web",
       "scala.quoted" -> "scala",
       "scala.quoted.runtime" -> "scala"
     ),
@@ -52,7 +47,6 @@ lazy val `tripaint-app` = project
   )
   .settings(
     libraryDependencies ++= Seq(MUnit, Mockito),
-    libraryDependencies += ScalaFx,
     libraryDependencies ++= JavaFxInclude,
     excludeDependencies ++= JavaFxExclude
   )

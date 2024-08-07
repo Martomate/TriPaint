@@ -3,10 +3,11 @@ package tripaint.view.gui
 import tripaint.util.Resource
 import tripaint.view.EditMode
 
-import scalafx.geometry.Orientation
-import scalafx.scene.control.{ToggleButton, Tooltip}
-import scalafx.scene.image.ImageView
-import scalafx.scene.layout.TilePane
+import javafx.geometry.Orientation
+import javafx.scene.control.ToggleButton
+import javafx.scene.control.Tooltip
+import javafx.scene.image.ImageView
+import javafx.scene.layout.TilePane
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -23,7 +24,7 @@ object ToolBox {
     for m <- editModes yield {
       val b = new ToolboxButton(m, () => setCurrentEditMode(m))
       if m == currentEditMode.value then {
-        b.selected = true
+        b.setSelected(true)
       }
       buttons += b
       buttonMap(m) = b
@@ -31,22 +32,19 @@ object ToolBox {
 
     currentEditMode.onChange((oldMode, newMode) =>
       for b <- buttonMap.get(oldMode) do {
-        b.selected = false
+        b.setSelected(false)
       }
       for b <- buttonMap.get(newMode) do {
-        b.selected = true
+        b.setSelected(true)
       }
     )
 
-    val pane = new TilePane
-    pane.orientation = Orientation.Vertical
-    pane.children = buttons
-    pane
+    new TilePane(Orientation.VERTICAL, buttons.toArray*)
   }
 }
 
 class ToolboxButton(mode: EditMode, onClick: () => Unit)
     extends ToggleButton(null, new ImageView("icons/editmodes/" + mode.imagePath + ".png")) {
-  tooltip = new Tooltip(s"${mode.tooltipText}\n(Shortcut: ${mode.shortCut})")
-  onAction = _ => onClick()
+  setTooltip(new Tooltip(s"${mode.tooltipText}\n(Shortcut: ${mode.shortCut})"))
+  setOnAction(_ => onClick())
 }

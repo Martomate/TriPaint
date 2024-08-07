@@ -5,12 +5,13 @@ import tripaint.grid.ImageGrid
 import tripaint.image.ImagePool
 import tripaint.view.image.TriImageForPreview
 
-import scalafx.scene.layout.{StackPane, TilePane}
+import javafx.scene.layout.StackPane
+import javafx.scene.layout.TilePane
 
 import scala.collection.mutable
 
 class ImageTabs(imagePool: ImagePool, requestImageRemoval: GridCell => Unit) extends TilePane {
-  maxWidth = TriImageForPreview.previewSize
+  this.setMaxWidth(TriImageForPreview.previewSize)
 
   private val imageTabMap: mutable.Map[GridCell, StackPane] = mutable.Map.empty
 
@@ -18,11 +19,11 @@ class ImageTabs(imagePool: ImagePool, requestImageRemoval: GridCell => Unit) ext
     event match {
       case ImageGrid.Event.ImageAdded(image) =>
         val tab = ImageTabPane(image, requestImageRemoval, imagePool)
-        children.add(tab.delegate)
+        this.getChildren.add(tab)
         imageTabMap(image) = tab
       case ImageGrid.Event.ImageRemoved(image) =>
         imageTabMap.remove(image) match {
-          case Some(pane) => children.remove(pane.delegate)
+          case Some(pane) => this.getChildren.remove(pane)
           case None       =>
         }
       case _ =>

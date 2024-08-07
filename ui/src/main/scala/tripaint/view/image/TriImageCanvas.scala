@@ -5,56 +5,56 @@ import tripaint.ScalaFxExt.*
 import tripaint.coords.TriangleCoords
 import tripaint.image.ImageStorage
 
+import javafx.scene.canvas.Canvas
 import javafx.scene.image.PixelFormat
-import scalafx.scene.canvas.Canvas
 
 class TriImageCanvas(init_width: Double, imageSize: Int)
     extends Canvas(init_width, init_width * Math.sqrt(3) / 2) {
 
   private val coordsToRealConverter =
-    new TriangleCoordsToReal(imageSize, (xx, yy) => (xx * width(), yy * height()))
+    new TriangleCoordsToReal(imageSize, (xx, yy) => (xx * getWidth, yy * getHeight))
 
   def setCanvasSize(width: Double): Unit = {
-    this.width = width
-    this.height = width * Math.sqrt(3) / 2
+    this.setWidth(width)
+    this.setHeight(width * Math.sqrt(3) / 2)
   }
 
   def setCanvasLocationUsingCenter(centerX: Double, centerY: Double): Unit = {
     // adjustment caused by canvas center not being the wanted rotation center (i.e. the centroid)
-    val adjLen = this.height() / 6
-    val angle = this.rotate() / 180 * math.Pi
+    val adjLen = this.getHeight / 6
+    val angle = this.getRotate / 180 * math.Pi
     val dx = -adjLen * math.sin(angle)
     val dy = -adjLen * math.cos(angle)
-    this.relocate(centerX - this.width() / 2 + dx, centerY - this.height() / 2 + dy)
+    this.relocate(centerX - this.getWidth / 2 + dx, centerY - this.getHeight / 2 + dy)
   }
 
   def clearCanvas(): Unit = {
-    graphicsContext2D.clearRect(-1, -1, width() + 1, height() + 1)
+    getGraphicsContext2D.clearRect(-1, -1, getWidth + 1, getHeight + 1)
   }
 
   def drawTriangle(coords: TriangleCoords, color: Color, pixels: ImageStorage): Unit = {
-    val gc = graphicsContext2D
+    val gc = getGraphicsContext2D
     val indexMap = new IndexMap(imageSize)
 
     val (xLo, yLo, xHi, yHi) = triangleBoundingRect(coords)
 
     for y <- yLo.toInt - 1 to yHi.toInt + 1 do {
       for x <- xLo.toInt - 1 to xHi.toInt + 1 do {
-        val c = indexMap.coordsAt(x / width(), y / height())
+        val c = indexMap.coordsAt(x / getWidth, y / getHeight)
         if c != null then {
           val col = if c == coords then color else pixels.getColor(c)
-          gc.pixelWriter.setColor(x, y, col.toFXColor)
+          gc.getPixelWriter.setColor(x, y, col.toFXColor)
         }
       }
     }
   }
 
   def redraw(pixels: ImageStorage): Unit = {
-    val gc = graphicsContext2D
+    val gc = getGraphicsContext2D
     val indexMap = new IndexMap(imageSize)
 
-    val heightInt = height().toInt
-    val widthInt = width().toInt
+    val heightInt = getHeight.toInt
+    val widthInt = getWidth.toInt
 
     val image = new Array[Int](16 * 16)
 

@@ -4,10 +4,10 @@ import tripaint.grid.GridCell
 import tripaint.image.ImagePool
 import tripaint.view.image.TriImageForPreview
 
-import scalafx.geometry.Pos
-import scalafx.scene.control.{Button, ToggleButton}
-import scalafx.scene.image.{Image, ImageView}
-import scalafx.scene.layout.StackPane
+import javafx.geometry.Pos
+import javafx.scene.control.{Button, ToggleButton}
+import javafx.scene.image.{Image, ImageView}
+import javafx.scene.layout.StackPane
 
 object ImageTabPane {
   def apply(
@@ -19,27 +19,26 @@ object ImageTabPane {
 
     val closeButton = {
       val b = new Button
-      b.text = "X"
-      b.visible = false
-      b.alignmentInParent = Pos.TopRight
-      b.onAction = _ => requestImageRemoval(image)
+      b.setText("X")
+      b.setVisible(false)
+      b.setOnAction(_ => requestImageRemoval(image))
       b
     }
 
     val previewButton = {
       val b = new ToggleButton
-      b.graphic = preview
-      b.tooltip = TriImageTooltip.fromImagePool(image, imagePool.locationOf)
+      b.setGraphic(preview)
+      b.setTooltip(TriImageTooltip.fromImagePool(image, imagePool.locationOf))
 
       image.trackChanges {
         case GridCell.Event.StateUpdated(editable, _) =>
-          b.selected = editable
+          b.setSelected(editable)
         case _ =>
       }
-      b.selected.onChange { (_, _, selected) =>
+      b.selectedProperty.addListener { (_, _, selected) =>
         image.setEditable(selected)
       }
-      b.selected = image.editable
+      b.setSelected(image.editable)
 
       b
     }
@@ -47,14 +46,15 @@ object ImageTabPane {
     val starView: ImageView = makeStarView(image)
 
     val stackPane = {
-      val p = new StackPane
-      p.children.addAll(previewButton, closeButton, starView)
-      p.onMouseEntered = _ => {
-        closeButton.visible = true
-      }
-      p.onMouseExited = _ => {
-        closeButton.visible = false
-      }
+      val p = new StackPane(previewButton, closeButton, starView)
+      StackPane.setAlignment(closeButton, Pos.TOP_RIGHT)
+      StackPane.setAlignment(starView, Pos.TOP_LEFT)
+      p.setOnMouseEntered(_ => {
+        closeButton.setVisible(true)
+      })
+      p.setOnMouseExited(_ => {
+        closeButton.setVisible(false)
+      })
       p
     }
 
@@ -63,16 +63,15 @@ object ImageTabPane {
 
   private def makeStarView(image: GridCell): ImageView = {
     val star: ImageView = new ImageView
-    star.image = new Image("/icons/star.png")
-    star.alignmentInParent = Pos.TopLeft
-    star.mouseTransparent = true
+    star.setImage(new Image("/icons/star.png"))
+    star.setMouseTransparent(true)
 
     image.trackChanges {
       case GridCell.Event.StateUpdated(_, changed) =>
-        star.visible = changed
+        star.setVisible(changed)
       case _ =>
     }
-    star.visible = image.changed
+    star.setVisible(image.changed)
 
     star
   }

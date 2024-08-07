@@ -4,7 +4,7 @@ import tripaint.coords.StorageCoords
 import tripaint.grid.GridCell
 import tripaint.image.{ImagePool, ImageStorage}
 
-import scalafx.scene.control.Tooltip
+import javafx.scene.control.Tooltip
 
 object TriImageTooltip {
   def fromImagePool(
@@ -14,8 +14,8 @@ object TriImageTooltip {
     val getText = () => makeText(content.storage.imageSize, locationOfImage(content.storage))
 
     val tooltip = new Tooltip()
-    tooltip.text = getText()
-    tooltip.activated.onChange(tooltip.text = getText())
+    tooltip.setText(getText())
+    tooltip.activatedProperty.addListener(_ => tooltip.setText(getText()))
 
     tooltip
   }

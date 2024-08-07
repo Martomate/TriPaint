@@ -1,21 +1,18 @@
 package tripaint.view.gui
 
+import tripaint.ScalaFxExt.toScala
 import tripaint.grid.{GridCell, ImageGrid}
 import tripaint.image.ImagePool
 import tripaint.view.image.TriImageForPreview
 
-import scalafx.application.Platform
-import scalafx.beans.property.StringProperty
-import scalafx.collections.ObservableBuffer
-import scalafx.geometry.Orientation
-import scalafx.scene.Node
-import scalafx.scene.control.*
-import scalafx.scene.image.{Image, ImageView, PixelFormat, WritableImage}
-import scalafx.scene.layout.*
-import scalafx.util.StringConverter
+import javafx.application.Platform
+import javafx.beans.property.StringProperty
+import javafx.scene.Node
+import javafx.scene.control.{ButtonType, ScrollPane, TextInputDialog}
+import javafx.scene.control.{Dialog, TextField}
+import javafx.scene.layout.{GridPane, Region, VBox}
 
-import java.io.{File, FileInputStream, FileNotFoundException, IOException}
-import scala.util.{Success, Try}
+import scala.util.Try
 
 type TextFieldRestriction = String => Boolean
 
@@ -35,9 +32,9 @@ object RestrictedTextField {
   def uintTF: TextField = restrict(new TextField, TextFieldRestriction.uintRestriction)
 
   def restrict(tf: TextField, contentAllowed: TextFieldRestriction): TextField = {
-    tf.text.onChange((ob, oldVal, newVal) => {
+    tf.textProperty.addListener((ob, oldVal, newVal) => {
       val property = ob.asInstanceOf[StringProperty]
-      property.value = if contentAllowed(newVal) then newVal else oldVal
+      property.setValue(if contentAllowed(newVal) then newVal else oldVal)
     })
     tf
   }
@@ -46,8 +43,8 @@ object RestrictedTextField {
 object DialogUtils {
   def makeGridPane(content: Seq[Seq[Node]]): GridPane = {
     val gridPane = new GridPane
-    gridPane.vgap = 10
-    gridPane.hgap = 10
+    gridPane.setVgap(10)
+    gridPane.setHgap(10)
     for i <- content.indices do {
       for j <- content(i).indices do {
         gridPane.add(content(i)(j), j, i)
@@ -64,30 +61,29 @@ object DialogUtils {
       content: Seq[Region] = Seq.empty,
       resultConverter: ButtonType => R,
       nodeWithFocus: Node = null,
-      buttons: Seq[ButtonType] = Seq(ButtonType.OK, ButtonType.Cancel)
+      buttons: Seq[ButtonType] = Seq(ButtonType.OK, ButtonType.CANCEL)
   ): Option[R] = {
     val dialog = new Dialog[R]
-    dialog.title = title
-    dialog.headerText = headerText
-    dialog.contentText = contentText
-    dialog.graphic = graphic
+    dialog.setTitle(title)
+    dialog.setHeaderText(headerText)
+    dialog.setContentText(contentText)
+    dialog.setGraphic(graphic)
 
     val contentBox = new VBox(content*)
     contentBox.setSpacing(10)
 
-    dialog.dialogPane().setContent(contentBox)
-    dialog.resultConverter = resultConverter
+    dialog.getDialogPane.setContent(contentBox)
+    dialog.setResultConverter(b => resultConverter(b))
 
     for b <- buttons do {
-      dialog.dialogPane().getButtonTypes.add(b)
+      dialog.getDialogPane.getButtonTypes.add(b)
     }
 
     if nodeWithFocus != null then {
-      dialog.setOnShowing(_ => Platform.runLater(nodeWithFocus.requestFocus()))
+      dialog.setOnShowing(_ => Platform.runLater(() => nodeWithFocus.requestFocus()))
     }
 
-    val result = dialog.delegate.showAndWait()
-    if result.isPresent then Some(result.get) else None
+    dialog.showAndWait().toScala
   }
 
   def getValueFromDialog[T](
@@ -103,15 +99,15 @@ object DialogUtils {
     val (previewPane, updatePreview) = makeImagePreviewList(images, imagePool)
 
     val dialog = new TextInputDialog
-    dialog.title = title
-    dialog.headerText = headerText
-    dialog.contentText = contentText
-    dialog.graphic = previewPane
-    RestrictedTextField.restrict(dialog.editor, restriction)
+    dialog.setTitle(title)
+    dialog.setHeaderText(headerText)
+    dialog.setContentText(contentText)
+    dialog.setGraphic(previewPane)
+    RestrictedTextField.restrict(dialog.getEditor, restriction)
 
     refreshPreviewFn match {
       case Some(refreshFn) =>
-        dialog.editor.text.onChange((_, _, s) =>
+        dialog.getEditor.textProperty.addListener((_, _, s) =>
           if restriction(s) then {
             val value = stringToValue(s)
             updatePreview(imageGrid => refreshFn(value, imageGrid))
@@ -122,7 +118,7 @@ object DialogUtils {
       case None =>
     }
 
-    dialog.showAndWait().map(stringToValue)
+    dialog.showAndWait().toScala.map(stringToValue)
   }
 
   def makeImagePreviewList(

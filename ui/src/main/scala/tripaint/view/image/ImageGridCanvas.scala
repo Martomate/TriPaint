@@ -5,8 +5,8 @@ import tripaint.coords.{GlobalPixCoords, PixelCoords}
 import tripaint.grid.ImageGrid
 import tripaint.image.RegularImage
 
+import javafx.scene.canvas.Canvas
 import javafx.scene.image.PixelFormat
-import scalafx.scene.canvas.Canvas
 
 class ImageGridCanvas(images: ImageGrid) extends Canvas {
   private var scale: Double = 1
@@ -23,8 +23,8 @@ class ImageGridCanvas(images: ImageGrid) extends Canvas {
   def coordsAt(x: Double, y: Double): GlobalPixCoords = {
     val (xScroll, yScroll) = this.displacement
 
-    val yy = -(y - yScroll - height() / 2) / this.scale / Math.sqrt(3)
-    val xx = ((x - xScroll - width() / 2) / this.scale - yy) / 2
+    val yy = -(y - yScroll - getHeight / 2) / this.scale / Math.sqrt(3)
+    val xx = ((x - xScroll - getWidth / 2) / this.scale - yy) / 2
 
     val xInt = Math.floor(xx).toInt
     val yInt = Math.floor(yy).toInt
@@ -43,15 +43,15 @@ class ImageGridCanvas(images: ImageGrid) extends Canvas {
     val (xInt, yInt) = (Math.floorDiv(coords.x, 2), coords.y)
     val (xx, yy) = (xInt + 0.5, yInt + 0.5)
 
-    val y = -yy * Math.sqrt(3) * this.scale + height() / 2 + yScroll
-    val x = (xx * 2 + yy) * this.scale + width() / 2 + xScroll
+    val y = -yy * Math.sqrt(3) * this.scale + getHeight / 2 + yScroll
+    val x = (xx * 2 + yy) * this.scale + getWidth / 2 + xScroll
 
     (x, y)
   }
 
   def redraw(): Unit = {
-    val w = width().toInt
-    val h = height().toInt
+    val w = getWidth.toInt
+    val h = getHeight.toInt
 
     redraw(0, 0, w, h)
   }
@@ -76,6 +76,6 @@ class ImageGridCanvas(images: ImageGrid) extends Canvas {
     }
 
     val f = PixelFormat.getIntArgbInstance
-    graphicsContext2D.pixelWriter.setPixels(startX, startY, w, h, f, buffer.toIntArray, 0, w)
+    getGraphicsContext2D.getPixelWriter.setPixels(startX, startY, w, h, f, buffer.toIntArray, 0, w)
   }
 }

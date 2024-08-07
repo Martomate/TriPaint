@@ -1,6 +1,6 @@
 package tripaint
 
-import tripaint.ScalaFxExt.{*, given}
+import tripaint.ScalaFxExt.{fromFXColor, toFXColor, toScala}
 import tripaint.effects.{BlurEffect, MotionBlurEffect, RandomNoiseEffect}
 import tripaint.grid.GridCell
 import tripaint.image.{ImagePool, ImageStorage}
@@ -10,22 +10,30 @@ import tripaint.view.*
 import tripaint.view.gui.*
 import tripaint.view.image.ImageGridPane
 
-import scalafx.application.JFXApp3.PrimaryStage
-import scalafx.scene.Scene
-import scalafx.scene.control.*
-import scalafx.scene.control.Alert.AlertType
-import scalafx.scene.control.ButtonBar.ButtonData
-import scalafx.scene.layout.{AnchorPane, BorderPane, TilePane, VBox}
-import scalafx.scene.paint.Color as FXColor
-import scalafx.stage.FileChooser
-import scalafx.stage.FileChooser.ExtensionFilter
+import javafx.scene.Scene
+import javafx.scene.control.{
+  Alert,
+  ButtonType,
+  ColorPicker,
+  Label,
+  MenuBar,
+  TextInputDialog,
+  ToolBar
+}
+import javafx.scene.control.Alert.AlertType
+import javafx.scene.control.ButtonBar.ButtonData
+import javafx.scene.layout.{AnchorPane, BorderPane, TilePane, VBox}
+import javafx.scene.paint.Color as FXColor
+import javafx.stage.FileChooser
+import javafx.stage.FileChooser.ExtensionFilter
+import javafx.stage.Stage
 
 import java.io.File
 import scala.language.implicitConversions
 import scala.util.Try
 
 class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
-    extends PrimaryStage
+    extends Stage
     with TriPaintView {
   private val (currentEditMode, setCurrentEditMode) = createResource(EditMode.Draw)
 
@@ -40,54 +48,61 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
 
   private var currentFolder: Option[File] = None
 
-  title = "TriPaint"
-  onCloseRequest = e => {
-    if (!controls.requestExit()) e.consume()
-  }
-  scene = new Scene(720, 720) {
-    delegate.getStylesheets.add(getClass.getResource("/styles/application.css").toExternalForm)
-    root = new BorderPane {
-      top = new VBox(menuBar, toolBar)
-      center = new AnchorPane {
-        AnchorPane.setAnchors(imageDisplay, 0, 0, 0, 0)
-        imageDisplay.clip === this.clip
+  {
+    this.setTitle("TriPaint")
+    this.setOnCloseRequest(e => {
+      if (!controls.requestExit()) e.consume()
+    })
 
-        AnchorPane.setLeftAnchor(toolBox, 0)
-        AnchorPane.setTopAnchor(toolBox, 0)
+    val centerPane = new AnchorPane(imageDisplay, toolBox, colorBox, imageTabs)
+    AnchorPane.setTopAnchor(imageDisplay, 0)
+    AnchorPane.setRightAnchor(imageDisplay, 0)
+    AnchorPane.setBottomAnchor(imageDisplay, 0)
+    AnchorPane.setLeftAnchor(imageDisplay, 0)
+    imageDisplay.clipProperty.isEqualTo(centerPane.clipProperty)
 
-        AnchorPane.setLeftAnchor(colorBox, 10)
-        AnchorPane.setBottomAnchor(colorBox, 10)
+    AnchorPane.setLeftAnchor(toolBox, 0)
+    AnchorPane.setTopAnchor(toolBox, 0)
 
-        AnchorPane.setRightAnchor(imageTabs, 10)
-        AnchorPane.setTopAnchor(imageTabs, 10)
-        AnchorPane.setBottomAnchor(imageTabs, 10)
-        this.children = Seq(imageDisplay, toolBox, colorBox, imageTabs)
+    AnchorPane.setLeftAnchor(colorBox, 10)
+    AnchorPane.setBottomAnchor(colorBox, 10)
+
+    AnchorPane.setRightAnchor(imageTabs, 10)
+    AnchorPane.setTopAnchor(imageTabs, 10)
+    AnchorPane.setBottomAnchor(imageTabs, 10)
+
+    val topPane = new VBox(menuBar, toolBar)
+
+    val sceneContents = new BorderPane(centerPane, topPane, null, null, null)
+
+    val scene = new Scene(sceneContents, 720, 720)
+    scene.getStylesheets.add(getClass.getResource("/styles/application.css").toExternalForm)
+
+    for m <- EditMode.all do {
+      if m.shortCut != null then {
+        scene.getAccelerators.put(m.shortCut, () => setCurrentEditMode(m))
       }
     }
-  }
 
-  for m <- EditMode.all do {
-    if m.shortCut != null then {
-      scene().getAccelerators.put(m.shortCut, () => setCurrentEditMode(m))
-    }
+    this.setScene(scene)
   }
 
   private def makeColorBox() = {
     // overlay and imageDisplay
-    val colorPicker1 = new ColorPicker(new FXColor(imageDisplay.colors.primaryColor().toFXColor))
-    val colorPicker2 = new ColorPicker(new FXColor(imageDisplay.colors.secondaryColor().toFXColor))
+    val colorPicker1 = new ColorPicker(imageDisplay.colors.primaryColor.get().toFXColor)
+    val colorPicker2 = new ColorPicker(imageDisplay.colors.secondaryColor.get().toFXColor)
 
-    colorPicker1.value.onChange: (_, from, to) =>
-      if from != to then imageDisplay.colors.setPrimaryColor(new FXColor(to))
+    colorPicker1.valueProperty.addListener: (_, from, to) =>
+      if from != to then imageDisplay.colors.setPrimaryColor(fromFXColor(to))
 
-    colorPicker2.value.onChange: (_, from, to) =>
-      if from != to then imageDisplay.colors.setSecondaryColor(new FXColor(to))
+    colorPicker2.valueProperty.addListener: (_, from, to) =>
+      if from != to then imageDisplay.colors.setSecondaryColor(fromFXColor(to))
 
-    imageDisplay.colors.primaryColor.onChange: (_, from, to) =>
-      if from != to then colorPicker1.value = to.toFXColor
+    imageDisplay.colors.primaryColor.addListener: (_, from, to) =>
+      if from != to then colorPicker1.setValue(to.toFXColor)
 
-    imageDisplay.colors.secondaryColor.onChange: (_, from, to) =>
-      if from != to then colorPicker2.value = to.toFXColor
+    imageDisplay.colors.secondaryColor.addListener: (_, from, to) =>
+      if from != to then colorPicker2.setValue(to.toFXColor)
 
     new VBox(
       new Label("Primary color:"),
@@ -97,13 +112,13 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     )
   }
 
-  override def backgroundColor: Color = imageDisplay.colors.secondaryColor()
+  override def backgroundColor: Color = imageDisplay.colors.secondaryColor.get()
 
   override def askForSaveFile(image: GridCell): Option[File] = {
     val chooser = new FileChooser
-    currentFolder.foreach(chooser.initialDirectory = _)
-    chooser.title = "Save file"
-    chooser.extensionFilters.add(new ExtensionFilter("PNG", "*.png"))
+    currentFolder.foreach(chooser.setInitialDirectory)
+    chooser.setTitle("Save file")
+    chooser.getExtensionFilters.add(new ExtensionFilter("PNG", "*.png"))
     val result = Option(chooser.showSaveDialog(this))
     result.foreach(r => currentFolder = Some(r.getParentFile))
     result
@@ -123,7 +138,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
 
   override def askForFileToOpen(): Option[File] = {
     val chooser = new FileChooser
-    chooser.title = "Open file"
+    chooser.setTitle("Open file")
     val result = Option(chooser.showOpenDialog(this))
     result.foreach(r => currentFolder = Some(r.getParentFile))
     result
@@ -171,19 +186,19 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
   override def askForRandomNoiseColors(): Option[(Color, Color)] = {
     val images = model.imageGrid.selectedImages
     val selectedImagesCoords = model.imageGrid.selectedImages.map(_.coords)
-    val loColorPicker = new ColorPicker(FXColor.Black)
-    val hiColorPicker = new ColorPicker(FXColor.White)
+    val loColorPicker = new ColorPicker(FXColor.BLACK)
+    val hiColorPicker = new ColorPicker(FXColor.WHITE)
     import DialogUtils.*
 
     val (previewPane, updatePreview) = DialogUtils.makeImagePreviewList(images, model.imagePool)
 
     def updatePreviewFromInputs(): Unit =
-      val lo = new FXColor(loColorPicker.value())
-      val hi = new FXColor(hiColorPicker.value())
+      val lo = fromFXColor(loColorPicker.getValue)
+      val hi = fromFXColor(hiColorPicker.getValue)
       updatePreview(grid => new RandomNoiseEffect(lo, hi).action(selectedImagesCoords, grid))
 
-    loColorPicker.value.onChange((_, _, _) => updatePreviewFromInputs())
-    hiColorPicker.value.onChange((_, _, _) => updatePreviewFromInputs())
+    loColorPicker.valueProperty.addListener((_, _, _) => updatePreviewFromInputs())
+    hiColorPicker.valueProperty.addListener((_, _, _) => updatePreviewFromInputs())
 
     updatePreviewFromInputs()
 
@@ -201,36 +216,40 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
       ),
       resultConverter = {
         case ButtonType.OK =>
-          Try((new FXColor(loColorPicker.value()), new FXColor(hiColorPicker.value())))
+          Try((loColorPicker.getValue, hiColorPicker.getValue))
             .map((lo, hi) => (fromFXColor(lo), fromFXColor(hi)))
             .getOrElse(null)
         case _ => null
       },
-      buttons = Seq(ButtonType.OK, ButtonType.Cancel)
+      buttons = Seq(ButtonType.OK, ButtonType.CANCEL)
     )
   }
 
   override def askSaveBeforeClosing(images: Seq[GridCell]): Option[Boolean] = {
-    saveBeforeClosingAlert(images).showAndWait().map(_.buttonData) flatMap {
-      case ButtonData.Yes => Some(true)
-      case ButtonData.No  => Some(false)
+    val res = saveBeforeClosingAlert(images).showAndWait().toScala
+
+    res.flatMap(_.getButtonData match {
+      case ButtonData.YES => Some(true)
+      case ButtonData.NO  => Some(false)
       case _              => None
-    }
+    })
   }
 
   private def saveBeforeClosingAlert(images: Seq[GridCell]): Alert = {
     val (previewPane, _) = DialogUtils.makeImagePreviewList(images, model.imagePool)
 
-    val alert = new Alert(AlertType.Confirmation)
-    alert.title = "Save before closing?"
-    alert.headerText = "Do you want to save " + (if (images.size == 1) "this image"
-                                                 else "these images") + " before closing the tab?"
-    alert.graphic = previewPane
+    val alert = new Alert(AlertType.CONFIRMATION)
+    alert.setTitle("Save before closing?")
+    alert.setHeaderText(
+      "Do you want to save " + (if (images.size == 1) "this image"
+                                else "these images") + " before closing the tab?"
+    )
+    alert.setGraphic(previewPane)
 
-    alert.buttonTypes = Seq(
-      new ButtonType("Save", ButtonData.Yes),
-      new ButtonType("Don't save", ButtonData.No),
-      new ButtonType("Cancel", ButtonData.CancelClose)
+    alert.getButtonTypes.setAll(
+      new ButtonType("Save", ButtonData.YES),
+      new ButtonType("Don't save", ButtonData.NO),
+      new ButtonType("Cancel", ButtonData.CANCEL_CLOSE)
     )
     alert
   }
@@ -261,24 +280,24 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     val tri2 = model.imageGrid.findByStorage(currentImage).orNull
     val (previewPane, _) = DialogUtils.makeImagePreviewList(Seq(tri1, tri2), model.imagePool)
 
-    val alert = new Alert(AlertType.Confirmation)
-    alert.title = "Collision"
-    alert.headerText = "The image already exists on the screen. Which one should be used?"
-    alert.graphic = previewPane
+    val alert = new Alert(AlertType.CONFIRMATION)
+    alert.setTitle("Collision")
+    alert.setHeaderText("The image already exists on the screen. Which one should be used?")
+    alert.setGraphic(previewPane)
 
-    alert.buttonTypes = Seq(
-      new ButtonType("Left", ButtonData.Yes),
-      new ButtonType("Right", ButtonData.No),
-      new ButtonType("Cancel", ButtonData.CancelClose)
+    alert.getButtonTypes.setAll(
+      new ButtonType("Left", ButtonData.YES),
+      new ButtonType("Right", ButtonData.NO),
+      new ButtonType("Cancel", ButtonData.CANCEL_CLOSE)
     )
-    alert.showAndWait().map(_.buttonData == ButtonData.Yes)
+    alert.showAndWait().toScala.map(_.getButtonData == ButtonData.YES)
   }
 
   override def askForImageSize(): Option[Int] = {
     val dialog = new TextInputDialog("32")
-    dialog.title = "Image Size"
-    dialog.headerText = "What should be the image size? (#rows)"
-    val sizeStr = dialog.showAndWait()
+    dialog.setTitle("Image Size")
+    dialog.setHeaderText("What should be the image size? (#rows)")
+    val sizeStr = dialog.showAndWait().toScala
     sizeStr.map(str => Try(str.toInt).toOption.filter(_ > 0).getOrElse(32))
   }
 }

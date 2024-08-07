@@ -2,13 +2,13 @@ package tripaint.view.gui
 
 import tripaint.view.{MenuBarAction, TriPaintViewListener}
 
-import scalafx.scene.control.{Button, Separator, ToolBar, Tooltip}
-import scalafx.scene.image.ImageView
+import javafx.scene.control.{Button, Separator, ToolBar, Tooltip}
+import javafx.scene.image.ImageView
 
 object TheToolBar {
   def create(controls: TriPaintViewListener): ToolBar = {
     val toolBar = new ToolBar
-    toolBar.items = Seq(
+    toolBar.getItems.setAll(
       makeButton(controls, MainStageButtons.New),
       makeButton(controls, MainStageButtons.Open),
       makeButton(controls, MainStageButtons.Save),
@@ -29,12 +29,12 @@ object TheToolBar {
     } else {
       new Button(null, new ImageView("icons/" + action.imagePath + ".png"))
     }
-    item.onAction = _ => {
+    item.setOnAction(_ => {
       if action.action != null then {
         controls.perform(action.action)
       }
-    }
-    item.tooltip = new Tooltip(action.text)
+    })
+    item.setTooltip(new Tooltip(action.text))
     item
   }
 }

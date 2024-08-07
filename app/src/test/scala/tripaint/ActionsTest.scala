@@ -1,15 +1,14 @@
 package tripaint
 
-import tripaint.{Actions, TriPaintModel}
-import tripaint.ScalaFxExt.given
+import tripaint.ScalaFxExt.fromFXColor
 import tripaint.coords.{GridCoords, StorageCoords}
 import tripaint.image.{ImageStorage, RegularImage}
 import tripaint.image.ImagePool.SaveLocation
 import tripaint.image.format.{SimpleStorageFormat, StorageFormat}
 import tripaint.view.FileOpenSettings
 
+import javafx.scene.paint.Color as FXColor
 import munit.FunSuite
-import scalafx.scene.paint.Color as FXColor
 
 import java.io.File
 import scala.language.implicitConversions
@@ -39,7 +38,7 @@ class ActionsTest extends FunSuite {
     val location = SaveLocation(file)
     val imageSize = 16
 
-    val image = ImageStorage.fill(imageSize, FXColor.Orange)
+    val image = ImageStorage.fill(imageSize, fromFXColor(FXColor.ORANGE))
     val regularImage = image.toRegularImage(storageFormat)
 
     val model =
@@ -65,7 +64,7 @@ class ActionsTest extends FunSuite {
     val location = SaveLocation(file, offset)
     val imageSize = 16
 
-    val image = ImageStorage.fill(imageSize, FXColor.Orange)
+    val image = ImageStorage.fill(imageSize, fromFXColor(FXColor.ORANGE))
     val regularImage = image.toRegularImage(storageFormat)
 
     val storedImage = RegularImage.ofSize(imageSize + offset.x, imageSize + offset.y)
