@@ -32,9 +32,8 @@ import java.io.File
 import scala.language.implicitConversions
 import scala.util.Try
 
-class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
-    extends Stage
-    with TriPaintView {
+class MainStage(controls: TriPaintViewListener, model: TriPaintModel, stage: Stage)
+    extends TriPaintView {
   private val (currentEditMode, setCurrentEditMode) = createResource(EditMode.Draw)
 
   private val imageDisplay: ImageGridPane = new ImageGridPane(model.imageGrid, currentEditMode)
@@ -49,8 +48,8 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
   private var currentFolder: Option[File] = None
 
   {
-    this.setTitle("TriPaint")
-    this.setOnCloseRequest(e => {
+    stage.setTitle("TriPaint")
+    stage.setOnCloseRequest(e => {
       if (!controls.requestExit()) e.consume()
     })
 
@@ -84,7 +83,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
       }
     }
 
-    this.setScene(scene)
+    stage.setScene(scene)
   }
 
   private def makeColorBox() = {
@@ -119,7 +118,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     currentFolder.foreach(chooser.setInitialDirectory)
     chooser.setTitle("Save file")
     chooser.getExtensionFilters.add(new ExtensionFilter("PNG", "*.png"))
-    val result = Option(chooser.showSaveDialog(this))
+    val result = Option(chooser.showSaveDialog(stage))
     result.foreach(r => currentFolder = Some(r.getParentFile))
     result
   }
@@ -139,7 +138,7 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
   override def askForFileToOpen(): Option[File] = {
     val chooser = new FileChooser
     chooser.setTitle("Open file")
-    val result = Option(chooser.showOpenDialog(this))
+    val result = Option(chooser.showOpenDialog(stage))
     result.foreach(r => currentFolder = Some(r.getParentFile))
     result
   }
@@ -300,4 +299,6 @@ class MainStage(controls: TriPaintViewListener, model: TriPaintModel)
     val sizeStr = dialog.showAndWait().toScala
     sizeStr.map(str => Try(str.toInt).toOption.filter(_ > 0).getOrElse(32))
   }
+
+  override def close(): Unit = stage.close()
 }

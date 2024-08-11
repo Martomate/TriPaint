@@ -12,13 +12,7 @@ object TriPaint {
   class App extends Application {
     override def start(stage: Stage): Unit = {
       val model: TriPaintModel = TriPaintModel.create()
-      val controller = new TriPaintController(model, new MainStage(_, _))
-      val s = controller.view.asInstanceOf[Stage]
-
-      // TODO: send stage to the UI instead of copying over the data
-      stage.setTitle(s.getTitle)
-      stage.setScene(s.getScene)
-      stage.setOnCloseRequest(s.getOnCloseRequest)
+      val controller = new TriPaintController(model, new MainStage(_, _, stage))
 
       Platform.runLater(() =>
         model.imageGrid.setImageSizeIfEmpty(controller.view.askForImageSize().getOrElse(32))
