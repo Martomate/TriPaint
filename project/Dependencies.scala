@@ -2,7 +2,7 @@ import sbt.*
 
 object Dependencies {
   lazy val JavaFxInclude = Seq("base", "controls", "graphics", "media", "swing")
-    .map(m => "org.openjfx" % s"javafx-$m" % "21.0.1")
+    .map(m => "org.openjfx" % s"javafx-$m" % "22.0.2")
   lazy val JavaFxExclude = Seq("fxml", "web")
     .map(m => "org.openjfx" % s"javafx-$m")
 
