@@ -3,7 +3,6 @@ package tripaint.view.gui
 import tripaint.view.{MenuBarAction, TriPaintViewListener}
 
 import javafx.scene.control.{Menu, MenuBar, MenuItem, SeparatorMenuItem}
-import javafx.scene.image.ImageView
 
 object TheMenuBar {
   def create(controls: TriPaintViewListener): MenuBar = {
@@ -57,11 +56,7 @@ object TheMenuBar {
   }
 
   private def makeMenuItem(controls: TriPaintViewListener, action: MenuBarAction): MenuItem = {
-    val item = if action.imagePath == null then {
-      new MenuItem(action.text)
-    } else {
-      new MenuItem(action.text, new ImageView(s"icons/${action.imagePath}.png"))
-    }
+    val item = new MenuItem(action.text)
     if action.action != null then {
       item.setOnAction(_ => controls.perform(action.action))
     }

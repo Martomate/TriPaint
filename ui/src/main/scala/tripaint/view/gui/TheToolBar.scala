@@ -27,7 +27,10 @@ object TheToolBar {
     val item = if action.imagePath == null then {
       new Button(action.text)
     } else {
-      new Button(null, new ImageView("icons/" + action.imagePath + ".png"))
+      val imageView = new ImageView(s"icons/${action.imagePath}.png")
+      imageView.setFitWidth(20)
+      imageView.setFitHeight(20)
+      new Button(null, imageView)
     }
     item.setOnAction(_ => {
       if action.action != null then {
