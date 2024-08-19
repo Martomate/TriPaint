@@ -47,4 +47,7 @@ class ToolboxButton(mode: EditMode, onClick: () => Unit)
     extends ToggleButton(null, new ImageView("icons/editmodes/" + mode.imagePath + ".png")) {
   setTooltip(new Tooltip(s"${mode.tooltipText}\n(Shortcut: ${mode.shortCut})"))
   setOnAction(_ => onClick())
+
+  getGraphic.asInstanceOf[ImageView].setFitWidth(20)
+  getGraphic.asInstanceOf[ImageView].setFitHeight(20)
 }
