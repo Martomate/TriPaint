@@ -12,7 +12,7 @@ class RandomNoiseEffect(min: Color, max: Color) extends Effect {
     val hi = max.toHsb
 
     for (imageCoords <- images) {
-      val image = grid(imageCoords).get.storage
+      val image = grid(imageCoords).storage
       for (coords <- image.allPixels) {
         var hueDiff = hi.h - lo.h
         if hueDiff > 180 then {

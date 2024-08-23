@@ -1,6 +1,9 @@
 package tripaint.coords
 
-case class PixelCoords(image: GridCoords, pix: TriangleCoords) {
+case class PixelCoords(value: Long) extends AnyVal {
+  inline def image: GridCoords = new GridCoords((value >> 32).toInt)
+  inline def pix: TriangleCoords = new TriangleCoords(value.toInt)
+
   def neighbours(imageSize: Int): Seq[PixelCoords] = {
     toGlobal(imageSize).neighbours map (c => PixelCoords(c, imageSize))
     /*    val dyForTop = if (image.x % 2 == 0) 1 else -1
@@ -47,20 +50,29 @@ case class PixelCoords(image: GridCoords, pix: TriangleCoords) {
 
 object PixelCoords {
   def apply(coords: TriangleCoords, coords1: GridCoords): PixelCoords =
-    PixelCoords(coords1, coords)
+    new PixelCoords(coords1.value.toLong << 32 | coords.value.toLong)
 
   def apply(coords: GlobalPixCoords, imageSize: Int): PixelCoords = {
     require(imageSize > 0)
 
-    val iy = Math.floorDiv(coords.y, imageSize)
-    val ix = Math.floorDiv(coords.x, 2 * imageSize) * 2
-    val py1 = imageSize - 1 - (coords.y - iy * imageSize)
-    val px1 = coords.x - ix * imageSize
+    fromGlobalCoords(coords.x, coords.y, imageSize)
+  }
+
+  inline def fromGlobalCoords(x: Int, y: Int, imageSize: Int): PixelCoords = {
+    val iy = Math.floorDiv(y, imageSize)
+    val ix = Math.floorDiv(x, 2 * imageSize) * 2
+    val py1 = imageSize - 1 - (y - iy * imageSize)
+    val px1 = x - ix * imageSize
     val upsideDown = px1 > 2 * py1
-    val py = if (upsideDown) imageSize - 1 - py1 else py1
-    val px = if (upsideDown) 2 * imageSize - 1 - px1 else px1
-    val image = GridCoords(if (upsideDown) ix + 1 else ix, iy)
-    val pix = TriangleCoords(px, py)
-    PixelCoords(pix, image)
+
+    if upsideDown then {
+      val image = GridCoords(ix + 1, iy)
+      val pix = TriangleCoords(2 * imageSize - 1 - px1, imageSize - 1 - py1)
+      new PixelCoords(image.value.toLong << 32 | pix.value.toLong)
+    } else {
+      val image = GridCoords(ix, iy)
+      val pix = TriangleCoords(px1, py1)
+      new PixelCoords(image.value.toLong << 32 | pix.value.toLong)
+    }
   }
 }

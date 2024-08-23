@@ -20,7 +20,7 @@ abstract class LocalEffect extends Effect {
 
     val searcher = new FloodFillSearcher(colorLookup)
     val allChanges = for (imageCoords <- images) yield {
-      val image = grid(imageCoords).get.storage
+      val image = grid(imageCoords).storage
 
       val newVals = for (here <- image.allPixels) yield {
         val coords = PixelCoords(here, imageCoords)
@@ -36,7 +36,7 @@ abstract class LocalEffect extends Effect {
       imageCoords -> newVals
     }
     for ((im, vals) <- allChanges) {
-      val image = grid(im).get.storage
+      val image = grid(im).storage
       for ((coords, color) <- vals) image.setColor(coords, color)
     }
   }

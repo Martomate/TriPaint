@@ -17,6 +17,10 @@ class ImageStorage private (val imageSize: Int, image: RegularImage) {
     val sc = SimpleStorageFormat.transform(coords)
     image.getColor(sc.x, sc.y)
 
+  final def getColorArgb(coords: TriangleCoords): Int =
+    val sc = SimpleStorageFormat.transform(coords)
+    image.getColorArgb(sc.x, sc.y)
+
   final def setColor(coords: TriangleCoords, col: Color): Unit =
     val before = this.getColor(coords)
     if before != col then

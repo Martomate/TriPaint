@@ -39,7 +39,21 @@ class ImageGrid(init_imageSize: Int) {
   private val dispatcher = new EventDispatcher[ImageGrid.Event]
   def trackChanges(tracker: Tracker[ImageGrid.Event]): Unit = dispatcher.track(tracker)
 
-  def apply(coords: GridCoords): Option[GridCell] = _images.find(_.coords == coords)
+  // Note: this function is optimized for speed
+  def apply(coords: GridCoords): GridCell = {
+    var res: GridCell = null
+    var idx = 0
+    val len = _images.length
+    while idx < len do {
+      val img = _images(idx)
+      if img.coords == coords then {
+        res = img
+        idx = len
+      }
+      idx += 1
+    }
+    res
+  }
 
   def findByStorage(storage: ImageStorage): Option[GridCell] = images.find(_.storage == storage)
 
@@ -140,7 +154,10 @@ class ImageGrid(init_imageSize: Int) {
   }
 
   def replaceImage(coords: GridCoords, newImage: ImageStorage): Unit = {
-    apply(coords).foreach(_.replaceImage(newImage))
+    val img = apply(coords)
+    if img != null then {
+      img.replaceImage(newImage)
+    }
   }
 
   final def selectedImages: Seq[GridCell] = images.filter(_.editable)
@@ -150,7 +167,7 @@ class ImageGrid(init_imageSize: Int) {
   private def onGridCellEvent(cell: GridCoords, event: GridCell.Event): Unit = {
     event match {
       case GridCell.Event.PixelChanged(pix, from, to) =>
-        dispatcher.notify(ImageGrid.Event.PixelChanged(PixelCoords(cell, pix), from, to))
+        dispatcher.notify(ImageGrid.Event.PixelChanged(PixelCoords(pix, cell), from, to))
       case GridCell.Event.ImageChangedALot =>
         dispatcher.notify(ImageGrid.Event.ImageChangedALot(cell))
       case _ =>

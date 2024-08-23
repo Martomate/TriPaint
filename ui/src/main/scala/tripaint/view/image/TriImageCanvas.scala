@@ -6,10 +6,12 @@ import tripaint.coords.TriangleCoords
 import tripaint.image.ImageStorage
 
 import javafx.scene.canvas.Canvas
-import javafx.scene.image.PixelFormat
+import javafx.scene.image.{PixelFormat, WritableImage}
 
 class TriImageCanvas(init_width: Double, imageSize: Int)
     extends Canvas(init_width, init_width * Math.sqrt(3) / 2) {
+
+  private inline val sc = 2
 
   private val coordsToRealConverter =
     new TriangleCoordsToReal(imageSize, (xx, yy) => (xx * getWidth, yy * getHeight))
@@ -33,51 +35,56 @@ class TriImageCanvas(init_width: Double, imageSize: Int)
   }
 
   def drawTriangle(coords: TriangleCoords, color: Color, pixels: ImageStorage): Unit = {
-    val gc = getGraphicsContext2D
-    val indexMap = new IndexMap(imageSize)
-
     val (xLo, yLo, xHi, yHi) = triangleBoundingRect(coords)
 
-    for y <- yLo.toInt - 1 to yHi.toInt + 1 do {
-      for x <- xLo.toInt - 1 to xHi.toInt + 1 do {
-        val c = indexMap.coordsAt(x / getWidth, y / getHeight)
-        if c != null then {
-          val col = if c == coords then color else pixels.getColor(c)
-          gc.getPixelWriter.setColor(x, y, col.toFXColor)
-        }
-      }
-    }
+    redraw(pixels, xLo.toInt - 1, yLo.toInt - 1, xHi.toInt + 2, yHi.toInt + 2)
   }
 
   def redraw(pixels: ImageStorage): Unit = {
-    val gc = getGraphicsContext2D
-    val indexMap = new IndexMap(imageSize)
+    redraw(pixels, 0, 0, getWidth.toInt, getHeight.toInt)
+  }
 
-    val heightInt = getHeight.toInt
-    val widthInt = getWidth.toInt
+  def redraw(pixels: ImageStorage, xLo: Int, yLo: Int, xHi: Int, yHi: Int): Unit =
+    this.synchronized {
+      val gc = getGraphicsContext2D
+      val indexMap = new IndexMap(imageSize)
 
-    val image = new Array[Int](16 * 16)
+      val x0 = xLo * sc
+      val y0 = yLo * sc
+      val x1 = xHi * sc
+      val y1 = yHi * sc
 
-    for yc <- 0 until heightInt by 16 do {
-      val h = Math.min(heightInt - yc, 16)
-      for xc <- 0 until widthInt by 16 do {
-        val w = Math.min(widthInt - xc, 16)
+      val width = this.getWidth * sc
+      val height = this.getHeight * sc
 
-        for dy <- 0 until h do {
-          val y = yc + dy
-          for dx <- 0 until w do {
-            val x = xc + dx
+      val image = new Array[Int](16 * sc * 16 * sc)
+      val f = PixelFormat.getIntArgbInstance
 
-            val coords = indexMap.coordsAt(x.toDouble / widthInt, y.toDouble / heightInt)
-            val col = if coords != null then pixels.getColor(coords).withAlpha(1).toInt else 0
-            image(dx + dy * 16) = col
+      gc.clearRect(xLo + 1, yLo + 1, xHi - xLo - 2, yHi - yLo - 2)
+
+      for yc <- y0 until y1 by 16 * sc do {
+        val h = Math.min(y1 - yc, 16 * sc)
+        for xc <- x0 until x1 by 16 * sc do {
+          val w = Math.min(x1 - xc, 16 * sc)
+
+          for dy <- 0 until h do {
+            val y = yc + dy
+            for dx <- 0 until w do {
+              val x = xc + dx
+
+              val col = indexMap.coordsAt(x.toDouble / width, y.toDouble / height) match {
+                case Some(coords) => pixels.getColor(coords).withAlpha(1).toInt
+                case None         => 0
+              }
+              image(dx + dy * 16 * sc) = col
+            }
           }
+          val im = WritableImage(16 * sc, 16 * sc)
+          im.getPixelWriter.setPixels(0, 0, w, h, f, image, 0, 16 * sc)
+          gc.drawImage(im, 0, 0, w, h, xc / sc, yc / sc, w / sc, h / sc)
         }
-
-        gc.getPixelWriter.setPixels(xc, yc, w, h, PixelFormat.getIntArgbInstance, image, 0, 16)
       }
     }
-  }
 
   private def triangleBoundingRect(coords: TriangleCoords): (Double, Double, Double, Double) = {
     val (px, py) = coordsToRealConverter.triangleCornerPoints(coords)

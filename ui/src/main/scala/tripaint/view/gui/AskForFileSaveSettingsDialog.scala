@@ -95,7 +95,9 @@ object AskForFileSaveSettingsDialog {
 
     def updatePreviewAction(): Unit = {
       resultFromInputs() match {
-        case Success(FileSaveSettings(StorageCoords(x, y), format)) =>
+        case Success(FileSaveSettings(sc, format)) =>
+          val x = sc.x
+          val y = sc.y
           previewPane.setLayoutX(x)
           previewPane.setLayoutY(y)
 

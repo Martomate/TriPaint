@@ -8,20 +8,26 @@ import java.util
 
 class RegularImage private (val width: Int, val height: Int, private val pixels: Array[Int]) {
   def getColor(x: Int, y: Int): Color =
+    Color.fromInt(getColorArgb(x, y))
+
+  def getColorArgb(x: Int, y: Int): Int =
     require(x >= 0)
     require(y >= 0)
     require(x < width)
     require(y < height)
 
-    Color.fromInt(pixels(x + y * width))
+    pixels(x + y * width)
 
   def setColor(x: Int, y: Int, color: Color): Unit =
+    setColorArgb(x, y, color.toInt)
+
+  def setColorArgb(x: Int, y: Int, color: Int): Unit =
     require(x >= 0)
     require(y >= 0)
     require(x < width)
     require(y < height)
 
-    pixels(x + y * width) = color.toInt
+    pixels(x + y * width) = color
 
   def pasteImage(offset: StorageCoords, image: RegularImage): Unit =
     require(offset.x + image.width <= width)

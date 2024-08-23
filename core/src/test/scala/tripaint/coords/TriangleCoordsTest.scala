@@ -31,8 +31,8 @@ class TriangleCoordsTest extends FunSuite {
     testToIntSuccess(0xfff, 0xfff)(0xffffff)
     testToIntSuccess(0xfff * 2, 0xfff)(0x1ffefff)
   }
-  test("fromInt should return null for -1") {
-    assertEquals(TriangleCoords.fromInt(-1), null)
+  test("fromInt should throw an exception for -1") {
+    intercept[IllegalArgumentException](TriangleCoords.fromInt(-1))
   }
   test("fromInt should throw an exception for invalid input") {
     testFromIntFail(0x001000)

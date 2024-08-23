@@ -100,7 +100,9 @@ object AskForFileOpenSettingsDialog {
 
     def updatePreviewAction(): Unit = {
       resultFromInputs() match {
-        case Success(FileOpenSettings(StorageCoords(sx, sy), format)) =>
+        case Success(FileOpenSettings(sc, format)) =>
+          val sx = sc.x
+          val sy = sc.y
           previewPane.setLayoutX(sx)
           previewPane.setLayoutY(sy)
 

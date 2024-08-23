@@ -88,6 +88,7 @@ class ImageGridPane(imageGrid: ImageGrid, currentEditMode: Resource[EditMode]) e
       currentEditMode.value match {
         case EditMode.Organize => // TODO: implement scale and rotation if (x, y) is close enough to a corner
           setScroll(xScroll + xDiff, yScroll + yDiff)
+          canvas.redraw()
         case _ =>
           val dist = Math.hypot(xDiff, yDiff) / zoom
 
@@ -166,18 +167,20 @@ class ImageGridPane(imageGrid: ImageGrid, currentEditMode: Resource[EditMode]) e
       case _                     => None
     }
 
-    for {
-      image <- imageGrid(coords.image)
-      color <- colorToUse
-    } do {
-      currentEditMode.value match {
-        case EditMode.Draw =>
-          drawAt(image, coords.pix, color.get())
-        case EditMode.Fill =>
-          fill(coords, color.get())
-        case EditMode.PickColor =>
-          color.setValue(image.storage.getColor(coords.pix))
-        case _ =>
+    val image = imageGrid(coords.image)
+    if image != null then {
+      for {
+        color <- colorToUse
+      } do {
+        currentEditMode.value match {
+          case EditMode.Draw =>
+            drawAt(image, coords.pix, color.get())
+          case EditMode.Fill =>
+            fill(coords, color.get())
+          case EditMode.PickColor =>
+            color.setValue(image.storage.getColor(coords.pix))
+          case _ =>
+        }
       }
     }
   }
@@ -198,17 +201,18 @@ class ImageGridPane(imageGrid: ImageGrid, currentEditMode: Resource[EditMode]) e
   }
 
   private def fill(coords: PixelCoords, color: Color): Unit = {
-    for image <- imageGrid(coords.image) do {
+    val image = imageGrid(coords.image)
+    if image != null then {
       val referenceColor = image.storage.getColor(coords.pix)
       val places = gridSearcher
         .search(coords.toGlobal(imageGrid.imageSize), (_, col) => col == referenceColor)
         .map(p => PixelCoords(p, imageGrid.imageSize))
 
-      for {
-        p <- places
-        im <- imageGrid(p.image)
-      } do {
-        drawAt(im, p.pix, color)
+      for p <- places do {
+        val im = imageGrid(p.image)
+        if im != null then {
+          drawAt(im, p.pix, color)
+        }
       }
     }
 

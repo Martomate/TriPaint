@@ -90,7 +90,7 @@ class BlurEffectTest extends FunSuite {
     effect.action(Seq(thisImage, borderingImage), grid)
 
     val colorLookup = new ImageGridColorLookup(grid)
-    val dotGlobal = PixelCoords(thisImage, dotLocation).toGlobal(imageSize)
+    val dotGlobal = PixelCoords(dotLocation, thisImage).toGlobal(imageSize)
 
     for (dx <- 0 to radius) {
       val look1 = GlobalPixCoords(dotGlobal.x - dx, dotGlobal.y)

@@ -51,20 +51,20 @@ class ImageGridTest extends FunSuite with MockitoSugar {
     val f = new ImageGrid(16)
     val image = new GridCell(GridCoords(1, 0), ImageStorage.fill(4, Color.Black))
 
-    assertEquals(f(GridCoords(0, 0)), None)
+    assertEquals(f(GridCoords(0, 0)), null)
     f.set(image)
-    assertEquals(f(GridCoords(0, 0)), None)
+    assertEquals(f(GridCoords(0, 0)), null)
   }
 
   test("apply should return the image at the given location") {
     val f = new ImageGrid(16)
     val image = new GridCell(GridCoords(1, 0), ImageStorage.fill(4, Color.Black))
 
-    assertEquals(f(GridCoords(1, 0)), None)
+    assertEquals(f(GridCoords(1, 0)), null)
     f.set(image)
-    assertEquals(f(GridCoords(1, 0)), Some(image))
-    assertEquals(f(GridCoords(0, 1)), None)
-    assertEquals(f(GridCoords(1, 0)), Some(image))
+    assertEquals(f(GridCoords(1, 0)), image)
+    assertEquals(f(GridCoords(0, 1)), null)
+    assertEquals(f(GridCoords(1, 0)), image)
   }
 
   test("update should add the image if it doesn't already exist") {
@@ -72,7 +72,7 @@ class ImageGridTest extends FunSuite with MockitoSugar {
     val image = new GridCell(GridCoords(1, 0), ImageStorage.fill(4, Color.Black))
 
     f.set(image)
-    assertEquals(f(GridCoords(1, 0)), Some(image))
+    assertEquals(f(GridCoords(1, 0)), image)
   }
 
   test("update should replace the image if there is already one at that location") {
@@ -82,7 +82,7 @@ class ImageGridTest extends FunSuite with MockitoSugar {
 
     f.set(image)
     f.set(image2)
-    assertEquals(f(GridCoords(1, 0)), Some(image2))
+    assertEquals(f(GridCoords(1, 0)), image2)
   }
 
   test("update should notify listeners about image addition, and image removal if there was one") {
@@ -118,7 +118,7 @@ class ImageGridTest extends FunSuite with MockitoSugar {
 
     f.set(image)
     assertEquals(f -= GridCoords(1, 0), image)
-    assertEquals(f(GridCoords(1, 0)), None)
+    assertEquals(f(GridCoords(1, 0)), null)
   }
 
   test("-= should notify listeners if there was a removal") {

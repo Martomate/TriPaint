@@ -24,9 +24,7 @@ class TriImageForPreview(content: GridCell, previewWidth: Double) extends Pane {
 
   private def redraw(): Unit = {
     canvas.clearCanvas()
-    for c <- storage.allPixels do {
-      drawTriangle(c)
-    }
+    canvas.redraw(storage)
   }
 
   private def onImageChanged(event: GridCell.Event): Unit = {

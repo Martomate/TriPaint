@@ -14,6 +14,7 @@ import javafx.scene.control.Tooltip
 import javafx.scene.image.ImageView
 import javafx.scene.layout.HBox
 import javafx.scene.paint.Color
+import javafx.scene.transform.Transform
 
 object ImagePreviewList {
   def fromImageContent(
@@ -66,14 +67,19 @@ object ImagePreview {
       previewSize: Int,
       locationOfImage: ImageStorage => Option[SaveLocation]
   ): ImageView = {
-    val preview = new TriImageForPreview(content, previewSize)
+    val scale = 4 // this make the image look good on high dpi displays
+
+    val preview = new TriImageForPreview(content, previewSize * scale)
     val tooltip = TriImageTooltip.fromImagePool(content, locationOfImage)
 
     val snapshotParams = new SnapshotParameters
     snapshotParams.setFill(Color.TRANSPARENT)
 
     val view = new ImageView
-    view.setImage(preview.toImage(snapshotParams))
+    val image = preview.toImage(snapshotParams)
+    view.setImage(image)
+    view.setFitWidth(image.getWidth / scale)
+    view.setFitHeight(image.getHeight / scale)
     Tooltip.install(view, tooltip)
     view
   }

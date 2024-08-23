@@ -10,7 +10,7 @@ object ScrambleEffect extends Effect {
 
   override def action(images: Seq[GridCoords], grid: ImageGrid): Unit = {
     for (imageCoords <- images) {
-      val image = grid(imageCoords).get.storage
+      val image = grid(imageCoords).storage
       val allPixels = image.allPixels
 
       val transform = allPixels.zip(new Random().shuffle(allPixels).map(image.getColor))

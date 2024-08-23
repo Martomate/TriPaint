@@ -1,7 +1,10 @@
 package tripaint.coords
 
 /** Like TriImageCoords but for pixels (on the entire area) */
-case class GlobalPixCoords(x: Int, y: Int) {
+case class GlobalPixCoords(value: Long) extends AnyVal {
+  inline def x = (value >> 32).toInt
+  inline def y = (value & 0xffffffff).toInt
+
   infix def distanceSq(other: GlobalPixCoords): Double = {
     val dx = other.x - x
     val dy = other.y - y
@@ -38,4 +41,6 @@ case class GlobalPixCoords(x: Int, y: Int) {
 
 object GlobalPixCoords {
   private val sqrt3: Double = math.sqrt(3)
+
+  inline def apply(x: Int, y: Int): GlobalPixCoords = new GlobalPixCoords(x.toLong << 32 | y)
 }

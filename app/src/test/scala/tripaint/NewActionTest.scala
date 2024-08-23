@@ -17,11 +17,8 @@ class NewActionTest extends FunSuite {
 
     val expectedImage = RegularImage.fill(imageSize, imageSize, backgroundColor)
 
-    val actualImage = model
-      .imageGrid(GridCoords(3, 4))
-      .map(_.storage)
-      .map(_.toRegularImage(SimpleStorageFormat))
-      .orNull
+    val cell = model.imageGrid(GridCoords(3, 4))
+    val actualImage = cell.storage.toRegularImage(SimpleStorageFormat)
 
     assertEquals(actualImage, expectedImage)
   }
@@ -38,11 +35,8 @@ class NewActionTest extends FunSuite {
 
     val expectedImage = RegularImage.fill(imageSize, imageSize, backgroundColor)
 
-    val actualImage = model
-      .imageGrid(GridCoords(3, 4))
-      .map(_.storage)
-      .map(_.toRegularImage(SimpleStorageFormat))
-      .orNull
+    val cell = model.imageGrid(GridCoords(3, 4))
+    val actualImage = cell.storage.toRegularImage(SimpleStorageFormat)
 
     assertEquals(actualImage, expectedImage)
   }

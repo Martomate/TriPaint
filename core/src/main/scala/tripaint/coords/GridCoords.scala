@@ -1,6 +1,9 @@
 package tripaint.coords
 
-case class GridCoords(x: Int, y: Int) {
+case class GridCoords(value: Int) extends AnyVal {
+  inline def x: Int = value >> 16
+  inline def y: Int = value << 16 >> 16
+
   def center: (Double, Double) = {
     val vertices: Seq[(Double, Double)] =
       val xDiv2 = (x.toDouble / 2).floor
@@ -23,5 +26,11 @@ case class GridCoords(x: Int, y: Int) {
     val centerY: Double = vertices.map(_._2).sum / 3
 
     (centerX, centerY)
+  }
+}
+
+object GridCoords {
+  inline def apply(x: Int, y: Int): GridCoords = {
+    new GridCoords(x << 16 | y)
   }
 }

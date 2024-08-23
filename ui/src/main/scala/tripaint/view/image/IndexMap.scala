@@ -3,7 +3,7 @@ package tripaint.view.image
 import tripaint.coords.TriangleCoords
 
 class IndexMap(imageSize: Int) {
-  def coordsAt(x: Double, y: Double): TriangleCoords = {
+  def coordsAt(x: Double, y: Double): Option[TriangleCoords] = {
     val yy = y
     val xx = x - (1 - y) / 2
 
@@ -16,8 +16,8 @@ class IndexMap(imageSize: Int) {
         then xInt * 2 + 1
         else xInt * 2
 
-      if (yInt < 0 || yInt >= imageSize || xT < 0 || xT > yInt * 2) null
-      else TriangleCoords(xT, yInt)
-    } else null
+      if (yInt < 0 || yInt >= imageSize || xT < 0 || xT > yInt * 2) None
+      else Some(TriangleCoords(xT, yInt))
+    } else None
   }
 }
