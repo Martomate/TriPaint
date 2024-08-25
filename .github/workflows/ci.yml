@@ -19,7 +19,7 @@ jobs:
           cache: 'gradle'
 
       - name: Build
-        run: ./gradlew build
+        run: ./gradlew classes testClasses
 
       - name: Test
-        run: ./gradlew check
+        run: ./gradlew check --info
