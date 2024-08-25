@@ -23,6 +23,14 @@
 .idea/**/gradle.xml
 .idea/**/libraries
 
+.gradle
+**/build/
+!src/**/build/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+.gradletasknamecache
+
 # CMake
 cmake-build-debug/
 
