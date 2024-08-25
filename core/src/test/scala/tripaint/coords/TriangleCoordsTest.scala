@@ -32,7 +32,7 @@ class TriangleCoordsTest extends FunSuite {
     testToIntSuccess(0xfff * 2, 0xfff)(0x1ffefff)
   }
   test("fromInt should throw an exception for -1") {
-    intercept[IllegalArgumentException](TriangleCoords.fromInt(-1))
+    intercept[AssertionError](TriangleCoords.fromInt(-1))
   }
   test("fromInt should throw an exception for invalid input") {
     testFromIntFail(0x001000)
@@ -49,13 +49,13 @@ class TriangleCoordsTest extends FunSuite {
   }
 
   private def testApplyFail(x: Int, y: Int): Unit =
-    intercept[IllegalArgumentException](TriangleCoords(x, y))
+    intercept[AssertionError](TriangleCoords(x, y))
 
   private def testToIntSuccess(x: Int, y: Int)(repr: Int): Unit =
     assertEquals(TriangleCoords(x, y).toInt, repr)
 
   private def testFromIntFail(repr: Int): Unit =
-    intercept[IllegalArgumentException](TriangleCoords.fromInt(repr))
+    intercept[AssertionError](TriangleCoords.fromInt(repr))
 
   private def testFromIntSuccess(repr: Int)(x: Int, y: Int): Unit =
     assertEquals(TriangleCoords.fromInt(repr), TriangleCoords(x, y))

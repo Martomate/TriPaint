@@ -68,11 +68,11 @@ object PixelCoords {
     if upsideDown then {
       val image = GridCoords(ix + 1, iy)
       val pix = TriangleCoords(2 * imageSize - 1 - px1, imageSize - 1 - py1)
-      new PixelCoords(image.value.toLong << 32 | pix.value.toLong)
+      new PixelCoords(image.value.toLong << 32 | (pix.value.toLong & 0xffffffffL))
     } else {
       val image = GridCoords(ix, iy)
       val pix = TriangleCoords(px1, py1)
-      new PixelCoords(image.value.toLong << 32 | pix.value.toLong)
+      new PixelCoords(image.value.toLong << 32 | (pix.value.toLong & 0xffffffffL))
     }
   }
 }

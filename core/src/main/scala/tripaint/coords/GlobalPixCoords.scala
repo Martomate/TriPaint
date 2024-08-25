@@ -42,5 +42,7 @@ case class GlobalPixCoords(value: Long) extends AnyVal {
 object GlobalPixCoords {
   private val sqrt3: Double = math.sqrt(3)
 
-  inline def apply(x: Int, y: Int): GlobalPixCoords = new GlobalPixCoords(x.toLong << 32 | y)
+  inline def apply(x: Int, y: Int): GlobalPixCoords = new GlobalPixCoords(
+    x.toLong << 32 | (y.toLong & 0xffffffffL)
+  )
 }

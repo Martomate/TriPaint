@@ -31,6 +31,6 @@ case class GridCoords(value: Int) extends AnyVal {
 
 object GridCoords {
   inline def apply(x: Int, y: Int): GridCoords = {
-    new GridCoords(x << 16 | y)
+    new GridCoords(x << 16 | (y & 0xffff))
   }
 }

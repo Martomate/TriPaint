@@ -9,13 +9,14 @@ case class TriangleCoords(value: Int) extends AnyVal {
 
 object TriangleCoords {
   inline def apply(x: Int, y: Int): TriangleCoords = {
+    assert(x >= 0)
+    assert(x <= 2 * y)
+    assert(y < 0x1000)
     new TriangleCoords(x << 12 | y)
   }
 
   def fromInt(repr: Int): TriangleCoords = {
-    if repr == -1 then {
-      throw new IllegalArgumentException()
-    }
+    assert(repr != -1)
     TriangleCoords(repr >>> 12, repr & 0xfff)
   }
 }
