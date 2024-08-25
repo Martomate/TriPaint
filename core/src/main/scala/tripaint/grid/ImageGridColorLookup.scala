@@ -1,6 +1,7 @@
 package tripaint.grid
 
-import tripaint.{Color, ColorLookup}
+import tripaint.ColorLookup
+import tripaint.color.Color
 import tripaint.coords.{GlobalPixCoords, PixelCoords}
 
 class ImageGridColorLookup(grid: ImageGrid) extends ColorLookup {

@@ -1,6 +1,5 @@
 package tripaint.grid
 
-import tripaint.Color
 import tripaint.coords.{GridCoords, TriangleCoords}
 import tripaint.grid.ImageSaveCollisionHandler
 import tripaint.image.{ImagePool, ImageStorage}
@@ -11,6 +10,7 @@ import munit.FunSuite
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.mockito.MockitoSugar.mock
+import tripaint.color.Color
 
 class ImageGridTest extends FunSuite with MockitoSugar {
   given collisionHandler: ImageSaveCollisionHandler = mock[ImageSaveCollisionHandler]

@@ -1,17 +1,18 @@
 package tripaint.view.image
 
-import tripaint.{Color, FloodFillSearcher}
-import tripaint.ScalaFxExt.fromFXColor
+import tripaint.FloodFillSearcher
 import tripaint.coords.{GridCoords, PixelCoords, TriangleCoords}
 import tripaint.grid.{GridCell, ImageChange, ImageGrid, ImageGridChange, ImageGridColorLookup}
 import tripaint.util.Resource
 import tripaint.view.EditMode
+import tripaint.view.JavaFxExt.fromFXColor
 
 import javafx.beans.property.{ObjectProperty, SimpleObjectProperty}
 import javafx.scene.input.{MouseButton, MouseEvent}
 import javafx.scene.layout.Pane
 import javafx.scene.paint.Color as FXColor
 import javafx.scene.shape.Rectangle
+import tripaint.color.Color
 
 import scala.collection.mutable
 

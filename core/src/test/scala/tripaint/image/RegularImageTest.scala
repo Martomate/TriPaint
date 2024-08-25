@@ -1,10 +1,10 @@
 package tripaint.image
 
-import tripaint.Color
 import tripaint.coords.StorageCoords
 import tripaint.image.format.SimpleStorageFormat
 
 import munit.FunSuite
+import tripaint.color.Color
 
 import java.awt.image.BufferedImage
 import java.io.File

@@ -1,6 +1,6 @@
 package tripaint.image
 
-import tripaint.Color
+import tripaint.color.Color
 import tripaint.coords.{StorageCoords, TriangleCoords}
 import tripaint.image.format.{SimpleStorageFormat, StorageFormat}
 import tripaint.util.{EventDispatcher, Tracker}

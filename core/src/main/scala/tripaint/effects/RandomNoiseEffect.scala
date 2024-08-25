@@ -1,6 +1,6 @@
 package tripaint.effects
 
-import tripaint.{Color, HsbColor}
+import tripaint.color.{Color, HsbColor}
 import tripaint.coords.GridCoords
 import tripaint.grid.ImageGrid
 

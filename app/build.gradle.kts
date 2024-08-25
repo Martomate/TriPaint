@@ -6,7 +6,7 @@ plugins {
 }
 
 application {
-    mainClass = "tripaint.TriPaint"
+    mainClass = "tripaint.app.TriPaint"
 }
 
 runtime {

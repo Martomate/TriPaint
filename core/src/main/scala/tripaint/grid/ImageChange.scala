@@ -1,7 +1,7 @@
 package tripaint.grid
 
 import tripaint.Change
-import tripaint.Color
+import tripaint.color.Color
 import tripaint.coords.TriangleCoords
 import tripaint.image.ImageStorage
 

@@ -1,4 +1,4 @@
-package tripaint
+package tripaint.app
 
 import tripaint.image.RegularImage
 import tripaint.util.{EventDispatcher, Tracker}

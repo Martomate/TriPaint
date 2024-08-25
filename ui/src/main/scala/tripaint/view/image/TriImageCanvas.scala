@@ -1,12 +1,11 @@
 package tripaint.view.image
 
-import tripaint.Color
-import tripaint.ScalaFxExt.*
 import tripaint.coords.TriangleCoords
 import tripaint.image.ImageStorage
 
 import javafx.scene.canvas.Canvas
 import javafx.scene.image.{PixelFormat, WritableImage}
+import tripaint.color.Color
 
 class TriImageCanvas(init_width: Double, imageSize: Int)
     extends Canvas(init_width, init_width * Math.sqrt(3) / 2) {

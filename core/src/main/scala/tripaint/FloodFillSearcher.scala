@@ -1,5 +1,6 @@
 package tripaint
 
+import tripaint.color.Color
 import tripaint.coords.GlobalPixCoords
 
 class FloodFillSearcher(colorLookup: ColorLookup) {

@@ -1,5 +1,6 @@
-package tripaint
+package tripaint.app
 
+import tripaint.color.Color
 import tripaint.coords.GridCoords
 import tripaint.image.RegularImage
 import tripaint.image.format.SimpleStorageFormat

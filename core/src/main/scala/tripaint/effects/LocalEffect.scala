@@ -1,6 +1,7 @@
 package tripaint.effects
 
-import tripaint.{Color, ColorLookup, FloodFillSearcher}
+import tripaint.{ColorLookup, FloodFillSearcher}
+import tripaint.color.Color
 import tripaint.coords.{GlobalPixCoords, GridCoords, PixelCoords}
 import tripaint.grid.{ImageGrid, ImageGridColorLookup}
 

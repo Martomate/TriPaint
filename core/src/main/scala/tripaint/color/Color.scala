@@ -1,12 +1,6 @@
-package tripaint
+package tripaint.color
 
 import scala.annotation.targetName
-
-case class HsbColor(h: Double, s: Double, b: Double, a: Double) {
-  def toRgb: Color = {
-    Color.fromHsb(this)
-  }
-}
 
 case class Color(r: Double, g: Double, b: Double, a: Double) {
   def withAlpha(a: Double): Color = Color(r, g, b, a)

@@ -1,11 +1,11 @@
-package tripaint
+package tripaint.app
 
-import tripaint.ScalaFxExt.fromFXColor
 import tripaint.coords.{GridCoords, StorageCoords}
 import tripaint.image.{ImageStorage, RegularImage}
 import tripaint.image.ImagePool.SaveLocation
 import tripaint.image.format.{SimpleStorageFormat, StorageFormat}
 import tripaint.view.FileOpenSettings
+import tripaint.view.JavaFxExt.fromFXColor
 
 import javafx.scene.paint.Color as FXColor
 import munit.FunSuite

@@ -1,10 +1,9 @@
-package tripaint
+package tripaint.view
 
 import javafx.scene.paint.Color as FXColor
+import tripaint.color.Color
 
-import java.util.Optional
-
-object ScalaFxExt {
+object JavaFxExt {
   extension (c: Color) {
     def toFXColor: FXColor = FXColor.color(clamp(c.r), clamp(c.g), clamp(c.b), clamp(c.a))
   }
@@ -16,8 +15,4 @@ object ScalaFxExt {
   }
 
   private def clamp(v: Double): Double = math.min(math.max(v, 0), 1)
-
-  extension [T](opt: Optional[T]) {
-    def toScala: Option[T] = if opt.isPresent then Some(opt.get) else None
-  }
 }

@@ -1,4 +1,6 @@
-package tripaint
+package tripaint.color
+
+import tripaint.color.{Color, HsbColor}
 
 import munit.{Compare, FunSuite}
 

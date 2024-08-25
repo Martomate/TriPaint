@@ -1,11 +1,11 @@
 package tripaint.effects
 
-import tripaint.Color
 import tripaint.coords.{GlobalPixCoords, GridCoords, PixelCoords, TriangleCoords}
 import tripaint.grid.{GridCell, ImageGrid, ImageGridColorLookup}
 import tripaint.image.ImageStorage
 
 import munit.FunSuite
+import tripaint.color.Color
 
 class BlurEffectTest extends FunSuite {
   test("name should be 'Blur'") {

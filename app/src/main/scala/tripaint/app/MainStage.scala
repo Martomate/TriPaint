@@ -1,12 +1,13 @@
-package tripaint
+package tripaint.app
 
-import tripaint.ScalaFxExt.{fromFXColor, toFXColor, toScala}
 import tripaint.effects.{BlurEffect, MotionBlurEffect, RandomNoiseEffect}
 import tripaint.grid.GridCell
 import tripaint.image.{ImagePool, ImageStorage}
 import tripaint.image.format.{RecursiveStorageFormat, SimpleStorageFormat}
 import tripaint.util.{createResource, Resource}
+import tripaint.util.JavaExt.toScala
 import tripaint.view.*
+import tripaint.view.JavaFxExt.{fromFXColor, toFXColor}
 import tripaint.view.gui.*
 import tripaint.view.image.ImageGridPane
 
@@ -27,6 +28,7 @@ import javafx.scene.paint.Color as FXColor
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import javafx.stage.Stage
+import tripaint.color.Color
 
 import java.io.File
 import scala.language.implicitConversions

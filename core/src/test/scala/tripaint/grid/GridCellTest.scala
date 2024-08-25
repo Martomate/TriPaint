@@ -1,11 +1,11 @@
 package tripaint.grid
 
-import tripaint.Color
 import tripaint.coords.{GridCoords, TriangleCoords}
 import tripaint.image.ImageStorage
 import tripaint.util.Tracker
 
 import munit.FunSuite
+import tripaint.color.Color
 
 class GridCellTest extends FunSuite {
 

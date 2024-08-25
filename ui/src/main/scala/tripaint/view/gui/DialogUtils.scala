@@ -1,8 +1,8 @@
 package tripaint.view.gui
 
-import tripaint.ScalaFxExt.toScala
 import tripaint.grid.{GridCell, ImageGrid}
 import tripaint.image.ImagePool
+import tripaint.util.JavaExt.toScala
 import tripaint.view.image.TriImageForPreview
 
 import javafx.application.Platform

@@ -1,6 +1,6 @@
-package tripaint
+package tripaint.app
 
-import tripaint.Color
+import tripaint.color.Color
 import tripaint.image.RegularImage
 import tripaint.util.Tracker
 

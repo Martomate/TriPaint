@@ -1,5 +1,6 @@
-package tripaint
+package tripaint.app
 
+import tripaint.color.Color
 import tripaint.coords.{GridCoords, StorageCoords}
 import tripaint.effects.Effect
 import tripaint.grid.*

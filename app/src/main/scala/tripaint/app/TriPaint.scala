@@ -1,4 +1,4 @@
-package tripaint
+package tripaint.app
 
 import javafx.application.{Application, Platform}
 import javafx.stage.Stage

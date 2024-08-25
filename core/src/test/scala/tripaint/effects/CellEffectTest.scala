@@ -1,12 +1,12 @@
 package tripaint.effects
 
-import tripaint.Color
 import tripaint.coords.{GridCoords, TriangleCoords}
 import tripaint.grid.GridCell
 import tripaint.grid.ImageGrid
 import tripaint.image.ImageStorage
 
 import munit.FunSuite
+import tripaint.color.Color
 
 class CellEffectTest extends FunSuite {
   test("Cell effect works for bottom triangles") {

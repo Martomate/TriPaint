@@ -1,10 +1,10 @@
 package tripaint.grid
 
-import tripaint.Color
 import tripaint.coords.{GlobalPixCoords, GridCoords, TriangleCoords}
 import tripaint.image.ImageStorage
 
 import munit.FunSuite
+import tripaint.color.Color
 
 class ImageGridColorLookupTest extends FunSuite {
   test("lookup should return None if there is no image") {

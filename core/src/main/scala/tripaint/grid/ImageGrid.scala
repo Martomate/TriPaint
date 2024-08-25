@@ -1,6 +1,6 @@
 package tripaint.grid
 
-import tripaint.Color
+import tripaint.color.Color
 import tripaint.coords.{GridCoords, PixelCoords}
 import tripaint.image.{ImagePool, ImageStorage}
 import tripaint.image.ImagePool.{SaveInfo, SaveLocation}

@@ -1,6 +1,5 @@
 package tripaint.view.gui
 
-import tripaint.Color
 import tripaint.coords.{GridCoords, StorageCoords}
 import tripaint.grid.{GridCell, ImageGrid}
 import tripaint.image.{ImageStorage, RegularImage}
@@ -17,6 +16,7 @@ import javafx.scene.control.ButtonType
 import javafx.scene.image.ImageView
 import javafx.scene.layout.Pane
 import javafx.util.StringConverter
+import tripaint.color.Color
 
 import java.io.File
 import scala.util.{Success, Try}

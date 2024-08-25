@@ -1,7 +1,7 @@
 package tripaint.image
 
 import munit.FunSuite
-import tripaint.Color
+import tripaint.color.Color
 import tripaint.image.ImagePool.SaveLocation
 import tripaint.image.format.{SimpleStorageFormat, StorageFormat}
 
