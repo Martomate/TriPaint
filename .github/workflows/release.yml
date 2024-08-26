@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  package:
+    name: Build and package release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux
+          - os: macos-latest
+            name: osx
+          - os: windows-latest
+            name: win
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Build and package
+        run: ./gradlew jpackage
+      
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: tripaint-${{matrix.name}}
+          path: app/build/jpackage/
