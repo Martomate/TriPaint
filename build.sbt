@@ -32,7 +32,9 @@ lazy val `tripaint-app` = project
   .enablePlugins(JlinkPlugin)
   .settings(
     Compile / mainClass := Some("tripaint.TriPaint"),
-    Compile / discoveredMainClasses := Seq()
+    Compile / discoveredMainClasses := Seq(),
+    executableScriptName := "tripaint",
+    packageName := "tripaint"
   )
   .settings(
     jlinkIgnoreMissingDependency := JlinkIgnore.only(
