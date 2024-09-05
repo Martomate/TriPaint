@@ -1,6 +1,7 @@
 package tripaint.grid
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Nested
 import tripaint.color.Color
 import tripaint.coords.GridCoords
 import tripaint.coords.TriangleCoords
@@ -10,47 +11,53 @@ import kotlin.test.Ignore
 import kotlin.test.Test
 
 class GridCellTest {
-    @Test
-    fun `onImageChangedALot should tell the listeners that a lot has changed`() {
-        val image = ImageStorage.fill(2, Color.Black)
-        val f = GridCell(GridCoords.from(0, 0), image)
+    @Nested
+    inner class OnImageChangedALot {
+        @Test
+        fun `tells the listeners that a lot has changed`() {
+            val image = ImageStorage.fill(2, Color.Black)
+            val f = GridCell(GridCoords.from(0, 0), image)
 
-        val tracker = Tracker.withStorage<GridCell.Event>()
-        f.trackChanges(tracker)
+            val tracker = Tracker.withStorage<GridCell.Event>()
+            f.trackChanges(tracker)
 
-        f.onImageChangedALot()
+            f.onImageChangedALot()
 
-        assertEquals(tracker.events, listOf(GridCell.Event.ImageChangedALot))
+            assertEquals(tracker.events, listOf(GridCell.Event.ImageChangedALot))
+        }
     }
 
-    @Test
-    fun `changed should return false if nothing has happened`() {
-        val image = ImageStorage.fill(2, Color.Black)
-        val f = GridCell(GridCoords.from(0, 0), image)
-        assert(!f.changed)
-    }
+    @Nested
+    inner class Changed {
+        @Test
+        fun `returns false if nothing has happened`() {
+            val image = ImageStorage.fill(2, Color.Black)
+            val f = GridCell(GridCoords.from(0, 0), image)
+            assert(!f.changed)
+        }
 
-    @Test
-    fun `changed should return true if the image has been modified since the last save`() {
-        val image = ImageStorage.fill(2, Color.Black)
-        val f = GridCell(GridCoords.from(0, 0), image)
+        @Test
+        fun `returns true if the image has been modified since the last save`() {
+            val image = ImageStorage.fill(2, Color.Black)
+            val f = GridCell(GridCoords.from(0, 0), image)
 
-        image.setColor(TriangleCoords.from(0, 0), Color.Blue)
+            image.setColor(TriangleCoords.from(0, 0), Color.Blue)
 
-        assert(f.changed)
-    }
+            assert(f.changed)
+        }
 
-    @Test
-    fun `changed should return false if the image was just saved`() {
-        val image = ImageStorage.fill(2, Color.Black)
+        @Test
+        fun `returns false if the image was just saved`() {
+            val image = ImageStorage.fill(2, Color.Black)
 
-        val cell = GridCell(GridCoords.from(0, 0), image)
+            val cell = GridCell(GridCoords.from(0, 0), image)
 
-        image.setColor(TriangleCoords.from(0, 0), Color.Blue)
-        assert(cell.changed)
+            image.setColor(TriangleCoords.from(0, 0), Color.Blue)
+            assert(cell.changed)
 
-        cell.setImageSaved()
-        assert(!cell.changed)
+            cell.setImageSaved()
+            assert(!cell.changed)
+        }
     }
 
     @Ignore
