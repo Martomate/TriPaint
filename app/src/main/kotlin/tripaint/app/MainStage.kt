@@ -13,6 +13,7 @@ import tripaint.effects.BlurEffect
 import tripaint.effects.MotionBlurEffect
 import tripaint.effects.RandomNoiseEffect
 import tripaint.grid.GridCell
+import tripaint.grid.ImageGrid
 import tripaint.image.ImagePool
 import tripaint.image.ImageStorage
 import tripaint.image.format.RecursiveStorageFormat
@@ -29,31 +30,34 @@ import java.io.File
 
 class MainStage(
     private val controls: TriPaintViewListener,
-    private val model: TriPaintModel,
+    private val fileSystem: FileSystem,
+    private val imagePool: ImagePool,
+    private val imageGrid: ImageGrid,
     private val stage: Stage,
 ) : TriPaintView {
     private val currentEditMode: Resource<EditMode>
     private val setCurrentEditMode: (EditMode) -> Unit
 
     init {
-        val res = Resource.createResource(EditMode.Draw)
-        this.currentEditMode = res.first
-        this.setCurrentEditMode = res.second
+        Resource.createResource(EditMode.Draw).let {
+            this.currentEditMode = it.first
+            this.setCurrentEditMode = it.second
+        }
     }
 
-    private val imageDisplay: ImageGridPane = ImageGridPane(model.imageGrid, currentEditMode)
+    private val imageDisplay: ImageGridPane = ImageGridPane(imageGrid, currentEditMode)
 
     private val menuBar: MenuBar = TheMenuBar.create(controls)
     private val toolBar: ToolBar = TheToolBar.create(controls)
     private val toolBox: TilePane = ToolBox.create(EditMode.all(), currentEditMode, setCurrentEditMode)
     private val imageTabs: TilePane =
-        ImageTabs.fromImagePool(model.imageGrid, model.imagePool, controls::requestImageRemoval)
+        ImageTabs.fromImagePool(imageGrid, imagePool, controls::requestImageRemoval)
     private val colorBox: VBox = makeColorBox()
 
     private var currentFolder: File? = null
 
     init {
-        stage.setTitle("TriPaint")
+        stage.title = "TriPaint"
         stage.setOnCloseRequest { e ->
             if (!controls.requestExit()) e.consume()
         }
@@ -80,7 +84,7 @@ class MainStage(
         val sceneContents = BorderPane(centerPane, topPane, null, null, null)
 
         val scene = Scene(sceneContents, 720.0, 720.0)
-        scene.stylesheets.add(MainStage::class.java.getResource("/styles/application.css").toExternalForm())
+        scene.stylesheets.add(MainStage::class.java.getResource("/styles/application.css")!!.toExternalForm())
 
         for (m in EditMode.all()) {
             if (m.shortCut != null) {
@@ -105,11 +109,11 @@ class MainStage(
         }
 
         imageDisplay.colors.primaryColor.addListener { _, from, to ->
-            if (from != to) colorPicker1.setValue(to.toFXColor())
+            if (from != to) colorPicker1.value = to.toFXColor()
         }
 
         imageDisplay.colors.secondaryColor.addListener { _, from, to ->
-            if (from != to) colorPicker2.setValue(to.toFXColor())
+            if (from != to) colorPicker2.value = to.toFXColor()
         }
 
         return VBox(
@@ -160,10 +164,10 @@ class MainStage(
     }
 
     override fun askForBlurRadius(): Int? {
-        val selectedImagesCoords = model.imageGrid.selectedImages().map { it.coords }
+        val selectedImagesCoords = imageGrid.selectedImages().map { it.coords }
         return DialogUtils.getValueFromDialog<Int>(
-            model.imagePool,
-            model.imageGrid.selectedImages(),
+            imagePool,
+            imageGrid.selectedImages(),
             "Blur images",
             "How much should the images be blurred?",
             "Radius:",
@@ -174,10 +178,10 @@ class MainStage(
     }
 
     override fun askForMotionBlurRadius(): Int? {
-        val selectedImagesCoords = model.imageGrid.selectedImages().map { it.coords }
+        val selectedImagesCoords = imageGrid.selectedImages().map { it.coords }
         return DialogUtils.getValueFromDialog(
-            model.imagePool,
-            model.imageGrid.selectedImages(),
+            imagePool,
+            imageGrid.selectedImages(),
             "Motion blur images",
             "How much should the images be motion blurred?",
             "Radius:",
@@ -188,12 +192,12 @@ class MainStage(
     }
 
     override fun askForRandomNoiseColors(): Pair<Color, Color>? {
-        val images = model.imageGrid.selectedImages()
-        val selectedImagesCoords = model.imageGrid.selectedImages().map { it.coords }
+        val images = imageGrid.selectedImages()
+        val selectedImagesCoords = imageGrid.selectedImages().map { it.coords }
         val loColorPicker = ColorPicker(Color.Black.toFXColor())
         val hiColorPicker = ColorPicker(Color.White.toFXColor())
 
-        val (previewPane, updatePreview) = DialogUtils.makeImagePreviewList(images, model.imagePool)
+        val (previewPane, updatePreview) = DialogUtils.makeImagePreviewList(images, imagePool)
 
         fun updatePreviewFromInputs() {
             val lo = fromFXColor(loColorPicker.value)
@@ -244,7 +248,7 @@ class MainStage(
     }
 
     private fun saveBeforeClosingAlert(images: List<GridCell>): Alert {
-        val (previewPane, _) = DialogUtils.makeImagePreviewList(images, model.imagePool)
+        val (previewPane, _) = DialogUtils.makeImagePreviewList(images, imagePool)
 
         val alert = Alert(Alert.AlertType.CONFIRMATION)
         alert.title = "Save before closing?"
@@ -273,7 +277,7 @@ class MainStage(
                 Pair(RecursiveStorageFormat, "Recursive format")
             ),
             0
-        ) { model.fileSystem.readImage(it) }
+        ) { fileSystem.readImage(it) }
     }
 
     override fun shouldReplaceImage(
@@ -281,9 +285,9 @@ class MainStage(
         newImage: ImageStorage,
         location: ImagePool.SaveLocation
     ): Boolean? {
-        val tri1 = model.imageGrid.findByStorage(newImage)!!
-        val tri2 = model.imageGrid.findByStorage(currentImage)!!
-        val (previewPane, _) = DialogUtils.makeImagePreviewList(listOf(tri1, tri2), model.imagePool)
+        val tri1 = imageGrid.findByStorage(newImage)!!
+        val tri2 = imageGrid.findByStorage(currentImage)!!
+        val (previewPane, _) = DialogUtils.makeImagePreviewList(listOf(tri1, tri2), imagePool)
 
         val alert = Alert(Alert.AlertType.CONFIRMATION)
         alert.title = "Collision"
@@ -295,7 +299,7 @@ class MainStage(
             ButtonType("Right", ButtonBar.ButtonData.NO),
             ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE)
         )
-        return alert.showAndWait().orElse(null)?.buttonData == ButtonBar.ButtonData.YES
+        return alert.showAndWait().map { it.buttonData == ButtonBar.ButtonData.YES }.orElse(null)
     }
 
     override fun askForImageSize(): Int? {

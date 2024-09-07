@@ -78,22 +78,24 @@ object Actions {
     }
 
     fun openImage(
-        model: TriPaintModel,
+        fileSystem: FileSystem,
+        imagePool: ImagePool,
+        imageGrid: ImageGrid,
         file: File,
         fileOpenSettings: FileOpenSettings,
         whereToPutImage: GridCoords
     ) {
         val (offset, format) = fileOpenSettings
         val location = ImagePool.SaveLocation(file, offset)
-        val imageSize = model.imageGrid.imageSize
+        val imageSize = imageGrid.imageSize
 
         CachedLoader.apply(
-            cached = { model.imagePool.imageAt(location) },
-            load = { loadImageFromFile(location, format, imageSize, model.fileSystem) }
+            cached = { imagePool.imageAt(location) },
+            load = { loadImageFromFile(location, format, imageSize, fileSystem) }
         ).onSuccess {
             val (image, found) = it
-            if (!found) model.imagePool.set(image, location, ImagePool.SaveInfo(format))
-            model.imageGrid.set(GridCell(whereToPutImage, image))
+            if (!found) imagePool.set(image, location, ImagePool.SaveInfo(format))
+            imageGrid.set(GridCell(whereToPutImage, image))
         }.onFailure {
             it.printStackTrace()
         }
@@ -109,8 +111,11 @@ object Actions {
         return ImageStorage.fromRegularImage(im, location.offset, format, imageSize)
     }
 
-    fun openHexagon(model: TriPaintModel, file: File, fileOpenSettings: FileOpenSettings, coords: GridCoords) {
-        val imageSize = model.imageGrid.imageSize
+    fun openHexagon(
+        fileSystem: FileSystem, imagePool: ImagePool, imageGrid: ImageGrid,
+        file: File, fileOpenSettings: FileOpenSettings, coords: GridCoords
+    ) {
+        val imageSize = imageGrid.imageSize
         val (offset, format) = fileOpenSettings
 
         fun coordOffset(idx: Int): Pair<Int, Int> {
@@ -131,12 +136,12 @@ object Actions {
             val off = coordOffset(idx)
             val whereToPutImage = GridCoords.from(coords.x + off.first, coords.y + off.second)
 
-            openImage(model, file, FileOpenSettings(imageOffset, format), whereToPutImage)
+            openImage(fileSystem, imagePool, imageGrid, file, FileOpenSettings(imageOffset, format), whereToPutImage)
         }
     }
 
-    fun applyEffect(model: TriPaintModel, effect: Effect) {
-        val grid = model.imageGrid
+    fun applyEffect(imageGrid: ImageGrid, effect: Effect) {
+        val grid = imageGrid
         val images = grid.selectedImages()
 
         val before = images.map { im -> im.storage.allPixels().map { pix -> im.storage.getColor(pix) } }

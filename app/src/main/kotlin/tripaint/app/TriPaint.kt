@@ -1,7 +1,6 @@
 package tripaint.app
 
 import javafx.application.Application
-import javafx.application.Platform
 import javafx.stage.Stage
 
 object TriPaint {
@@ -13,12 +12,7 @@ object TriPaint {
 
     class App : Application() {
         override fun start(stage: Stage) {
-            val model: TriPaintModel = TriPaintModel.create()
-            val controller = TriPaintController(model) { c, m -> MainStage(c, m, stage) }
-
-            Platform.runLater {
-                model.imageGrid.setImageSizeIfEmpty(controller.view.askForImageSize() ?: 32)
-            }
+            TriPaintController(stage, FileSystem.create())
 
             stage.show()
         }

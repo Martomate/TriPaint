@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Nested
 import tripaint.color.Color
 import tripaint.coords.GridCoords
 import tripaint.coords.StorageCoords
+import tripaint.grid.ImageGrid
 import tripaint.image.ImagePool
 import tripaint.image.ImageStorage
 import tripaint.image.RegularImage
@@ -24,17 +25,18 @@ class ActionsTest {
             val location = ImagePool.SaveLocation(File("a.png"))
             val imageSize = 16
 
-            val model = TriPaintModel.createNull(imageSize, FileSystem.NullArgs(initialImages = mapOf()))
-            val pool = model.imagePool
+            val fileSystem = FileSystem.createNull(FileSystem.NullArgs(initialImages = mapOf()))
+            val imagePool = ImagePool()
+            val imageGrid = ImageGrid(imageSize)
 
             Actions.openImage(
-                model,
+                fileSystem, imagePool, imageGrid,
                 location.file,
                 FileOpenSettings(location.offset, storageFormat),
                 GridCoords.from(0, 0)
             )
 
-            assertEquals(null, pool.imageAt(location))
+            assertEquals(null, imagePool.imageAt(location))
         }
 
         @Test
@@ -46,19 +48,20 @@ class ActionsTest {
             val image = ImageStorage.fill(imageSize, Color.Yellow)
             val regularImage = image.toRegularImage(storageFormat)
 
-            val model =
-                TriPaintModel.createNull(
-                    imageSize,
-                    FileSystem.NullArgs(initialImages = mapOf(Pair(file, regularImage)))
-                )
+            val fileSystem = run {
+                val initialImages = mapOf(Pair(file, regularImage))
+                FileSystem.createNull(FileSystem.NullArgs(initialImages))
+            }
+            val imagePool = ImagePool()
+            val imageGrid = ImageGrid(imageSize)
 
             Actions.openImage(
-                model,
+                fileSystem, imagePool, imageGrid,
                 location.file,
                 FileOpenSettings(location.offset, storageFormat),
                 GridCoords.from(0, 0)
             )
-            val loadedImage = model.imagePool.imageAt(location)!!
+            val loadedImage = imagePool.imageAt(location)!!
 
             assertEquals(regularImage, loadedImage.toRegularImage(storageFormat))
         }
@@ -76,19 +79,17 @@ class ActionsTest {
             val storedImage = RegularImage.ofSize(imageSize + offset.x, imageSize + offset.y)
             storedImage.pasteImage(offset, regularImage)
 
-            val model = TriPaintModel.createNull(
-                imageSize,
-                FileSystem.NullArgs(initialImages = mapOf(Pair(file, storedImage)))
-            )
-            val pool = model.imagePool
+            val fileSystem = FileSystem.createNull(FileSystem.NullArgs(initialImages = mapOf(Pair(file, storedImage))))
+            val imagePool = ImagePool()
+            val imageGrid = ImageGrid(imageSize)
 
             Actions.openImage(
-                model,
+                fileSystem, imagePool, imageGrid,
                 location.file,
                 FileOpenSettings(location.offset, storageFormat),
                 GridCoords.from(0, 0)
             )
-            val loadedImage = pool.imageAt(location)!!
+            val loadedImage = imagePool.imageAt(location)!!
 
             assertEquals(regularImage, loadedImage.toRegularImage(storageFormat))
         }

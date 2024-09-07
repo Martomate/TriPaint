@@ -1,14 +1,27 @@
 package tripaint.app
 
+import javafx.application.Platform
+import javafx.stage.Stage
 import tripaint.coords.GridCoords
 import tripaint.effects.*
 import tripaint.grid.GridCell
+import tripaint.grid.ImageGrid
+import tripaint.image.ImagePool
 import tripaint.view.TriPaintView
 import tripaint.view.TriPaintViewListener
 import tripaint.view.gui.UIAction
 
-class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFactory) : TriPaintViewListener {
-    val view: TriPaintView = viewFactory.createView(this, model)
+class TriPaintController(stage: Stage, private val fileSystem: FileSystem) : TriPaintViewListener {
+    private val imagePool: ImagePool = ImagePool()
+    private val imageGrid: ImageGrid = ImageGrid(-1)
+
+    private val view: TriPaintView = MainStage(this, fileSystem, imagePool, imageGrid, stage)
+
+    init {
+        Platform.runLater {
+            imageGrid.setImageSizeIfEmpty(view.askForImageSize() ?: 32)
+        }
+    }
 
     override fun perform(action: UIAction) {
         when (action) {
@@ -16,16 +29,16 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
                 view.askForWhereToPutImage()?.let { (x, y) ->
                     val backgroundColor = view.backgroundColor()
                     val coords = GridCoords.from(x, y)
-                    Actions.createNewImage(model.imageGrid, backgroundColor, coords)
+                    Actions.createNewImage(imageGrid, backgroundColor, coords)
                 }
             }
 
             UIAction.Open -> {
                 view.askForFileToOpen()?.let { file ->
-                    view.askForFileOpenSettings(file, model.imageGrid.imageSize, 1, 1)?.let { fileOpenSettings ->
+                    view.askForFileOpenSettings(file, imageGrid.imageSize, 1, 1)?.let { fileOpenSettings ->
                         view.askForWhereToPutImage()?.let { (x, y) ->
                             val coords = GridCoords.from(x, y)
-                            Actions.openImage(model, file, fileOpenSettings, coords)
+                            Actions.openImage(fileSystem, imagePool, imageGrid, file, fileOpenSettings, coords)
                         }
                     }
                 }
@@ -33,10 +46,10 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
 
             UIAction.OpenHexagon -> {
                 view.askForFileToOpen()?.let { file ->
-                    view.askForFileOpenSettings(file, model.imageGrid.imageSize, 6, 1)?.let { fileOpenSettings ->
+                    view.askForFileOpenSettings(file, imageGrid.imageSize, 6, 1)?.let { fileOpenSettings ->
                         view.askForWhereToPutImage()?.let { (x, y) ->
                             val coords = GridCoords.from(x, y)
-                            Actions.openHexagon(model, file, fileOpenSettings, coords)
+                            Actions.openHexagon(fileSystem, imagePool, imageGrid, file, fileOpenSettings, coords)
                         }
                     }
                 }
@@ -44,10 +57,10 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
 
             UIAction.Save -> {
                 Actions.save(
-                    model.imageGrid,
-                    model.imagePool,
-                    model.imageGrid.selectedImages().filter { it.changed },
-                    model.fileSystem,
+                    imageGrid,
+                    imagePool,
+                    imageGrid.selectedImages().filter { it.changed },
+                    fileSystem,
                     { image -> view.askForSaveFile(image) },
                     { file, image -> view.askForFileSaveSettings(file, image) },
                     view,
@@ -55,12 +68,12 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
             }
 
             UIAction.SaveAs -> {
-                for (im in model.imageGrid.selectedImages()) {
+                for (im in imageGrid.selectedImages()) {
                     Actions.saveAs(
-                        model.imageGrid,
-                        model.imagePool,
+                        imageGrid,
+                        imagePool,
                         im,
-                        model.fileSystem,
+                        fileSystem,
                         { image -> view.askForSaveFile(image) },
                         { file, image -> view.askForFileSaveSettings(file, image) },
                         view
@@ -75,37 +88,37 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
             }
 
             UIAction.Undo -> {
-                model.imageGrid.undo()
+                imageGrid.undo()
             }
 
             UIAction.Redo -> {
-                model.imageGrid.redo()
+                imageGrid.redo()
             }
 
             UIAction.Blur -> {
                 view.askForBlurRadius()?.let { radius ->
-                    Actions.applyEffect(model, BlurEffect(radius))
+                    Actions.applyEffect(imageGrid, BlurEffect(radius))
                 }
             }
 
             UIAction.MotionBlur -> {
                 view.askForMotionBlurRadius()?.let { radius ->
-                    Actions.applyEffect(model, MotionBlurEffect(radius))
+                    Actions.applyEffect(imageGrid, MotionBlurEffect(radius))
                 }
             }
 
             UIAction.RandomNoise -> {
                 view.askForRandomNoiseColors()?.let { (lo, hi) ->
-                    Actions.applyEffect(model, RandomNoiseEffect(lo, hi))
+                    Actions.applyEffect(imageGrid, RandomNoiseEffect(lo, hi))
                 }
             }
 
             UIAction.Scramble -> {
-                Actions.applyEffect(model, ScrambleEffect)
+                Actions.applyEffect(imageGrid, ScrambleEffect)
             }
 
             UIAction.Cell -> {
-                Actions.applyEffect(model, CellEffect())
+                Actions.applyEffect(imageGrid, CellEffect())
             }
 
             else -> {}
@@ -120,10 +133,10 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
             val shouldSave = view.askSaveBeforeClosing(listOf(image))
             if (shouldSave != null) {
                 if (shouldSave && !Actions.save(
-                        model.imageGrid,
-                        model.imagePool,
+                        imageGrid,
+                        imagePool,
                         listOf(image),
-                        model.fileSystem,
+                        fileSystem,
                         { view.askForSaveFile(it) },
                         { file, im -> view.askForFileSaveSettings(file, im) },
                         view,
@@ -137,19 +150,19 @@ class TriPaintController(val model: TriPaintModel, viewFactory: TriPaintViewFact
         }
 
         if (!abortRemoval) {
-            model.imageGrid.remove(image.coords)
+            imageGrid.remove(image.coords)
         }
     }
 
     private fun doExit(): Boolean {
-        val images = model.imageGrid.changedImages()
+        val images = imageGrid.changedImages()
         if (images.isEmpty()) return true
 
         val shouldSave = view.askSaveBeforeClosing(images)
         return if (shouldSave != null) {
             if (shouldSave) {
                 Actions.save(
-                    model.imageGrid, model.imagePool, images, model.fileSystem,
+                    imageGrid, imagePool, images, fileSystem,
                     { image -> view.askForSaveFile(image) },
                     { file, image -> view.askForFileSaveSettings(file, image) },
                     view
