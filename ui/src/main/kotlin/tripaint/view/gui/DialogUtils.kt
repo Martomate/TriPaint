@@ -71,7 +71,7 @@ object DialogUtils {
         dialog.graphic = graphic
 
         val contentBox = VBox(*content.toTypedArray())
-        contentBox.setSpacing(10.0)
+        contentBox.spacing = 10.0
 
         dialog.dialogPane.content = contentBox
         dialog.setResultConverter { b -> resultConverter(b) }
@@ -123,7 +123,7 @@ object DialogUtils {
     fun makeImagePreviewList(
         images: List<GridCell>,
         imagePool: ImagePool
-    ): Pair<ScrollPane, ((ImageGrid) -> Unit) -> Unit> {
+    ): Pair<ScrollPane, (effect: (ImageGrid) -> Unit) -> Unit> {
         return ImagePreviewList.fromImageContent(images, TriImageForPreview.previewSize) { imagePool.locationOf(it) }
     }
 }

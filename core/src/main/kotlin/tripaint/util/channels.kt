@@ -44,8 +44,7 @@ class Resource<T> internal constructor(init: T, source: Receiver<T>) {
     }
 
     init {
-        source.onEvent {
-            newValue ->
+        source.onEvent { newValue ->
             val oldValue = this._value
             this._value = newValue
             dispatcher.notify(Pair(oldValue, newValue))
@@ -59,7 +58,7 @@ class Resource<T> internal constructor(init: T, source: Receiver<T>) {
             return Pair(tx, rx)
         }
 
-        fun <T> createResource(init: T): Pair<Resource<T>, (T) -> Unit> {
+        fun <T> createResource(init: T): Pair<Resource<T>, (value: T) -> Unit> {
             val (tx, rx) = createChannel<T>()
             return Pair(Resource(init, rx)) { v -> tx.send(v) }
         }

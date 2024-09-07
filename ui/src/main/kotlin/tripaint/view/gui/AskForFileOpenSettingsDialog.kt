@@ -69,10 +69,10 @@ object AskForFileOpenSettingsDialog {
 
         val previewPaneBorder = run {
             val stroke = BorderStroke(
-                    Color.Red.toFXColor(),
-            BorderStrokeStyle.SOLID,
-            CornerRadii.EMPTY,
-            BorderWidths.DEFAULT
+                Color.Red.toFXColor(),
+                BorderStrokeStyle.SOLID,
+                CornerRadii.EMPTY,
+                BorderWidths.DEFAULT
             )
             Border(stroke)
         }

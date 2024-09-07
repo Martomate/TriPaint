@@ -22,8 +22,9 @@ class ImageGridPane(private val imageGrid: ImageGrid, private val currentEditMod
     private var xScroll: Double = 0.0
     private var yScroll: Double = 0.0
     private var zoom: Double = 1.0
+    private val drag = Drag()
 
-    private object drag {
+    private class Drag {
         var x: Double = -1.0
         var y: Double = -1.0
     }

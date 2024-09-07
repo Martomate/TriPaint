@@ -165,7 +165,7 @@ class MainStage(
 
     override fun askForBlurRadius(): Int? {
         val selectedImagesCoords = imageGrid.selectedImages().map { it.coords }
-        return DialogUtils.getValueFromDialog<Int>(
+        return DialogUtils.getValueFromDialog(
             imagePool,
             imageGrid.selectedImages(),
             "Blur images",

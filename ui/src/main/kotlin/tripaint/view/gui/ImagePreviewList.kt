@@ -12,40 +12,33 @@ import tripaint.grid.ImageGrid
 import tripaint.image.ImagePool
 import tripaint.image.ImageStorage
 import tripaint.image.format.SimpleStorageFormat
+import tripaint.util.Resource
 import tripaint.view.JavaFxExt.toFXColor
 import tripaint.view.image.TriImageForPreview
+import kotlin.math.sqrt
 
 object ImagePreviewList {
     fun fromImageContent(
         images: List<GridCell>,
         previewSize: Int,
         locationOfImage: (ImageStorage) -> ImagePool.SaveLocation?
-    ): Pair<ScrollPane, ((ImageGrid) -> Unit) -> Unit> {
-        val imageSize = if (images.isNotEmpty()) images.first().storage.imageSize else 8
-
-        fun makeContent(effect: (ImageGrid) -> Unit): List<ImageView> {
-            val previewImages = images.map { cloneImageContent(it) }
-
-            val previewImageGrid = ImageGrid(imageSize)
-            for (im in previewImages) {
-                previewImageGrid.set(im)
-            }
-
-            effect(previewImageGrid)
-
-            return previewImages.map { im -> ImagePreview.fromImageContent(im, previewSize, locationOfImage) }
-        }
+    ): Pair<ScrollPane, (effect: (ImageGrid) -> Unit) -> Unit> {
+        val (currentEffect, setEffect) = Resource.createResource<(ImageGrid) -> Unit> { _ -> }
 
         val p = ScrollPane()
         p.maxWidth = previewSize * 5.0
-        p.content = HBox(*makeContent { _ -> }.toTypedArray<ImageView>())
-        p.minViewportHeight = previewSize * Math.sqrt(3.0) / 2
+        p.minViewportHeight = previewSize * sqrt(3.0) / 2
 
-        val updatePreview: ((ImageGrid) -> Unit) -> Unit = { effect ->
-            p.content = HBox(*makeContent(effect).toTypedArray())
+        currentEffect.onChange { (_, effect) ->
+            p.content = images
+                .withEffect(effect)
+                .map { ImagePreview.fromImageContent(it, previewSize, locationOfImage) }
+                .let { HBox(*it.toTypedArray()) }
         }
 
-        return Pair(p, updatePreview)
+        setEffect { _ -> } // call handler once to set the initial content
+
+        return Pair(p, setEffect)
     }
 
     private fun cloneImageContent(content: GridCell): GridCell {
@@ -54,6 +47,23 @@ object ImagePreviewList {
         val imageSize = content.storage.imageSize
         val storage = ImageStorage.fromRegularImage(image, StorageCoords.from(0, 0), format, imageSize).getOrThrow()
         return GridCell(content.coords, storage)
+    }
+
+    private fun List<GridCell>.withEffect(effect: (ImageGrid) -> Unit): List<GridCell> {
+        if (this.isEmpty()) return listOf()
+
+        val imageSize = this.first().storage.imageSize
+
+        val previewImages = this.map { cloneImageContent(it) }
+
+        val previewImageGrid = ImageGrid(imageSize)
+        for (im in previewImages) {
+            previewImageGrid.set(im)
+        }
+
+        effect(previewImageGrid)
+
+        return previewImages
     }
 }
 
