@@ -12,7 +12,7 @@ object TriPaint {
 
     class App : Application() {
         override fun start(stage: Stage) {
-            TriPaintController(stage, FileSystem.create())
+            MainController(stage, FileSystem.create())
 
             stage.show()
         }

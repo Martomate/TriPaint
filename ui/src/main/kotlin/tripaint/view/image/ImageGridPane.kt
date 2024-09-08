@@ -1,9 +1,6 @@
 package tripaint.view.image
 
-import javafx.beans.property.ObjectProperty
-import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.input.MouseButton
-import javafx.scene.paint.Color as FXColor
 import javafx.scene.layout.Pane
 import javafx.scene.shape.Rectangle
 import tripaint.FloodFillSearcher
@@ -12,13 +9,19 @@ import tripaint.coords.GridCoords
 import tripaint.coords.PixelCoords
 import tripaint.coords.TriangleCoords
 import tripaint.grid.*
+import tripaint.util.MutableResource
 import tripaint.util.Resource
 import tripaint.view.EditMode
-import tripaint.view.JavaFxExt.fromFXColor
 import kotlin.math.exp
 import kotlin.math.hypot
 
-class ImageGridPane(private val imageGrid: ImageGrid, private val currentEditMode: Resource<EditMode>) : Pane() {
+class ImageGridPane(
+    private val imageGrid: ImageGrid,
+    private val currentEditMode: Resource<EditMode>,
+    private val primaryColor: MutableResource<Color>,
+    private val secondaryColor: MutableResource<Color>,
+) : Pane() {
+
     private var xScroll: Double = 0.0
     private var yScroll: Double = 0.0
     private var zoom: Double = 1.0
@@ -27,28 +30,6 @@ class ImageGridPane(private val imageGrid: ImageGrid, private val currentEditMod
     private class Drag {
         var x: Double = -1.0
         var y: Double = -1.0
-    }
-
-    val colors = Colors()
-    class Colors {
-        val primaryColor: ObjectProperty<Color> = SimpleObjectProperty(Color.Black)
-        val secondaryColor: ObjectProperty<Color> = SimpleObjectProperty(Color.White)
-
-        fun setPrimaryColor(col: Color) {
-            primaryColor.setValue(col)
-        }
-
-        fun setSecondaryColor(col: Color) {
-            secondaryColor.setValue(col)
-        }
-
-        fun setPrimaryColor(col: FXColor) {
-            setPrimaryColor(fromFXColor(col))
-        }
-
-        fun setSecondaryColor(col: FXColor) {
-            setSecondaryColor(fromFXColor(col))
-        }
     }
 
     private val gridSearcher: FloodFillSearcher = FloodFillSearcher(ImageGridColorLookup(imageGrid))
@@ -174,8 +155,8 @@ class ImageGridPane(private val imageGrid: ImageGrid, private val currentEditMod
         dragged: Boolean
     ) {
         val colorToUse = when (button) {
-            MouseButton.PRIMARY   -> colors.primaryColor
-            MouseButton.SECONDARY -> colors.secondaryColor
+            MouseButton.PRIMARY   -> primaryColor
+            MouseButton.SECONDARY -> secondaryColor
             else                  -> null
         }
 
@@ -183,9 +164,9 @@ class ImageGridPane(private val imageGrid: ImageGrid, private val currentEditMod
         if (image != null) {
             if (colorToUse != null) {
                 when (currentEditMode.value) {
-                    EditMode.Draw -> drawAt(image, coords.pix, colorToUse.get())
-                    EditMode.Fill -> fill(coords, colorToUse.get())
-                    EditMode.PickColor -> colorToUse.setValue(image.storage.getColor(coords.pix))
+                    EditMode.Draw -> drawAt(image, coords.pix, colorToUse.value)
+                    EditMode.Fill -> fill(coords, colorToUse.value)
+                    EditMode.PickColor -> colorToUse.value = image.storage.getColor(coords.pix)
                     else -> {}
                 }
             }

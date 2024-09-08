@@ -58,9 +58,22 @@ class Resource<T> internal constructor(init: T, source: Receiver<T>) {
             return Pair(tx, rx)
         }
 
-        fun <T> createResource(init: T): Pair<Resource<T>, (value: T) -> Unit> {
+        fun <T> createResource(init: T): MutableResource<T> {
             val (tx, rx) = createChannel<T>()
-            return Pair(Resource(init, rx)) { v -> tx.send(v) }
+            return MutableResource(Resource(init, rx)) { v -> tx.send(v) }
         }
     }
+}
+
+class MutableResource<T> internal constructor(private val get: Resource<T>, private val set: (T) -> Unit) {
+    var value: T
+        get() = this.get.value
+        set(value) = this.set(value)
+
+    fun onChange(f: Tracker<Pair<T, T>>) {
+        this.get.onChange(f)
+    }
+
+    operator fun component1() = this.get
+    operator fun component2() = this.set
 }

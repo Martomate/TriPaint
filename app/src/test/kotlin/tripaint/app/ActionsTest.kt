@@ -11,7 +11,6 @@ import tripaint.image.ImageStorage
 import tripaint.image.RegularImage
 import tripaint.image.format.SimpleStorageFormat
 import tripaint.image.format.StorageFormat
-import tripaint.view.FileOpenSettings
 import java.io.File
 import kotlin.test.Test
 
@@ -32,7 +31,7 @@ class ActionsTest {
             Actions.openImage(
                 fileSystem, imagePool, imageGrid,
                 location.file,
-                FileOpenSettings(location.offset, storageFormat),
+                Pair(location.offset, storageFormat),
                 GridCoords.from(0, 0)
             )
 
@@ -58,7 +57,7 @@ class ActionsTest {
             Actions.openImage(
                 fileSystem, imagePool, imageGrid,
                 location.file,
-                FileOpenSettings(location.offset, storageFormat),
+                Pair(location.offset, storageFormat),
                 GridCoords.from(0, 0)
             )
             val loadedImage = imagePool.imageAt(location)!!
@@ -86,7 +85,7 @@ class ActionsTest {
             Actions.openImage(
                 fileSystem, imagePool, imageGrid,
                 location.file,
-                FileOpenSettings(location.offset, storageFormat),
+                Pair(location.offset, storageFormat),
                 GridCoords.from(0, 0)
             )
             val loadedImage = imagePool.imageAt(location)!!

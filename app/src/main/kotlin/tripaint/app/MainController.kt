@@ -1,0 +1,176 @@
+package tripaint.app
+
+import javafx.application.Platform
+import javafx.stage.Stage
+import tripaint.color.Color
+import tripaint.coords.GridCoords
+import tripaint.effects.*
+import tripaint.grid.GridCell
+import tripaint.grid.ImageGrid
+import tripaint.grid.ImageSaveCollisionHandler
+import tripaint.image.ImagePool
+import tripaint.image.ImageStorage
+import tripaint.util.Resource
+import tripaint.view.EditMode
+import tripaint.view.TriPaintViewListener
+import tripaint.view.gui.UIAction
+
+class MainController(
+    private val stage: Stage,
+    private val fileSystem: FileSystem
+) : TriPaintViewListener, ImageSaveCollisionHandler {
+
+    private val imagePool: ImagePool = ImagePool()
+    private val imageGrid: ImageGrid = ImageGrid(-1)
+
+    private val currentEditMode = Resource.createResource(EditMode.Draw)
+    private val primaryColor = Resource.createResource(Color.Black)
+    private val secondaryColor = Resource.createResource(Color.White)
+
+    init {
+        MainScene.create(
+            this, imagePool, imageGrid,
+            currentEditMode, primaryColor, secondaryColor
+        ).mount(stage)
+
+        Platform.runLater {
+            imageGrid.setImageSizeIfEmpty(Dialogs.askForImageSize() ?: 32)
+        }
+    }
+
+    override fun perform(action: UIAction) {
+        when (action) {
+            UIAction.New -> {
+                Dialogs.askForWhereToPutImage()?.let { (x, y) ->
+                    val backgroundColor = secondaryColor.value
+                    val coords = GridCoords.from(x, y)
+                    Actions.createNewImage(imageGrid, backgroundColor, coords)
+                }
+            }
+
+            UIAction.Open -> {
+                Dialogs.askForFileToOpen(stage)?.let { file ->
+                    Dialogs.askForFileOpenSettings(fileSystem, file, imageGrid.imageSize, 1, 1)?.let { fileOpenSettings ->
+                        Dialogs.askForWhereToPutImage()?.let { (x, y) ->
+                            val coords = GridCoords.from(x, y)
+                            Actions.openImage(fileSystem, imagePool, imageGrid, file, fileOpenSettings, coords)
+                        }
+                    }
+                }
+            }
+
+            UIAction.OpenHexagon -> {
+                Dialogs.askForFileToOpen(stage)?.let { file ->
+                    Dialogs.askForFileOpenSettings(fileSystem, file, imageGrid.imageSize, 6, 1)?.let { fileOpenSettings ->
+                        Dialogs.askForWhereToPutImage()?.let { (x, y) ->
+                            val coords = GridCoords.from(x, y)
+                            Actions.openHexagon(fileSystem, imagePool, imageGrid, file, fileOpenSettings, coords)
+                        }
+                    }
+                }
+            }
+
+            UIAction.Save -> {
+                val changedImages = imageGrid.selectedImages().filter { it.changed }
+                Actions.save(imageGrid, imagePool, changedImages, fileSystem, {Dialogs.askForSaveFile(stage, it)}, Dialogs::askForFileSaveSettings, this)
+            }
+
+            UIAction.SaveAs -> {
+                for (im in imageGrid.selectedImages()) {
+                    Actions.saveAs(imageGrid, imagePool, im, fileSystem, {Dialogs.askForSaveFile(stage, it)}, Dialogs::askForFileSaveSettings, this)
+                }
+            }
+
+            UIAction.Exit -> {
+                if (doExit()) {
+                    stage.close()
+                }
+            }
+
+            UIAction.Undo -> {
+                imageGrid.undo()
+            }
+
+            UIAction.Redo -> {
+                imageGrid.redo()
+            }
+
+            UIAction.Blur -> {
+                Dialogs.askForBlurRadius(imageGrid, imagePool)?.let { radius ->
+                    Actions.applyEffect(imageGrid, BlurEffect(radius))
+                }
+            }
+
+            UIAction.MotionBlur -> {
+                Dialogs.askForMotionBlurRadius(imageGrid, imagePool)?.let { radius ->
+                    Actions.applyEffect(imageGrid, MotionBlurEffect(radius))
+                }
+            }
+
+            UIAction.RandomNoise -> {
+                Dialogs.askForRandomNoiseColors(imageGrid, imagePool)?.let { (lo, hi) ->
+                    Actions.applyEffect(imageGrid, RandomNoiseEffect(lo, hi))
+                }
+            }
+
+            UIAction.Scramble -> {
+                Actions.applyEffect(imageGrid, ScrambleEffect)
+            }
+
+            UIAction.Cell -> {
+                Actions.applyEffect(imageGrid, CellEffect())
+            }
+
+            else -> {}
+        }
+    }
+
+    override fun requestExit(): Boolean = doExit()
+
+    override fun requestImageRemoval(image: GridCell) {
+        if (image.changed) {
+            val shouldSave = Dialogs.askSaveBeforeClosing(imagePool, listOf(image)) ?: return
+            if (shouldSave) {
+                val didSave = Actions.save(
+                    imageGrid,
+                    imagePool,
+                    listOf(image),
+                    fileSystem,
+                    {Dialogs.askForSaveFile(stage, it)},
+                    Dialogs::askForFileSaveSettings,
+                    this,
+                )
+                if (!didSave) {
+                    return
+                }
+            }
+        }
+
+        imageGrid.remove(image.coords)
+    }
+
+    private fun doExit(): Boolean {
+        val images = imageGrid.changedImages()
+        if (images.isEmpty()) return true
+
+        val shouldSave = Dialogs.askSaveBeforeClosing(imagePool, images)
+        return if (shouldSave != null) {
+            if (shouldSave) {
+                Actions.save(
+                    imageGrid, imagePool, images, fileSystem,
+                    {Dialogs.askForSaveFile(stage, it)},
+                    Dialogs::askForFileSaveSettings,
+                    this
+                )
+            } else true
+        } else false
+    }
+
+    override fun shouldReplaceImage(
+        currentImage: ImageStorage,
+        newImage: ImageStorage,
+        location: ImagePool.SaveLocation
+    ): Boolean? {
+        return Dialogs.shouldReplaceImage(imageGrid, imagePool, currentImage, newImage, location)
+    }
+}

@@ -5,20 +5,19 @@ import javafx.scene.control.ToggleButton
 import javafx.scene.control.Tooltip
 import javafx.scene.image.ImageView
 import javafx.scene.layout.TilePane
-import tripaint.util.Resource
+import tripaint.util.MutableResource
 import tripaint.view.EditMode
 
 object ToolBox {
     fun create(
         editModes: List<EditMode>,
-        currentEditMode: Resource<EditMode>,
-        setCurrentEditMode: (EditMode) -> Unit
+        currentEditMode: MutableResource<EditMode>,
     ): TilePane {
         val buttons: MutableList<ToolboxButton> = mutableListOf()
         val buttonMap: MutableMap<EditMode, ToolboxButton> = mutableMapOf()
 
         editModes.map { m ->
-            val b = ToolboxButton(m) { setCurrentEditMode(m) }
+            val b = ToolboxButton(m) { currentEditMode.value = m }
             if (m == currentEditMode.value) {
                 b.isSelected = true
             }

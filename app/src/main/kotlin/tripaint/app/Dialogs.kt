@@ -1,14 +1,10 @@
 package tripaint.app
 
-import javafx.scene.Scene
 import javafx.scene.control.*
-import javafx.scene.layout.AnchorPane
-import javafx.scene.layout.BorderPane
-import javafx.scene.layout.TilePane
-import javafx.scene.layout.VBox
 import javafx.stage.FileChooser
 import javafx.stage.Stage
 import tripaint.color.Color
+import tripaint.coords.StorageCoords
 import tripaint.effects.BlurEffect
 import tripaint.effects.MotionBlurEffect
 import tripaint.effects.RandomNoiseEffect
@@ -18,115 +14,18 @@ import tripaint.image.ImagePool
 import tripaint.image.ImageStorage
 import tripaint.image.format.RecursiveStorageFormat
 import tripaint.image.format.SimpleStorageFormat
-import tripaint.view.*
-import tripaint.util.Resource
+import tripaint.image.format.StorageFormat
 import tripaint.view.JavaFxExt.fromFXColor
 import tripaint.view.JavaFxExt.toFXColor
 import tripaint.view.gui.*
 import tripaint.view.gui.DialogUtils.getValueFromCustomDialog
 import tripaint.view.gui.DialogUtils.makeGridPane
-import tripaint.view.image.ImageGridPane
 import java.io.File
 
-class MainStage(
-    private val controls: TriPaintViewListener,
-    private val fileSystem: FileSystem,
-    private val imagePool: ImagePool,
-    private val imageGrid: ImageGrid,
-    private val stage: Stage,
-) : TriPaintView {
-    private val currentEditMode: Resource<EditMode>
-    private val setCurrentEditMode: (EditMode) -> Unit
-
-    init {
-        Resource.createResource(EditMode.Draw).let {
-            this.currentEditMode = it.first
-            this.setCurrentEditMode = it.second
-        }
-    }
-
-    private val imageDisplay: ImageGridPane = ImageGridPane(imageGrid, currentEditMode)
-
-    private val menuBar: MenuBar = TheMenuBar.create(controls)
-    private val toolBar: ToolBar = TheToolBar.create(controls)
-    private val toolBox: TilePane = ToolBox.create(EditMode.all(), currentEditMode, setCurrentEditMode)
-    private val imageTabs: TilePane =
-        ImageTabs.fromImagePool(imageGrid, imagePool, controls::requestImageRemoval)
-    private val colorBox: VBox = makeColorBox()
-
+object Dialogs {
     private var currentFolder: File? = null
 
-    init {
-        stage.title = "TriPaint"
-        stage.setOnCloseRequest { e ->
-            if (!controls.requestExit()) e.consume()
-        }
-
-        val centerPane = AnchorPane(imageDisplay, toolBox, colorBox, imageTabs)
-        AnchorPane.setTopAnchor(imageDisplay, 0.0)
-        AnchorPane.setRightAnchor(imageDisplay, 0.0)
-        AnchorPane.setBottomAnchor(imageDisplay, 0.0)
-        AnchorPane.setLeftAnchor(imageDisplay, 0.0)
-        imageDisplay.clipProperty().isEqualTo(centerPane.clipProperty())
-
-        AnchorPane.setLeftAnchor(toolBox, 0.0)
-        AnchorPane.setTopAnchor(toolBox, 0.0)
-
-        AnchorPane.setLeftAnchor(colorBox, 10.0)
-        AnchorPane.setBottomAnchor(colorBox, 10.0)
-
-        AnchorPane.setRightAnchor(imageTabs, 10.0)
-        AnchorPane.setTopAnchor(imageTabs, 10.0)
-        AnchorPane.setBottomAnchor(imageTabs, 10.0)
-
-        val topPane = VBox(menuBar, toolBar)
-
-        val sceneContents = BorderPane(centerPane, topPane, null, null, null)
-
-        val scene = Scene(sceneContents, 720.0, 720.0)
-        scene.stylesheets.add(MainStage::class.java.getResource("/styles/application.css")!!.toExternalForm())
-
-        for (m in EditMode.all()) {
-            if (m.shortCut != null) {
-                scene.accelerators[m.shortCut] = Runnable { setCurrentEditMode(m) }
-            }
-        }
-
-        stage.setScene(scene)
-    }
-
-    private fun makeColorBox(): VBox {
-        // overlay and imageDisplay
-        val colorPicker1 = ColorPicker(imageDisplay.colors.primaryColor.get().toFXColor())
-        val colorPicker2 = ColorPicker(imageDisplay.colors.secondaryColor.get().toFXColor())
-
-        colorPicker1.valueProperty().addListener { _, from, to ->
-            if (from != to) imageDisplay.colors.setPrimaryColor(fromFXColor(to))
-        }
-
-        colorPicker2.valueProperty().addListener { _, from, to ->
-            if (from != to) imageDisplay.colors.setSecondaryColor(fromFXColor(to))
-        }
-
-        imageDisplay.colors.primaryColor.addListener { _, from, to ->
-            if (from != to) colorPicker1.value = to.toFXColor()
-        }
-
-        imageDisplay.colors.secondaryColor.addListener { _, from, to ->
-            if (from != to) colorPicker2.value = to.toFXColor()
-        }
-
-        return VBox(
-            Label("Primary color:"),
-            colorPicker1,
-            Label("Secondary color:"),
-            colorPicker2
-        )
-    }
-
-    override fun backgroundColor(): Color = imageDisplay.colors.secondaryColor.get()
-
-    override fun askForSaveFile(image: GridCell): File? {
+    fun askForSaveFile(stage: Stage, image: GridCell): File? {
         val chooser = FileChooser()
         currentFolder?.let { chooser.initialDirectory = it }
         chooser.title = "Save file"
@@ -136,7 +35,7 @@ class MainStage(
         return result
     }
 
-    override fun askForFileSaveSettings(file: File, image: GridCell): FileSaveSettings? {
+     fun askForFileSaveSettings(file: File, image: GridCell): Pair<StorageCoords, StorageFormat>? {
         return AskForFileSaveSettingsDialog.askForFileSaveSettings(
             image.storage,
             file,
@@ -148,7 +47,7 @@ class MainStage(
         )
     }
 
-    override fun askForFileToOpen(): File? {
+     fun askForFileToOpen(stage: Stage): File? {
         val chooser = FileChooser()
         chooser.title = "Open file"
         val result = chooser.showOpenDialog(stage)
@@ -156,14 +55,14 @@ class MainStage(
         return result
     }
 
-    override fun askForWhereToPutImage(): Pair<Int, Int>? {
+     fun askForWhereToPutImage(): Pair<Int, Int>? {
         return AskForXYDialog.askForXY(
             title = "New image",
             headerText = "Please enter where it should be placed."
         )
     }
 
-    override fun askForBlurRadius(): Int? {
+     fun askForBlurRadius(imageGrid: ImageGrid, imagePool: ImagePool): Int? {
         val selectedImagesCoords = imageGrid.selectedImages().map { it.coords }
         return DialogUtils.getValueFromDialog(
             imagePool,
@@ -177,7 +76,7 @@ class MainStage(
         )
     }
 
-    override fun askForMotionBlurRadius(): Int? {
+     fun askForMotionBlurRadius(imageGrid: ImageGrid, imagePool: ImagePool): Int? {
         val selectedImagesCoords = imageGrid.selectedImages().map { it.coords }
         return DialogUtils.getValueFromDialog(
             imagePool,
@@ -191,7 +90,7 @@ class MainStage(
         )
     }
 
-    override fun askForRandomNoiseColors(): Pair<Color, Color>? {
+     fun askForRandomNoiseColors(imageGrid: ImageGrid, imagePool: ImagePool): Pair<Color, Color>? {
         val images = imageGrid.selectedImages()
         val selectedImagesCoords = imageGrid.selectedImages().map { it.coords }
         val loColorPicker = ColorPicker(Color.Black.toFXColor())
@@ -237,8 +136,8 @@ class MainStage(
         )
     }
 
-    override fun askSaveBeforeClosing(images: List<GridCell>): Boolean? {
-        return saveBeforeClosingAlert(images).showAndWait().orElse(null)?.let { res ->
+     fun askSaveBeforeClosing(imagePool: ImagePool, images: List<GridCell>): Boolean? {
+        return saveBeforeClosingAlert(imagePool, images).showAndWait().orElse(null)?.let { res ->
             return when (res.buttonData) {
                 ButtonBar.ButtonData.YES -> true
                 ButtonBar.ButtonData.NO -> false
@@ -247,7 +146,7 @@ class MainStage(
         }
     }
 
-    private fun saveBeforeClosingAlert(images: List<GridCell>): Alert {
+    private fun saveBeforeClosingAlert(imagePool: ImagePool, images: List<GridCell>): Alert {
         val (previewPane, _) = DialogUtils.makeImagePreviewList(images, imagePool)
 
         val alert = Alert(Alert.AlertType.CONFIRMATION)
@@ -264,12 +163,13 @@ class MainStage(
         return alert
     }
 
-    override fun askForFileOpenSettings(
+     fun askForFileOpenSettings(
+         fileSystem: FileSystem,
         file: File,
         imageSize: Int,
         xCount: Int,
         yCount: Int
-    ): FileOpenSettings? {
+    ): Pair<StorageCoords, StorageFormat>? {
         return AskForFileOpenSettingsDialog.askForFileOpenSettings(
             imagePreview = ImagePreviewParams(file, imageSize, xCount, yCount),
             listOf(
@@ -280,7 +180,9 @@ class MainStage(
         ) { fileSystem.readImage(it) }
     }
 
-    override fun shouldReplaceImage(
+     fun shouldReplaceImage(
+         imageGrid: ImageGrid,
+         imagePool: ImagePool,
         currentImage: ImageStorage,
         newImage: ImageStorage,
         location: ImagePool.SaveLocation
@@ -302,7 +204,7 @@ class MainStage(
         return alert.showAndWait().map { it.buttonData == ButtonBar.ButtonData.YES }.orElse(null)
     }
 
-    override fun askForImageSize(): Int? {
+    fun askForImageSize(): Int? {
         val dialog = TextInputDialog("32")
         dialog.title = "Image Size"
         dialog.headerText = "What should be the image size? (#rows)"
@@ -311,6 +213,4 @@ class MainStage(
             runCatching { str.toInt() }.getOrDefault(null)?.let { if (it > 0) it else null } ?: 32
         }
     }
-
-    override fun close() = stage.close()
 }

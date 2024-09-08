@@ -16,7 +16,6 @@ import tripaint.color.Color
 import tripaint.coords.StorageCoords
 import tripaint.image.ImageStorage
 import tripaint.image.format.StorageFormat
-import tripaint.view.FileSaveSettings
 import tripaint.view.JavaFxExt.toFXColor
 import tripaint.view.gui.DialogUtils.getValueFromCustomDialog
 import tripaint.view.gui.DialogUtils.makeGridPane
@@ -31,7 +30,7 @@ object AskForFileSaveSettingsDialog {
         file: File,
         formats: List<Pair<StorageFormat, String>>,
         initiallySelectedFormat: Int
-    ): FileSaveSettings? {
+    ): Pair<StorageCoords, StorageFormat>? {
         val imageSize = storage.imageSize
         val (previewFile, previewWidth, previewHeight) = Triple(file, imageSize, imageSize)
 
@@ -53,7 +52,7 @@ object AskForFileSaveSettingsDialog {
             b
         }
 
-        fun resultFromInputs(): Result<FileSaveSettings> {
+        fun resultFromInputs(): Result<Pair<StorageCoords, StorageFormat>> {
             val xt = xCoordTF.text
             val yt = yCoordTF.text
             val format = formatChooser.selectionModel.selectedItem
@@ -61,7 +60,7 @@ object AskForFileSaveSettingsDialog {
             return runCatching {
                 val xOffset = if (xt != "") xt.toInt() else 0
                 val yOffset = if (yt != "") yt.toInt() else 0
-                FileSaveSettings(StorageCoords.from(xOffset, yOffset), format)
+                Pair(StorageCoords.from(xOffset, yOffset), format)
             }
         }
 

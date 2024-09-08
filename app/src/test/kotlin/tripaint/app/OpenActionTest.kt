@@ -9,7 +9,6 @@ import tripaint.grid.ImageGrid
 import tripaint.image.ImagePool
 import tripaint.image.RegularImage
 import tripaint.image.format.SimpleStorageFormat
-import tripaint.view.FileOpenSettings
 import java.io.File
 import kotlin.test.Test
 
@@ -29,7 +28,7 @@ class OpenActionTest {
             Actions.openImage(
                 fileSystem, imagePool, imageGrid,
                 file,
-                FileOpenSettings(StorageCoords.from(0, 0), SimpleStorageFormat),
+                Pair(StorageCoords.from(0, 0), SimpleStorageFormat),
                 GridCoords.from(3, 4)
             )
 
@@ -56,7 +55,7 @@ class OpenActionTest {
             Actions.openImage(
                 fileSystem, imagePool, imageGrid,
                 file,
-                FileOpenSettings(offset, SimpleStorageFormat),
+                Pair(offset, SimpleStorageFormat),
                 GridCoords.from(3, 4)
             )
 

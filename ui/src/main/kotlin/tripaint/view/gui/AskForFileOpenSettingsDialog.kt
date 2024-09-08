@@ -18,7 +18,6 @@ import tripaint.grid.ImageGrid
 import tripaint.image.ImageStorage
 import tripaint.image.RegularImage
 import tripaint.image.format.StorageFormat
-import tripaint.view.FileOpenSettings
 import tripaint.view.JavaFxExt.toFXColor
 import tripaint.view.gui.DialogUtils.getValueFromCustomDialog
 import tripaint.view.gui.DialogUtils.makeGridPane
@@ -33,7 +32,7 @@ object AskForFileOpenSettingsDialog {
         formats: List<Pair<StorageFormat, String>>,
         initiallySelectedFormat: Int,
         readImage: (File) -> RegularImage?
-    ): FileOpenSettings? {
+    ): Pair<StorageCoords, StorageFormat>? {
         val (previewFile, imageSize, xCount, yCount) = imagePreview
         val (previewWidth, previewHeight) = Pair(xCount * imageSize, yCount * imageSize)
 
@@ -55,7 +54,7 @@ object AskForFileOpenSettingsDialog {
             b
         }
 
-        fun resultFromInputs(): Result<FileOpenSettings> {
+        fun resultFromInputs(): Result<Pair<StorageCoords, StorageFormat>> {
             val xt = xCoordTF.text
             val yt = yCoordTF.text
             val format = formatChooser.selectionModel.selectedItem
@@ -63,7 +62,7 @@ object AskForFileOpenSettingsDialog {
             return Result.runCatching {
                 val xOffset = if (xt != "") xt.toInt() else 0
                 val yOffset = if (yt != "") yt.toInt() else 0
-                FileOpenSettings(StorageCoords.from(xOffset, yOffset), format)
+                Pair(StorageCoords.from(xOffset, yOffset), format)
             }
         }
 
@@ -106,8 +105,8 @@ object AskForFileOpenSettingsDialog {
                 val (sc, format) = it
                 val sx = sc.x
                 val sy = sc.y
-                previewPane.setLayoutX(sx.toDouble())
-                previewPane.setLayoutY(sy.toDouble())
+                previewPane.layoutX = sx.toDouble()
+                previewPane.layoutY = sy.toDouble()
 
                 for (x in 0 until xCount) {
                     val offset = StorageCoords.from(sx + x * imageSize, sy)

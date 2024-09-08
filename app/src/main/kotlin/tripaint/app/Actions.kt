@@ -9,8 +9,6 @@ import tripaint.image.ImagePool
 import tripaint.image.ImageStorage
 import tripaint.image.format.StorageFormat
 import tripaint.util.CachedLoader
-import tripaint.view.FileOpenSettings
-import tripaint.view.FileSaveSettings
 import java.io.File
 
 object Actions {
@@ -20,7 +18,7 @@ object Actions {
         images: List<GridCell>,
         fileSystem: FileSystem,
         askForSaveFile: (GridCell) -> File?,
-        askForFileSaveSettings: (File, GridCell) -> FileSaveSettings?,
+        askForFileSaveSettings: (File, GridCell) -> Pair<StorageCoords, StorageFormat>?,
         imageSaveCollisionHandler: ImageSaveCollisionHandler
     ): Boolean {
         return images.filter { im -> !trySaveImage(imageGrid, imagePool, im.storage, fileSystem) }
@@ -50,15 +48,16 @@ object Actions {
 
     fun saveAs(imageGrid: ImageGrid, imagePool: ImagePool, image: GridCell, fileSystem: FileSystem,
         askForSaveFile: (GridCell) -> File?,
-        askForFileSaveSettings: (File, GridCell) -> FileSaveSettings?,
+        askForFileSaveSettings: (File, GridCell) -> Pair<StorageCoords, StorageFormat>?,
         imageSaveCollisionHandler: ImageSaveCollisionHandler
     ): Boolean {
         val file = askForSaveFile(image)
         val didMoveOpt = if (file != null) {
             val settings = askForFileSaveSettings(file, image)
             if (settings != null) {
-                val location = ImagePool.SaveLocation(file, settings.offset)
-                val info = ImagePool.SaveInfo(settings.format)
+                val (offset, format) = settings
+                val location = ImagePool.SaveLocation(file, offset)
+                val info = ImagePool.SaveInfo(format)
                 imageGrid.setImageSource(image.storage, location, info, imagePool, imageSaveCollisionHandler)
             } else null
         } else null
@@ -82,7 +81,7 @@ object Actions {
         imagePool: ImagePool,
         imageGrid: ImageGrid,
         file: File,
-        fileOpenSettings: FileOpenSettings,
+        fileOpenSettings: Pair<StorageCoords, StorageFormat>,
         whereToPutImage: GridCoords
     ) {
         val (offset, format) = fileOpenSettings
@@ -113,7 +112,7 @@ object Actions {
 
     fun openHexagon(
         fileSystem: FileSystem, imagePool: ImagePool, imageGrid: ImageGrid,
-        file: File, fileOpenSettings: FileOpenSettings, coords: GridCoords
+        file: File, fileOpenSettings: Pair<StorageCoords, StorageFormat>, coords: GridCoords
     ) {
         val imageSize = imageGrid.imageSize
         val (offset, format) = fileOpenSettings
@@ -136,7 +135,7 @@ object Actions {
             val off = coordOffset(idx)
             val whereToPutImage = GridCoords.from(coords.x + off.first, coords.y + off.second)
 
-            openImage(fileSystem, imagePool, imageGrid, file, FileOpenSettings(imageOffset, format), whereToPutImage)
+            openImage(fileSystem, imagePool, imageGrid, file, Pair(imageOffset, format), whereToPutImage)
         }
     }
 
