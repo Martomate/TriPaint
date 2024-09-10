@@ -41,33 +41,31 @@ class MainController(
     override fun perform(action: UIAction) {
         when (action) {
             UIAction.New -> {
-                Dialogs.askForWhereToPutImage()?.let { (x, y) ->
-                    val backgroundColor = secondaryColor.value
-                    val coords = GridCoords.from(x, y)
-                    Actions.createNewImage(imageGrid, backgroundColor, coords)
-                }
+                val (x, y) = Dialogs.askForWhereToPutImage() ?: return
+
+                val backgroundColor = secondaryColor.value
+                val coords = GridCoords.from(x, y)
+                Actions.createNewImage(imageGrid, backgroundColor, coords)
             }
 
             UIAction.Open -> {
-                Dialogs.askForFileToOpen(stage)?.let { file ->
-                    Dialogs.askForFileOpenSettings(fileSystem, file, imageGrid.imageSize, 1, 1)?.let { fileOpenSettings ->
-                        Dialogs.askForWhereToPutImage()?.let { (x, y) ->
-                            val coords = GridCoords.from(x, y)
-                            Actions.openImage(fileSystem, imagePool, imageGrid, file, fileOpenSettings, coords)
-                        }
-                    }
-                }
+                val file = Dialogs.askForFileToOpen(stage) ?: return
+                val fileOpenSettings =
+                    Dialogs.askForFileOpenSettings(fileSystem, file, imageGrid.imageSize, 1, 1) ?: return
+                val (x, y) = Dialogs.askForWhereToPutImage() ?: return
+
+                val coords = GridCoords.from(x, y)
+                Actions.openImage(fileSystem, imagePool, imageGrid, file, fileOpenSettings, coords)
             }
 
             UIAction.OpenHexagon -> {
-                Dialogs.askForFileToOpen(stage)?.let { file ->
-                    Dialogs.askForFileOpenSettings(fileSystem, file, imageGrid.imageSize, 6, 1)?.let { fileOpenSettings ->
-                        Dialogs.askForWhereToPutImage()?.let { (x, y) ->
-                            val coords = GridCoords.from(x, y)
-                            Actions.openHexagon(fileSystem, imagePool, imageGrid, file, fileOpenSettings, coords)
-                        }
-                    }
-                }
+                val file = Dialogs.askForFileToOpen(stage) ?: return
+                val fileOpenSettings =
+                    Dialogs.askForFileOpenSettings(fileSystem, file, imageGrid.imageSize, 6, 1) ?: return
+                val (x, y) = Dialogs.askForWhereToPutImage() ?: return
+
+                val coords = GridCoords.from(x, y)
+                Actions.openHexagon(fileSystem, imagePool, imageGrid, file, fileOpenSettings, coords)
             }
 
             UIAction.Save -> {
@@ -96,21 +94,21 @@ class MainController(
             }
 
             UIAction.Blur -> {
-                Dialogs.askForBlurRadius(imageGrid, imagePool)?.let { radius ->
-                    Actions.applyEffect(imageGrid, BlurEffect(radius))
-                }
+                val radius = Dialogs.askForBlurRadius(imageGrid, imagePool) ?: return
+
+                Actions.applyEffect(imageGrid, BlurEffect(radius))
             }
 
             UIAction.MotionBlur -> {
-                Dialogs.askForMotionBlurRadius(imageGrid, imagePool)?.let { radius ->
-                    Actions.applyEffect(imageGrid, MotionBlurEffect(radius))
-                }
+                val radius = Dialogs.askForMotionBlurRadius(imageGrid, imagePool) ?: return
+
+                Actions.applyEffect(imageGrid, MotionBlurEffect(radius))
             }
 
             UIAction.RandomNoise -> {
-                Dialogs.askForRandomNoiseColors(imageGrid, imagePool)?.let { (lo, hi) ->
-                    Actions.applyEffect(imageGrid, RandomNoiseEffect(lo, hi))
-                }
+                val (lo, hi) = Dialogs.askForRandomNoiseColors(imageGrid, imagePool) ?: return
+
+                Actions.applyEffect(imageGrid, RandomNoiseEffect(lo, hi))
             }
 
             UIAction.Scramble -> {
@@ -153,17 +151,15 @@ class MainController(
         val images = imageGrid.changedImages()
         if (images.isEmpty()) return true
 
-        val shouldSave = Dialogs.askSaveBeforeClosing(imagePool, images)
-        return if (shouldSave != null) {
-            if (shouldSave) {
-                Actions.save(
-                    imageGrid, imagePool, images, fileSystem,
-                    {Dialogs.askForSaveFile(stage, it)},
-                    Dialogs::askForFileSaveSettings,
-                    this
-                )
-            } else true
-        } else false
+        val shouldSave = Dialogs.askSaveBeforeClosing(imagePool, images) ?: return false
+        if (!shouldSave) return true
+
+        return Actions.save(
+            imageGrid, imagePool, images, fileSystem,
+            {Dialogs.askForSaveFile(stage, it)},
+            Dialogs::askForFileSaveSettings,
+            this
+        )
     }
 
     override fun shouldReplaceImage(

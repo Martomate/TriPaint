@@ -21,15 +21,15 @@ object Actions {
         askForFileSaveSettings: (File, GridCell) -> Pair<StorageCoords, StorageFormat>?,
         imageSaveCollisionHandler: ImageSaveCollisionHandler
     ): Boolean {
+        fun doSave(im: GridCell): Boolean {
+            if (trySaveImage(imageGrid, imagePool, im.storage, fileSystem)) return true
+            return saveAs(
+                imageGrid, imagePool, im, fileSystem,
+                askForSaveFile, askForFileSaveSettings, imageSaveCollisionHandler
+            )
+        }
         return images.filter { im -> !trySaveImage(imageGrid, imagePool, im.storage, fileSystem) }
-            .all { im ->
-                trySaveImage(imageGrid, imagePool, im.storage, fileSystem) ||
-                        saveAs(imageGrid, imagePool, im, fileSystem,
-                            askForSaveFile,
-                            askForFileSaveSettings,
-                            imageSaveCollisionHandler
-                        )
-            }
+            .all { doSave(it) }
     }
 
     private fun trySaveImage(
@@ -39,11 +39,9 @@ object Actions {
         fileSystem: FileSystem
     ): Boolean {
         val (loc, info) = imagePool.getSaveLocationAndInfo(image)
-        return if (loc != null && info != null) {
-            ImageSaver.saveImage(imageGrid, image, fileSystem, loc, info)
-        } else {
-            false
-        }
+        if (loc == null || info == null) return false
+
+        return ImageSaver.saveImage(imageGrid, image, fileSystem, loc, info)
     }
 
     fun saveAs(imageGrid: ImageGrid, imagePool: ImagePool, image: GridCell, fileSystem: FileSystem,
@@ -51,24 +49,19 @@ object Actions {
         askForFileSaveSettings: (File, GridCell) -> Pair<StorageCoords, StorageFormat>?,
         imageSaveCollisionHandler: ImageSaveCollisionHandler
     ): Boolean {
-        val file = askForSaveFile(image)
-        val didMoveOpt = if (file != null) {
-            val settings = askForFileSaveSettings(file, image)
-            if (settings != null) {
-                val (offset, format) = settings
-                val location = ImagePool.SaveLocation(file, offset)
-                val info = ImagePool.SaveInfo(format)
-                imageGrid.setImageSource(image.storage, location, info, imagePool, imageSaveCollisionHandler)
-            } else null
-        } else null
+        val file = askForSaveFile(image) ?: return false
+        val settings = askForFileSaveSettings(file, image) ?: return false
 
-        val didMove = didMoveOpt ?: false
+        val (offset, format) = settings
+        val location = ImagePool.SaveLocation(file, offset)
+        val info = ImagePool.SaveInfo(format)
 
-        return if (didMove) {
-            val saved = trySaveImage(imageGrid, imagePool, image.storage, fileSystem)
-            if (!saved) println("Image could not be saved!!")
-            saved
-        } else false
+        val didMove = imageGrid.setImageSource(image.storage, location, info, imagePool, imageSaveCollisionHandler)
+        if (!didMove) return false
+
+        val saved = trySaveImage(imageGrid, imagePool, image.storage, fileSystem)
+        if (!saved) println("Image could not be saved!!")
+        return saved
     }
 
     fun createNewImage(imageGrid: ImageGrid, backgroundColor: Color, coords: GridCoords) {
