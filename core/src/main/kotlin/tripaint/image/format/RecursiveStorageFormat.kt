@@ -35,6 +35,11 @@ import kotlin.math.max
  * }}}
  */
 object RecursiveStorageFormat : StorageFormat {
+    override fun supportsImageSize(size: Int): Boolean {
+        // checks if `size` is a power of 2
+        return size.takeHighestOneBit() == size
+    }
+
     override fun transform(coords: TriangleCoords): StorageCoords {
         return if (coords.y == 0) {
             StorageCoords.from(0, 0)

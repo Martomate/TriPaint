@@ -46,6 +46,8 @@ class ImageStorage private constructor (val imageSize: Int, val image: RegularIm
     }
 
     fun toRegularImage(format: StorageFormat): RegularImage {
+        require(format.supportsImageSize(imageSize))
+
         val image = RegularImage.ofSize(imageSize, imageSize)
         for (y in 0 until imageSize) {
             for (x in 0 until 2 * y + 1) {
@@ -70,6 +72,8 @@ class ImageStorage private constructor (val imageSize: Int, val image: RegularIm
             format: StorageFormat,
             imageSize: Int
         ): Result<ImageStorage> {
+            require(format.supportsImageSize(imageSize))
+
             return runCatching {
                 val regularImage = RegularImage.tabulate(imageSize, imageSize) {
                     x, y ->

@@ -175,7 +175,7 @@ object Dialogs {
             listOf(
                 Pair(SimpleStorageFormat, "Simple format"),
                 Pair(RecursiveStorageFormat, "Recursive format")
-            ),
+            ).filter { it.first.supportsImageSize(imageSize) },
             0
         ) { fileSystem.readImage(it) }
     }

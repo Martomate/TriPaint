@@ -28,10 +28,12 @@ object AskForFileSaveSettingsDialog {
     fun askForFileSaveSettings(
         storage: ImageStorage,
         file: File,
-        formats: List<Pair<StorageFormat, String>>,
+        availableFormats: List<Pair<StorageFormat, String>>,
         initiallySelectedFormat: Int
     ): Pair<StorageCoords, StorageFormat>? {
         val imageSize = storage.imageSize
+        val supportedFormats = availableFormats.filter { it.first.supportsImageSize(imageSize) }
+
         val (previewFile, previewWidth, previewHeight) = Triple(file, imageSize, imageSize)
 
         val xCoordTF = RestrictedTextField.uintTF()
@@ -40,10 +42,10 @@ object AskForFileSaveSettingsDialog {
         val yCoordTF = RestrictedTextField.uintTF()
         yCoordTF.promptText = "0"
 
-        val formatMap: Map<StorageFormat, String> = mapOf(*formats.toTypedArray())
+        val formatMap: Map<StorageFormat, String> = mapOf(*supportedFormats.toTypedArray())
 
         val formatChooser = run {
-            val b = ChoiceBox(FXCollections.observableArrayList(*formats.map { it.first }.toTypedArray()))
+            val b = ChoiceBox(FXCollections.observableArrayList(*supportedFormats.map { it.first }.toTypedArray()))
             b.selectionModel.select(initiallySelectedFormat)
             b.converter = object : StringConverter<StorageFormat>() {
                 override fun toString(t: StorageFormat): String = formatMap[t]!!
