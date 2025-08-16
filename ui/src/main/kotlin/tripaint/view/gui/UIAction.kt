@@ -15,6 +15,7 @@ enum class UIAction {
     Move,
     Scale,
     Rotate,
+    ShowPreview,
     Blur,
     MotionBlur,
     RandomNoise,

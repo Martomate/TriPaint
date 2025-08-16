@@ -31,6 +31,11 @@ object TheMenuBar {
             makeMenuItem(controls, MainStageButtons.Paste)
         )
 
+        val viewMenu = makeMenu(
+            "View",
+            makeMenuItem(controls, MainStageButtons.ShowPreview),
+        )
+
         val organizeMenu =
             makeMenu(
                 "Organize",
@@ -50,7 +55,7 @@ object TheMenuBar {
 
         val menuBar = MenuBar()
         menuBar.isUseSystemMenuBar = true
-        menuBar.menus.setAll(fileMenu, editMenu, organizeMenu, effectsMenu)
+        menuBar.menus.setAll(fileMenu, editMenu, viewMenu, organizeMenu, effectsMenu)
         return menuBar
     }
 

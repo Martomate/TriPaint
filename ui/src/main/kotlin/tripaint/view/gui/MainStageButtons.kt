@@ -52,6 +52,7 @@ object MainStageButtons {
     val Cut: MenuBarAction = MenuBarAction("Cut", "cut")
     val Copy: MenuBarAction = MenuBarAction("Copy", "copy")
     val Paste: MenuBarAction = MenuBarAction("Paste", "paste")
+    val ShowPreview: MenuBarAction = MenuBarAction("Show preview", action = UIAction.ShowPreview)
     val Move: MenuBarAction = MenuBarAction("Move", "move")
     val Scale: MenuBarAction = MenuBarAction("Scale", "scale")
     val Rotate: MenuBarAction = MenuBarAction("Rotate", "rotate")

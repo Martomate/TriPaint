@@ -27,15 +27,24 @@ class MainController(
     private val primaryColor = Resource.createResource(Color.Black)
     private val secondaryColor = Resource.createResource(Color.White)
 
+    private val previewStage: Stage = Stage()
+
     init {
         stage.title = "TriPaint"
         stage.setOnCloseRequest { e ->
-            if (!this.doExit()) e.consume()
+            if (!this.doExit()) {
+                e.consume()
+            } else {
+                previewStage.close()
+            }
         }
         stage.scene = MainScene.create(
             this, imagePool, imageGrid,
             currentEditMode, primaryColor, secondaryColor, this::requestImageRemoval
         )
+
+        previewStage.title = "TriPaint preview"
+        previewStage.scene = PreviewScene.create(imageGrid)
 
         Platform.runLater {
             imageGrid.setImageSizeIfEmpty(Dialogs.askForImageSize() ?: 32)
@@ -95,6 +104,10 @@ class MainController(
 
             UIAction.Redo -> {
                 imageGrid.redo()
+            }
+
+            UIAction.ShowPreview -> {
+                previewStage.show()
             }
 
             UIAction.Blur -> {
