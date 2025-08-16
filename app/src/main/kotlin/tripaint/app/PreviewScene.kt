@@ -30,6 +30,17 @@ object PreviewScene {
                         previewImageGrid.set(GridCell(coords, image.storage))
                     }
                 }
+            } else {
+                images.forEach {
+                    for (xs in -4..4) {
+                        for (ys in -4..4) {
+                            val dx = 2 * xs - 2 * ys
+                            val dy = 1 * xs + 2 * ys
+                            val coords = GridCoords.from(it.coords.x + dx, it.coords.y + dy)
+                            previewImageGrid.set(GridCell(coords, it.storage))
+                        }
+                    }
+                }
             }
         }
         imageGrid.trackChanges { when (it) {
