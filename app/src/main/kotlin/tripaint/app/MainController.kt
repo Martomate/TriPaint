@@ -28,10 +28,14 @@ class MainController(
     private val secondaryColor = Resource.createResource(Color.White)
 
     init {
-        MainScene.create(
+        stage.title = "TriPaint"
+        stage.setOnCloseRequest { e ->
+            if (!this.doExit()) e.consume()
+        }
+        stage.scene = MainScene.create(
             this, imagePool, imageGrid,
-            currentEditMode, primaryColor, secondaryColor
-        ).mount(stage)
+            currentEditMode, primaryColor, secondaryColor, this::requestImageRemoval
+        )
 
         Platform.runLater {
             imageGrid.setImageSizeIfEmpty(Dialogs.askForImageSize() ?: 32)
@@ -123,28 +127,29 @@ class MainController(
         }
     }
 
-    override fun requestExit(): Boolean = doExit()
-
-    override fun requestImageRemoval(image: GridCell) {
-        if (image.changed) {
-            val shouldSave = Dialogs.askSaveBeforeClosing(imagePool, listOf(image)) ?: return
-            if (shouldSave) {
-                val didSave = Actions.save(
-                    imageGrid,
-                    imagePool,
-                    listOf(image),
-                    fileSystem,
-                    {Dialogs.askForSaveFile(stage, it)},
-                    Dialogs::askForFileSaveSettings,
-                    this,
-                )
-                if (!didSave) {
-                    return
-                }
-            }
+    private fun requestImageRemoval(image: GridCell) {
+        if (shouldRemoveImage(image)) {
+            imageGrid.remove(image.coords)
         }
+    }
 
-        imageGrid.remove(image.coords)
+    private fun shouldRemoveImage(image: GridCell): Boolean {
+        if (!image.changed) return true
+
+        val shouldSave = Dialogs.askSaveBeforeClosing(imagePool, listOf(image)) ?: return false
+        if (shouldSave) {
+            val didSave = Actions.save(
+                imageGrid,
+                imagePool,
+                listOf(image),
+                fileSystem,
+                {Dialogs.askForSaveFile(stage, it)},
+                Dialogs::askForFileSaveSettings,
+                this,
+            )
+            if (!didSave) return false
+        }
+        return true
     }
 
     private fun doExit(): Boolean {
