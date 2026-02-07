@@ -16,6 +16,7 @@ import tripaint.view.EditMode
 import tripaint.view.JavaFxExt.toFXColor
 import kotlin.math.exp
 import kotlin.math.hypot
+import kotlin.math.min
 
 class ImageGridPane(
     private val imageGrid: ImageGrid,
@@ -226,6 +227,9 @@ class ImageGridPane(
         when (event) {
         is ImageGrid.Event.ImageAdded -> {
             cumulativeImageChange[event.image.coords] = ImageChange.Builder()
+            if (this.imageGrid.images().size == 1) {
+                fitToScreen(this.imageGrid.images()[0].coords)
+            }
             canvas.redraw()
         }
         is ImageGrid.Event.ImageRemoved -> {
@@ -241,5 +245,42 @@ class ImageGridPane(
             canvas.redraw()
         }
         }
+    }
+
+    private fun fitToScreen(gridCoords: GridCoords) {
+        val paddingX = 50.0
+        val paddingY = 100.0
+
+        val corners = listOf(
+            TriangleCoords.from(0, 0),
+            TriangleCoords.from(imageGrid.imageSize * 2 - 1, imageGrid.imageSize - 1),
+            TriangleCoords.from(0, imageGrid.imageSize - 1),
+        ).map {
+            PixelCoords
+                .from(it, gridCoords)
+                .toGlobal(imageGrid.imageSize)
+        }.map { canvas.locationOf(it) }
+
+        val xLo = corners.minOf { it.first }
+        val xHi = corners.maxOf { it.first }
+        val yLo = corners.minOf { it.second }
+        val yHi = corners.maxOf { it.second }
+
+        val xCenter = (xLo + xHi) / 2
+        val yCenter = (yLo + yHi) / 2
+        val width = xHi - xLo
+        val height = yHi - yLo
+
+        val scale = min(
+            (canvas.width - 2 * paddingX) / width,
+            (canvas.height - 2 * paddingY) / height
+        )
+
+        setScroll(
+            (canvas.width / 2 + xScroll - xCenter) * scale,
+            (canvas.height / 2 + yScroll - yCenter) * scale
+        )
+        zoom *= scale
+        canvas.setScale(zoom)
     }
 }
