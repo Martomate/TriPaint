@@ -10,3 +10,6 @@
 	-fx-background-color: rgba(120, 200, 255, 0.3);
 	-fx-border-color: rgba(120, 200, 255, 0.8);
 }
+.color-picker {
+    -fx-color-label-visible: false;
+}
