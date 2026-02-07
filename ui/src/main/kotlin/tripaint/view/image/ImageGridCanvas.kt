@@ -150,20 +150,16 @@ class ImageGridCanvas(val images: ImageGrid) : Canvas() {
 
         val coordsBuffer = this.calculateCoordsForRegion(startX, startY, w, h)
 
-        var ys = y0
-        while (ys < y1) {
-        val ySteps = (y1 - ys).coerceAtMost(stepSize)
+        for (ys in y0 ..< y1 step stepSize) {
+            val ySteps = (y1 - ys).coerceAtMost(stepSize)
 
-            var xs = x0
-            while (xs < x1) {
+            for (xs in x0 ..< x1 step stepSize) {
                 val xSteps = (x1 - xs).coerceAtMost(stepSize)
 
-                var dy = 0
-                while (dy < ySteps) {
+                for (dy in 0 ..< ySteps) {
                     val y = ys + dy
 
-                    var dx = 0
-                    while (dx < xSteps) {
+                    for (dx in 0 ..< xSteps) {
                         val x = xs + dx
 
                         val coords = PixelCoords(coordsBuffer[x - x0 + (y - y0) * ww])
@@ -178,14 +174,9 @@ class ImageGridCanvas(val images: ImageGrid) : Canvas() {
                         if (cell != null) {
                             buffer[x - x0 + (y - y0) * ww] = cell.storage.getColorArgb(coords.pix)
                         }
-
-                        dx += 1
                     }
-                    dy += 1
                 }
-                xs += stepSize
             }
-            ys += stepSize
         }
 
         val image = WritableImage(w * sc, h * sc)

@@ -1,6 +1,7 @@
 package tripaint.view.image
 
 import javafx.scene.input.MouseButton
+import javafx.scene.layout.Background
 import javafx.scene.layout.Pane
 import javafx.scene.shape.Rectangle
 import tripaint.FloodFillSearcher
@@ -12,6 +13,7 @@ import tripaint.grid.*
 import tripaint.util.MutableResource
 import tripaint.util.Resource
 import tripaint.view.EditMode
+import tripaint.view.JavaFxExt.toFXColor
 import kotlin.math.exp
 import kotlin.math.hypot
 
@@ -38,6 +40,9 @@ class ImageGridPane(
     init {
         canvas.setScale(zoom)
         canvas.setDisplacement(xScroll, yScroll)
+
+        val brightness = 0.9
+        this.background = Background.fill(Color(brightness, brightness, brightness, 1.0).toFXColor())
 
         this.children.add(canvas)
 
