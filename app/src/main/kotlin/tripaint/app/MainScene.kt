@@ -97,9 +97,9 @@ object MainScene {
         }
 
         return VBox(
-            Label("Primary color:"),
+            Label("Primary"),
             colorPicker1,
-            Label("Secondary color:"),
+            Label("Secondary"),
             colorPicker2
         )
     }
