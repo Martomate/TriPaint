@@ -3,6 +3,12 @@ plugins {
     id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
 javafx {
     version = "22.0.2"
     modules(

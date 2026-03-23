@@ -2,6 +2,12 @@ plugins {
     kotlin("jvm") version "2.0.20"
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
 dependencies {
     testImplementation(kotlin("test"))
     testImplementation("io.mockk:mockk:1.13.12")

@@ -5,6 +5,12 @@ plugins {
     id("org.beryx.runtime") version "1.13.1"
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
 application {
     mainClass = "tripaint.app.TriPaint"
 }
